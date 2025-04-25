@@ -1,0 +1,61 @@
+<template>
+	<main class="p-4 sm:p-6">
+		<FlowsHeader :creating-flow="createLoading" @createNewFlow="createNewFlow" />
+		<FlowsLoader v-if="loading" />
+		<FlowsEmptyState v-else-if="!userFlows.length" @createNewFlow="createNewFlow" />
+
+		<div v-else>
+			<TabComponents
+				:tabs="['active', 'draft']"
+				:selected="currentTab"
+				:icons="[Activity, FileEdit]"
+				:counts="[activeFlows.length, draftFlows.length]"
+				@changed="currentTab = $event"
+			/>
+
+			<FlowsList :current-tab="currentTab" :active-flows="activeFlows" :draft-flows="draftFlows" @edit="$router.push(`/flows/${$event.id}`)" @delete="setDeleteFlowData" @toggle-status="toggleFlowStatus" @createNewFlow="createNewFlow" @currentTab="currentTab = $event" />
+		</div>
+	</main>
+</template>
+
+<script setup lang="ts">
+import { Activity, FileEdit } from 'lucide-vue-next'
+import { usePageHeader } from '@/composables/utils/header'
+import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
+import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
+import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
+import { useCreateFlow } from '@/composables/dashboard/flows/create'
+import TabComponents from '@/components/core/Tabs.vue'
+
+
+
+
+const { userFlows, loading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
+const { toggleFlowStatus } = useToggleFlow()
+const { setDeleteFlowData } = useDeleteFlow()
+const { loading: createLoading, createNewFlow } = useCreateFlow()
+
+
+const currentTab = ref(activeFlows.value.length > 0 ? 'active' : 'draft')
+
+
+onMounted(async () => {
+	await fetchAllFlows()
+})
+
+definePageMeta({
+	layout: 'dashboard',
+	middleware: ['is-authenticated', () => {
+		usePageHeader().setPageHeader({
+			title: 'Flows',
+			description: 'Manage your workflow automation',
+			btnText: 'Create New Flow',
+			btnCall: () => useRouter().push('/flows/create'),
+			shouldShowFab: true,
+			shouldShowTab: usePageHeader().isLargeScreen.value
+		})
+	}]
+})
+</script>
+
+

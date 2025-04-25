@@ -1,0 +1,47 @@
+<template>
+	<Modal
+		modal="$atts.modal"
+		title="Start Goal"
+		:is-full-height="false"
+		:props-modal="propsModal"
+	>
+		<div class="field relative">
+			<label for="start">Start Date</label>
+			<DateInput id="start" v-model="start_date" placeholder="When do you want to start?" type="date" />
+		</div>
+		<transition name="scale" appear>
+			<div v-if="loading" class="card_ans !border-greenx bg-[#b8e3b8] mt-4">
+				{{ milestones.length === 0 ? 'Generating Milestones...' : todos.length === 0 ? 'Generating Todos....' : 'Saving to database' }}
+			</div>
+		</transition>
+
+		<div class="grid grid-cols-1 gap-4 mt-6">
+			<button class="btn-primary text-light " :disabled="loading || !start_date" @click="startGoal()">
+				<span v-if="!loading"> Start </span>
+				<Spinner v-else />
+			</button>
+		</div>
+	</Modal>
+</template>
+
+<script setup lang="ts">
+import { useStartGoal } from '@/composables/dashboard/goals/start'
+
+const { loading, startGoal, start_date, milestones, todos } = useStartGoal()
+
+const props = defineProps({
+	payload: {
+		type: Object as PropType<Record<string, any> | null>,
+		default: null,
+		required: false
+	},
+	propsModal: {
+		type: String,
+		required: false // Adjust as needed
+	}
+})
+</script>
+
+<style>
+
+</style>
