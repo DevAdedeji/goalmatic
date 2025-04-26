@@ -12,7 +12,7 @@ type msgType = {
 
 export const notifyUser = async (msg: msgType) => {
     // We'll use the API key from environment variables
-    const ZEPTOMAIL_AUTH = 'Zoho-enczapikey wSsVR61/rELxBq0snDyrducxzAkGUQz+EBt03gf37CX/HPyT8scznk3MBQKgSKccEW9tFGYb978pnh4I1DcNiYgvwl8BDyiF9mqRe1U4J3x17qnvhDzNV2hckhOJKYsNzgpqm2VlE8wl+g=='
+    const ZEPTOMAIL_AUTH = process.env.ZEPTOMAIL_AUTH
     
     // Format request according to ZeptoMail's SendGrid transition API
     const config = {

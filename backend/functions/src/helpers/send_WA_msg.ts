@@ -7,7 +7,7 @@ export const send_WA_Message = (data) => {
     method: 'post',
     url: 'https://graph.facebook.com/v19.0/341827889004649/messages',
     headers: {
-      'Authorization': 'Bearer EAAKv99qiXRgBO6xBZC76PHy2TT7FAX0KwIuD5qIQZCG0jJNBiCLFNR1tQJ07YMZCSTgHEqBavE0snLHTLZAZAXBRhpluOMEb5YkbQXhfcl3BJsMZA6ZB9tXSgYmE7Hvzpf49w26AdyVZBXsbaLZB8Ah7pmzsh6ZAtzQrYYcJIXqYLHtKGdMdTsfI48A7FPMZAlACRQf',
+      'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
       'Content-Type': 'application/json'
     },
     data: data
