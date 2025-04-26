@@ -25,8 +25,8 @@ export const dashboardRoutes = () => [
 
 		{
 		icon: Bot,
-		name: 'Assistant',
-		route: '/assistant',
+		name: 'Agent',
+		route: '/agents',
 		type: 'all',
 		main: true,
 		subRoutes: [

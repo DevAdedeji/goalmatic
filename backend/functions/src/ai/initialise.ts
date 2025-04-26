@@ -2,15 +2,18 @@ import {  InvalidPromptError, generateText } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { generateAgentTools } from './tools';
 
+
+
+
+export const initialiseAIChat = async (history: any[] = [], agent: Record<string, any>, isImageRequest: boolean = false) => {
+
 const google = createGoogleGenerativeAI({
     apiKey: process.env.GOOGLE_API_KEY,
 })
-
-export const initialiseAIChat = async (history: any[] = [], agent: Record<string, any>, isImageRequest: boolean = false) => {
+    console.log(process.env.GOOGLE_API_KEY);
     try {
         // Process messages, handling any that might contain image data
         const conversationHistory = history.map((msg) => {
-            // If the message has array content (for images), handle it specially
             if (msg.content && Array.isArray(msg.content)) {
                 return {
                     role: msg.role,

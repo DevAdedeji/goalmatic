@@ -59,10 +59,13 @@ export const useUser = () => {
     }
 
 
-    const fetchUserProfile = async (uid:string) => {
+    const fetchUserProfile = async (uid:string): Promise<void> => {
         if (user.value && uid) {
-            await getSingleFirestoreDocument('users', uid, _userProfileCookie)
-            return _userProfileCookie
+            try {
+                await getSingleFirestoreDocument('users', uid, _userProfileCookie)
+            } catch (error) {
+                _userProfileCookie.value = null
+            }
         }
     }
     return { setUser, clearUser, user, userProfile, redirectUrl, isLoggedIn, username, id, fetchUserProfile, setUserProfile, currentGoogleCalToken }

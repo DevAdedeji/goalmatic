@@ -6,10 +6,11 @@ import { setFirestoreDocument } from '@/firebase/firestore/create'
 
 
 export const afterAuthCheck = async (user: User | null) => {
-    if (user) {
-        const { fetchUserProfile } = useUser()
-        const userProfile = await fetchUserProfile(user.uid) as any
-        if (!userProfile?.value?.name) {
+    try {
+        if (user) {
+            const { fetchUserProfile } = useUser()
+            const userProfile = await fetchUserProfile(user.uid) as any
+            if (!userProfile?.value?.name) {
             await setFirestoreDocument('users', user.uid, {
                 id: user.uid,
                 name: user.displayName,
@@ -31,6 +32,9 @@ export const afterAuthCheck = async (user: User | null) => {
          const redirectUrl = useUser().redirectUrl.value
          useUser().redirectUrl.value = null
          useRouter().push(redirectUrl ?? '/goals')
+        }
+    } catch (error) {
+        console.error(error)
     }
 }
 

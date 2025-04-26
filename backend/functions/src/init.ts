@@ -21,10 +21,11 @@ export const useFirestore = (databaseName = '(default)'): Firestore => {
   return getFirestore(app, databaseName)
 }
 
-
+export const is_emulator = process.env.FUNCTIONS_EMULATOR === 'true';
 export const is_dev = JSON.parse(process.env.FIREBASE_CONFIG as string).projectId === 'taaskly-dev' ? true : false
 
+const useDefaultDb = (!is_dev || is_emulator) ? '(default)' : 'goalmatic-dev' 
 
 
-export const goals_db: Firestore = is_dev ? useFirestore('goalmatic-dev') : useFirestore('(default)') 
-export const goals_db_string: string = is_dev ? 'goalmatic-dev' : '(default)'
+export const goals_db: Firestore = useFirestore(useDefaultDb)
+export const goals_db_string: string = useDefaultDb
