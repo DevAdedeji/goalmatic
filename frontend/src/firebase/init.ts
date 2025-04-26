@@ -19,7 +19,6 @@ const firebaseConfig = {
 
 const useDefaultDb = import.meta.env.VITE_USE_DEFAULT_DB === 'true' ? '(default)' : 'goalmatic-dev'
 
-
 export const useFirebase = () => {
     if (getApps().length === 0) {
       return initializeApp(firebaseConfig)

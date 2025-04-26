@@ -1,0 +1,14 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.systemPrompt = exports.getUserToolConfig = exports.setUserToolConfig = exports.getUserUid = exports.setUserUid = void 0;
+let userUidInstance;
+let userToolConfig;
+const setUserUid = (uid) => { userUidInstance = uid; };
+exports.setUserUid = setUserUid;
+const getUserUid = () => userUidInstance;
+exports.getUserUid = getUserUid;
+const setUserToolConfig = (config) => { userToolConfig = config; };
+exports.setUserToolConfig = setUserToolConfig;
+const getUserToolConfig = () => userToolConfig;
+exports.getUserToolConfig = getUserToolConfig;
+exports.systemPrompt = `You are a help assistant for the user.`;

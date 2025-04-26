@@ -11,7 +11,7 @@ export default function firebaseServer() {
             if (getApps().length === 0) {
         return initializeApp()
     }
-    return getApp()
+    return getApp() 
     } catch (error) {
         return null
     }
@@ -26,5 +26,5 @@ export const is_dev = JSON.parse(process.env.FIREBASE_CONFIG as string).projectI
 
 
 
-export const goals_db: Firestore = process.env.FIREBASE_DEBUG_MODE === 'true' ? useFirestore('(default)') : useFirestore('goals')
-export const goals_db_string: string = process.env.FIREBASE_DEBUG_MODE === 'true' ? '(default)' : 'goals'
+export const goals_db: Firestore = is_dev ? useFirestore('goalmatic-dev') : useFirestore('(default)') 
+export const goals_db_string: string = is_dev ? 'goalmatic-dev' : '(default)'

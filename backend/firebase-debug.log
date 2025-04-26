@@ -1,0 +1,190 @@
+[debug] [2025-04-26T09:21:36.388Z] ----------------------------------------------------------------------
+[debug] [2025-04-26T09:21:36.389Z] Command:       /Users/anthonyakpan/.nvm/versions/node/v20.19.1/bin/node /Users/anthonyakpan/.nvm/versions/node/v20.19.1/bin/firebase emulators:start --import=./dummy_data --export-on-exit
+[debug] [2025-04-26T09:21:36.390Z] CLI Version:   14.2.1
+[debug] [2025-04-26T09:21:36.390Z] Platform:      darwin
+[debug] [2025-04-26T09:21:36.390Z] Node Version:  v20.19.1
+[debug] [2025-04-26T09:21:36.390Z] Time:          Sat Apr 26 2025 10:21:36 GMT+0100 (West Africa Standard Time)
+[debug] [2025-04-26T09:21:36.390Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-26T09:21:36.498Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-26T09:21:36.498Z] > authorizing via signed-in user (akpananthony33@gmail.com)
+[debug] [2025-04-26T09:21:36.598Z] java version "20.0.2" 2023-07-18
+
+[debug] [2025-04-26T09:21:36.599Z] Java(TM) SE Runtime Environment (build 20.0.2+9-78)
+Java HotSpot(TM) 64-Bit Server VM (build 20.0.2+9-78, mixed mode, sharing)
+
+[debug] [2025-04-26T09:21:36.605Z] Parsed Java major version: 20
+[info] i  emulators: Starting emulators: auth, functions, firestore, storage, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, functions, firestore, storage, extensions"}}
+[debug] [2025-04-26T09:21:36.606Z] Checked if tokens are valid: true, expires at: 1745662805626
+[debug] [2025-04-26T09:21:36.606Z] Checked if tokens are valid: true, expires at: 1745662805626
+[debug] [2025-04-26T09:21:36.606Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/taaskly-dev [none]
+[debug] [2025-04-26T09:21:37.954Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/taaskly-dev 200
+[debug] [2025-04-26T09:21:37.954Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/taaskly-dev {"projectNumber":"1036911639881","projectId":"taaskly-dev","lifecycleState":"ACTIVE","name":"Taaskly-dev","labels":{"firebase":"enabled"},"createTime":"2023-01-11T09:17:53.966Z","parent":{"type":"organization","id":"678498094683"}}
+[debug] [2025-04-26T09:21:38.446Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.447Z] [auth] Authentication Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.447Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.447Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.447Z] [storage] Storage Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.447Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8181}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2025-04-26T09:21:38.449Z] [hub] writing locator at /var/folders/7h/0xcfwvtj2xbcj9xr3qyzyj900000gn/T/hub-taaskly-dev.json
+[debug] [2025-04-26T09:21:38.452Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2025-04-26T09:21:38.642Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.642Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.642Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2025-04-26T09:21:38.642Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8181}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, database, hosting, pubsub, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, database, hosting, pubsub, dataconnect\u001b[22m"}}
+[debug] [2025-04-26T09:21:38.647Z] defaultcredentials: writing to file /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json
+[debug] [2025-04-26T09:21:38.647Z] Setting GAC to /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json"}}
+[debug] [2025-04-26T09:21:38.648Z] Checked if tokens are valid: true, expires at: 1745662805626
+[debug] [2025-04-26T09:21:38.648Z] Checked if tokens are valid: true, expires at: 1745662805626
+[debug] [2025-04-26T09:21:38.648Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/taaskly-dev/adminSdkConfig [none]
+[debug] [2025-04-26T09:21:39.960Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/taaskly-dev/adminSdkConfig 200
+[debug] [2025-04-26T09:21:39.960Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/taaskly-dev/adminSdkConfig {"projectId":"taaskly-dev","databaseURL":"https://taaskly-dev-default-rtdb.firebaseio.com","storageBucket":"taaskly-dev.appspot.com","locationId":"us-central"}
+[info] i  firestore: Importing data from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/firestore_export/firestore_export.overall_export_metadata {"metadata":{"emulator":{"name":"firestore"},"message":"Importing data from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/firestore_export/firestore_export.overall_export_metadata"}}
+[debug] [2025-04-26T09:21:39.982Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2025-04-26T09:21:39.982Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2025-04-26T09:21:39.982Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/Users/anthonyakpan/.cache/firebase/emulators/cloud-firestore-emulator-v1.19.8.jar","--host","127.0.0.1","--port",8181,"--websocket_port",9150,"--project_id","taaskly-dev","--seed_from_export","/Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/firestore_export/firestore_export.overall_export_metadata","--rules","/Users/anthonyakpan/Desktop/goalmatic/backend/firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8181} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/Users/anthonyakpan/.cache/firebase/emulators/cloud-firestore-emulator-v1.19.8.jar\",\"--host\",\"127.0.0.1\",\"--port\",8181,\"--websocket_port\",9150,\"--project_id\",\"taaskly-dev\",\"--seed_from_export\",\"/Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/firestore_export/firestore_export.overall_export_metadata\",\"--rules\",\"/Users/anthonyakpan/Desktop/goalmatic/backend/firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8181}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2025-04-26T09:21:40.582Z] Apr 26, 2025 10:21:40 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Apr 26, 2025 10:21:40 AM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2025-04-26T09:21:40.593Z] API endpoint: http:// {"metadata":{"emulator":{"name":"firestore"},"message":"API endpoint: http://"}}
+[debug] [2025-04-26T09:21:40.593Z] 127.0.0.1:8181
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8181
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8181
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"127.0.0.1:8181\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8181\n\nIf you are running a Firestore in Datastore Mode project, run:\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8181\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[info] i  auth: Importing config from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/auth_export/config.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing config from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/auth_export/config.json"}}
+[info] i  auth: Importing accounts from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/auth_export/accounts.json {"metadata":{"emulator":{"name":"auth"},"message":"Importing accounts from /Users/anthonyakpan/Desktop/goalmatic/backend/dummy_data/auth_export/accounts.json"}}
+[debug] [2025-04-26T09:21:43.317Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"storage"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2025-04-26T09:21:43.664Z] Temp file directory for storage emulator: /var/folders/7h/0xcfwvtj2xbcj9xr3qyzyj900000gn/T/firebase/storage/blobs {"metadata":{"emulator":{"name":"storage"},"message":"Temp file directory for storage emulator: /var/folders/7h/0xcfwvtj2xbcj9xr3qyzyj900000gn/T/firebase/storage/blobs"}}
+[debug] [2025-04-26T09:21:43.667Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "/Users/anthonyakpan/Desktop/goalmatic/backend/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/Users/anthonyakpan/Desktop/goalmatic/backend/functions\" for Cloud Functions..."}}
+[debug] [2025-04-26T09:21:43.670Z] Validating nodejs source
+[debug] [2025-04-26T09:21:44.573Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "build:watch": "tsc --watch",
+    "build": "tsc",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "@ai-sdk/google": "^1.2.12",
+    "@sendgrid/mail": "^7.7.0",
+    "@slack/webhook": "^6.1.0",
+    "@upstash/redis": "^1.34.4",
+    "@upstash/qstash": "^2.7.23",
+    "@upstash/workflow": "^0.2.12",
+    "ai": "^4.3.9",
+    "api": "^5.0.7",
+    "axios": "^1.3.3",
+    "firebase-admin": "^13.3.0",
+    "firebase-functions": "^6.3.2",
+    "genkit": "^0.9.12",
+    "googleapis": "^140.0.1",
+    "ioredis": "^5.4.2",
+    "moment-timezone": "^0.5.45",
+    "node-fetch": "^2.6.7",
+    "openai": "^4.20.1",
+    "redis": "^4.7.0",
+    "seamailer-nodejs": "^1.1.6",
+    "uuid": "^10.0.0",
+    "@ai-sdk/openai": "^1.1.9",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/uuid": "^10.0.0",
+    "firebase-functions-test": "^3.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^4.9.0"
+  },
+  "private": true
+}
+[debug] [2025-04-26T09:21:44.574Z] Building nodejs source
+[debug] [2025-04-26T09:21:44.574Z] Failed to find version of module node: reached end of search path /Users/anthonyakpan/Desktop/goalmatic/backend/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env, .env.dev. 
+[debug] [2025-04-26T09:21:44.580Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-04-26T09:21:44.590Z] Found firebase-functions binary at '/Users/anthonyakpan/Desktop/goalmatic/backend/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8508
+
+[error] [Upstash Redis] The 'url' property is missing or undefined in your Redis config.
+
+[error] [Upstash Redis] The 'token' property is missing or undefined in your Redis config.
+
+[error] [Upstash QStash] client token is not set. Either pass a token or set QSTASH_TOKEN env variable.
+
+[error] [Upstash QStash] client token is not set. Either pass a token or set QSTASH_TOKEN env variable.
+
+[debug] [2025-04-26T09:21:45.321Z] Got response from /__/functions.yaml {"endpoints":{"checkUsernameForGoals":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"callableTrigger":{},"entryPoint":"checkUsernameForGoals"},"createUserProfileForGoals":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"createUserProfileForGoals"},"getUserGoalDetails":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"getUserGoalDetails"},"goals_WA_message_webhook":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"goals_WA_message_webhook"},"messageAgent":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"callableTrigger":{},"entryPoint":"messageAgent"},"sendWhatsappOTP":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"callableTrigger":{},"entryPoint":"sendWhatsappOTP"},"welcomeNewGoalmaticUser":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.created","eventFilters":{"database":"goalmatic-dev","namespace":"(default)"},"eventFilterPathPatterns":{"document":"users/{userId}"},"retry":false},"entryPoint":"welcomeNewGoalmaticUser"},"activateFlow":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"callableTrigger":{},"entryPoint":"activateFlow"},"deactivateFlow":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"callableTrigger":{},"entryPoint":"deactivateFlow"},"executeFlow":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"executeFlow"},"failedScheduleTimeCallback":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","region":["us-central1"],"labels":{},"httpsTrigger":{},"entryPoint":"failedScheduleTimeCallback"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[debug] [2025-04-26T09:21:49.350Z] defaultcredentials: writing to file /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json
+[debug] [2025-04-26T09:21:49.351Z] Setting GAC to /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /Users/anthonyakpan/.config/firebase/akpananthony33_gmail_com_application_default_credentials.json"}}
+[info] ✔  functions: Loaded functions definitions from source: checkUsernameForGoals, createUserProfileForGoals, getUserGoalDetails, goals_WA_message_webhook, messageAgent, sendWhatsappOTP, welcomeNewGoalmaticUser, activateFlow, deactivateFlow, executeFlow, failedScheduleTimeCallback. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: checkUsernameForGoals, createUserProfileForGoals, getUserGoalDetails, goals_WA_message_webhook, messageAgent, sendWhatsappOTP, welcomeNewGoalmaticUser, activateFlow, deactivateFlow, executeFlow, failedScheduleTimeCallback."}}
+[info] ✔  functions[us-central1-checkUsernameForGoals]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/checkUsernameForGoals). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/checkUsernameForGoals)."}}
+[info] ✔  functions[us-central1-createUserProfileForGoals]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/createUserProfileForGoals). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/createUserProfileForGoals)."}}
+[info] ✔  functions[us-central1-getUserGoalDetails]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/getUserGoalDetails). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/getUserGoalDetails)."}}
+[info] ✔  functions[us-central1-goals_WA_message_webhook]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/goals_WA_message_webhook). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/goals_WA_message_webhook)."}}
+[info] ✔  functions[us-central1-messageAgent]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/messageAgent). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/messageAgent)."}}
+[info] ✔  functions[us-central1-sendWhatsappOTP]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/sendWhatsappOTP). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/sendWhatsappOTP)."}}
+[debug] [2025-04-26T09:21:49.358Z] Found a v2 firestore trigger.
+[debug] [2025-04-26T09:21:49.358Z] addFirestoreTrigger "{\"eventType\":\"google.cloud.firestore.document.v1.created\",\"database\":\"goalmatic-dev\",\"namespace\":\"(default)\",\"document\":{\"value\":\"users/{userId}\",\"matchType\":\"PATH_PATTERN\"}}"
+[debug] [2025-04-26T09:21:49.358Z] >>> [apiv2][query] POST http://127.0.0.1:8181/emulator/v1/projects/taaskly-dev/eventarcTrigger?eventarcTriggerId=us-central1-welcomeNewGoalmaticUser-0 [none]
+[debug] [2025-04-26T09:21:49.359Z] >>> [apiv2][body] POST http://127.0.0.1:8181/emulator/v1/projects/taaskly-dev/eventarcTrigger?eventarcTriggerId=us-central1-welcomeNewGoalmaticUser-0 "{\"eventType\":\"google.cloud.firestore.document.v1.created\",\"database\":\"goalmatic-dev\",\"namespace\":\"(default)\",\"document\":{\"value\":\"users/{userId}\",\"matchType\":\"PATH_PATTERN\"}}"
+[debug] [2025-04-26T09:21:49.365Z] Apr 26, 2025 10:21:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Apr 26, 2025 10:21:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected non-HTTP/2 connection.\n"}}
+[debug] [2025-04-26T09:21:49.451Z] Apr 26, 2025 10:21:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Apr 26, 2025 10:21:49 AM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead\nINFO: Detected HTTP/2 connection.\n"}}
+[debug] [2025-04-26T09:21:49.779Z] <<< [apiv2][status] POST http://127.0.0.1:8181/emulator/v1/projects/taaskly-dev/eventarcTrigger?eventarcTriggerId=us-central1-welcomeNewGoalmaticUser-0 200
+[debug] [2025-04-26T09:21:49.779Z] <<< [apiv2][body] POST http://127.0.0.1:8181/emulator/v1/projects/taaskly-dev/eventarcTrigger?eventarcTriggerId=us-central1-welcomeNewGoalmaticUser-0 {"eventType":"google.cloud.firestore.document.v1.created","database":"goalmatic-dev","namespace":"(default)","document":{"value":"users/{userId}","matchType":"PATH_PATTERN"}}
+[info] ✔  functions[us-central1-welcomeNewGoalmaticUser]: firestore function initialized. {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mfirestore\u001b[22m function initialized."}}
+[info] ✔  functions[us-central1-activateFlow]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/activateFlow). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/activateFlow)."}}
+[info] ✔  functions[us-central1-deactivateFlow]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/deactivateFlow). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/deactivateFlow)."}}
+[info] ✔  functions[us-central1-executeFlow]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/executeFlow). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/executeFlow)."}}
+[info] ✔  functions[us-central1-failedScheduleTimeCallback]: http function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/failedScheduleTimeCallback). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/taaskly-dev/us-central1/failedScheduleTimeCallback)."}}
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator       │ Host:Port      │ View in Emulator UI              │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth       │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Functions      │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Firestore      │ 127.0.0.1:8181 │ http://127.0.0.1:4000/firestore  │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Storage        │ 127.0.0.1:9199 │ http://127.0.0.1:4000/storage    │
+├────────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions     │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
