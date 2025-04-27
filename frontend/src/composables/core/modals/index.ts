@@ -7,10 +7,6 @@ import Logout from '@/components/modals/auth/logout.vue'
 import Confirmation from '@/components/modals/core/Confirmation.vue'
 import LoadingVerification from '@/components/modals/core/loading.vue'
 
-// ==================== DASHBOARD ===============================
-import StartGoal from '@/components/modals/dashboard/StartGoal.vue'
-import EditTodo from '@/components/modals/dashboard/EditTodo.vue'
-import CalendarEvent from '@/components/modals/dashboard/CalendarEvent.vue'
 
 // ==================== BOTTOMBAR ===============================
 import BottomMenu from '@/components/layouts/bottomBar/modal/Main.vue'
@@ -35,7 +31,6 @@ type OptionalPayload = Record<string, any> | null;
 
 // Update type definitions to include optional payload parameter
 type AuthTypes = 'Logout'
-type DashboardTypes = 'StartGoal' | 'EditTodo' | 'EditEvent' | 'CalendarEvent'
 type CoreTypes = 'Confirmation' | 'LoadingVerification'
 type BottombarTypes = 'BottomMenu'
 type AssistantTypes = 'CreateAgent' | 'EditToolConfig'
@@ -53,7 +48,6 @@ type ModalHelpers<Keys extends string> = Record<
 > & { closeAll: () => void };
 
 const AuthModals = { Logout } as Record<AuthTypes, any>
-const DashboardModals = { StartGoal, EditTodo, CalendarEvent } as Record<DashboardTypes, any>
 const CoreModals = { Confirmation, LoadingVerification } as Record<CoreTypes, any>
 const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
 const AssistantModals = { CreateAgent, EditToolConfig } as Record<AssistantTypes, any>
@@ -63,7 +57,7 @@ const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdReco
 
 
 const authModal = modal.register('Auth', AuthModals)
-const dashboardModal = modal.register('Dashboard', DashboardModals)
+
 const coreModal = modal.register('Core', CoreModals)
 const bottombarModal = modal.register('Bottombar', BottombarModals)
 const assistantModal = modal.register('Assistant', AssistantModals)
@@ -74,7 +68,6 @@ const tablesModal = modal.register('Tables', TablesModals)
 
 // Export with updated types
 export const useAuthModal = (): ModalHelpers<AuthTypes> => authModal
-export const useDashboardModal = (): ModalHelpers<DashboardTypes> => dashboardModal
 export const useCoreModal = (): ModalHelpers<CoreTypes> => coreModal
 export const useBottombarModal = (): ModalHelpers<BottombarTypes> => bottombarModal
 export const useAssistantModal = (): ModalHelpers<AssistantTypes> => assistantModal

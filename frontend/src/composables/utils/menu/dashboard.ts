@@ -7,7 +7,7 @@ export const dashboardRoutes = () => [
 
 		{
 		icon: Bot,
-		name: 'Agent',
+		name: 'Agents',
 		route: '/agents',
 		type: 'all',
 		main: true,

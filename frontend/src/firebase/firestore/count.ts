@@ -15,3 +15,14 @@ export const getFirestoreSubCollectionCountWithWhereQuery = async (
     const count = snapshot.data().count
     return count
 }
+
+export const getFirestoreSubCollectionCount = async (
+	collectionName: string,
+	documentName: string,
+	subCollectionName: string
+) => {
+	const collectionRef = collection(db, collectionName, documentName, subCollectionName)
+    const snapshot = await getCountFromServer(collectionRef)
+    const count = snapshot.data().count
+    return count
+}

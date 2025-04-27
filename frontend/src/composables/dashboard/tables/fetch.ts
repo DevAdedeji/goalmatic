@@ -3,18 +3,19 @@ import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
-
+import { getFirestoreSubCollectionCount } from '@/firebase/firestore/count'
 // Store for tables data
 const userTables = ref([] as any[])
 const tableData = ref<any>(null)
-const tableRecords = ref([] as any[])
-const loading = ref(false)
+
+
 
 // Track fetched states
 const hasInitialFetch = ref(false)
 
 export const useFetchUserTables = () => {
   const { id: user_id } = useUser()
+  const loading = ref(false)
 
   const fetchAllTables = async () => {
     if (!user_id.value) return
@@ -62,7 +63,22 @@ export const useFetchUserTables = () => {
     }
   }
 
-  // Fetch records for a specific table
+
+
+  return {
+    userTables,
+    loading,
+    fetchAllTables,
+    fetchTableById,
+    tableData,
+    hasInitialFetch
+  }
+}
+
+export const useFetchTableRecords = () => {
+  const loading = ref(false)
+  const tableRecords = ref([] as any[])
+
   const fetchTableRecords = async (tableId: string) => {
     if (!tableId) return []
 
@@ -80,14 +96,28 @@ export const useFetchUserTables = () => {
     }
   }
 
-  return {
-    userTables,
-    loading,
-    fetchAllTables,
-    fetchTableById,
-    fetchTableRecords,
-    tableData,
-    tableRecords,
-    hasInitialFetch
+  return { fetchTableRecords, loading, tableRecords }
+}
+
+export const useFetchTableRecordsCount = () => {
+  const loading = ref(false)
+  const recordsCount = ref(0)
+
+  const fetchTableRecordsCount = async (tableId: string) => {
+    if (!tableId) return 0
+
+    loading.value = true
+    try {
+      recordsCount.value = await getFirestoreSubCollectionCount('tables', tableId, 'records')
+      return recordsCount.value
+    } catch (error: any) {
+      console.error('Error fetching table records count:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error fetching table records count: ${error.message}` })
+      return 0
+    } finally {
+      loading.value = false
+    }
   }
+
+  return { fetchTableRecordsCount, loading, recordsCount }
 }

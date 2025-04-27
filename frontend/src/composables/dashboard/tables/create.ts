@@ -4,18 +4,7 @@ import { Timestamp } from 'firebase/firestore'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
-
-// Define the table field interface
-interface TableField {
-  id: string;
-  name: string;
-  type: string;
-  description?: string;
-  required: boolean;
-  options?: string[];
-  default?: any;
-  [key: string]: any; // Allow for additional properties
-}
+import { TableField } from './types'
 
 // Form for creating a new table
 const createTableForm = reactive({

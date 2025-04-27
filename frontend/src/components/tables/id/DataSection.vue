@@ -146,31 +146,9 @@
 
 <script setup lang="ts">
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
-import { useEditTable } from '@/composables/dashboard/tables/edit'
-import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 import { formatDate } from '@/composables/utils/formatter'
-import { useTablesModal } from '@/composables/core/modals'
-
-
-interface Field {
-	id: string;
-	name: string;
-	type: string;
-	description?: string;
-	required?: boolean;
-	options?: string[];
-}
-
-interface Record {
-	id: string;
-	[key: string]: any;
-}
-
-interface TableData {
-	fields?: Field[];
-	records?: Record[];
-	[key: string]: any;
-}
+import { TableData } from '@/composables/dashboard/tables/types'
+import { useTableDataSection } from '@/composables/dashboard/tables/dataSection'
 
 const props = defineProps({
 	tableData: {
@@ -180,206 +158,27 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['switchTab'])
-const { addRecordToTable, updateRecordInTable, removeRecordFromTable, removeMultipleRecordsFromTable, loading: editLoading } = useEditTable()
-const { fetchTableRecords, tableRecords, loading: fetchLoading } = useFetchUserTables()
 
+// Use the extracted logic from the composable
+const {
+	tableRecords,
+	loading,
+	selectedRecords,
+	isAllSelected,
+	toggleRecordSelection,
+	isRecordSelected,
+	toggleSelectAll,
+	deleteSelectedRecords,
+	addNewRecord,
+	editRecord,
+	deleteRecord,
+	initializeRecords
+} = useTableDataSection(props.tableData)
 
-// Record management
-const editingRecordIndex = ref(-1)
-const recordForm = ref({} as any)
-const localLoading = ref(false)
-
-
-// Computed property for overall loading state
-const loading = computed(() => editLoading.value || fetchLoading.value || localLoading.value)
-
-// Reset form function
-const resetForm = () => {
-  recordForm.value = {}
-  editingRecordIndex.value = -1
-}
-
-// Fetch records when component mounts or table changes
+// Initialize records when component is mounted
 onMounted(async () => {
-  if (props.tableData && props.tableData.id) {
-    await fetchTableRecords(props.tableData.id)
-  }
+	await initializeRecords()
 })
-
-watch(() => props.tableData?.id, async (newId) => {
-  if (newId) {
-    await fetchTableRecords(newId)
-  }
-})
-
-// Selection management
-const selectedRecords = ref<string[]>([])
-
-// Computed property to check if all records are selected
-const isAllSelected = computed(() => {
-	if (!tableRecords.value || tableRecords.value.length === 0) return false
-	return tableRecords.value.length === selectedRecords.value.length
-})
-
-// Toggle selection of a single record
-const toggleRecordSelection = (recordId: string) => {
-	const index = selectedRecords.value.indexOf(recordId)
-	if (index === -1) {
-		// Add to selection
-		selectedRecords.value.push(recordId)
-	} else {
-		// Remove from selection
-		selectedRecords.value.splice(index, 1)
-	}
-}
-
-// Check if a record is selected
-const isRecordSelected = (recordId: string) => {
-	return selectedRecords.value.includes(recordId)
-}
-
-// Toggle selection of all records
-const toggleSelectAll = () => {
-	if (isAllSelected.value) {
-		// Deselect all
-		selectedRecords.value = []
-	} else {
-		// Select all
-		selectedRecords.value = tableRecords.value?.map((record) => record.id) || []
-	}
-}
-
-// Delete selected records
-const deleteSelectedRecords = async () => {
-	if (selectedRecords.value.length === 0) return
-
-	if (confirm(`Are you sure you want to delete ${selectedRecords.value.length} selected record(s)?`)) {
-		localLoading.value = true
-		try {
-			const success = await removeMultipleRecordsFromTable(props.tableData, selectedRecords.value)
-			if (success) {
-				// Refresh records after delete
-				await fetchTableRecords(props.tableData.id)
-				// Clear selection
-				selectedRecords.value = []
-			}
-		} catch (error) {
-			console.error('Error deleting selected records:', error)
-		} finally {
-			localLoading.value = false
-		}
-	}
-}
-
-const addNewRecord = () => {
-	// Reset form first
-	resetForm()
-
-	// Initialize empty record with all fields
-	const newRecord: Record = { id: crypto.randomUUID() }
-	if (props.tableData.fields) {
-		props.tableData.fields.forEach((field) => {
-			newRecord[field.id] = getDefaultValueForType(field.type)
-		})
-	}
-
-	recordForm.value = newRecord
-	editingRecordIndex.value = -1
-
-	// Open the record modal with the current form data and editing index
-	useTablesModal().openRecordModal({
-		recordForm: recordForm.value,
-		fields: props.tableData.fields || [],
-		editingRecordIndex: editingRecordIndex.value,
-		onSave: saveRecord
-	})
-}
-
-const editRecord = (recordId: string) => {
-	// Reset form first
-	resetForm()
-
-	// Find the record in tableRecords
-	const record = tableRecords.value.find((r) => r.id === recordId)
-	if (record) {
-		// Clone the record to avoid direct mutation
-		recordForm.value = JSON.parse(JSON.stringify(record))
-		editingRecordIndex.value = tableRecords.value.findIndex((r) => r.id === recordId)
-
-		// Open the record modal with the current form data and editing index
-		useTablesModal().openRecordModal({
-			recordForm: recordForm.value,
-			fields: props.tableData.fields || [],
-			editingRecordIndex: editingRecordIndex.value,
-			onSave: saveRecord
-		})
-	}
-}
-
-const saveRecord = async () => {
-	localLoading.value = true
-	try {
-		// Check if we're adding a new record or updating an existing one
-		if (editingRecordIndex.value === -1) {
-			// Add new record
-			await addRecordToTable(props.tableData, recordForm.value)
-		} else {
-			// Update existing record
-			await updateRecordInTable(
-				props.tableData,
-				recordForm.value?.id,
-				recordForm.value
-			)
-		}
-
-		// Refresh records after save
-		await fetchTableRecords(props.tableData.id)
-
-		// Reset the form
-		resetForm()
-
-		// Close the modal
-		useTablesModal().closeRecordModal()
-	} catch (error) {
-		console.error('Error saving record:', error)
-	} finally {
-		localLoading.value = false
-	}
-}
-
-const deleteRecord = async (recordId: string) => {
-	if (confirm('Are you sure you want to delete this record?')) {
-		localLoading.value = true
-		try {
-			await removeRecordFromTable(props.tableData, recordId)
-			// Refresh records after delete
-			await fetchTableRecords(props.tableData.id)
-		} catch (error) {
-			console.error('Error deleting record:', error)
-		} finally {
-			localLoading.value = false
-		}
-	}
-}
-
-// Helper function to get default values based on field type
-const getDefaultValueForType = (type: string): any => {
-	switch (type) {
-		case 'number':
-			return 0
-		case 'boolean':
-			return false
-		case 'date':
-			return new Date().toISOString().split('T')[0]
-		case 'time': {
-			// Return current time in HH:MM format
-			const now = new Date()
-			return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-		}
-		default:
-			return ''
-	}
-}
 </script>
 
 <style scoped>

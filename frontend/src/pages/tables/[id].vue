@@ -19,10 +19,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
-import { useAlert } from '@/composables/core/notification'
 import TablesIdHeader from '@/components/tables/id/Header.vue'
 import TablesIdDetails from '@/components/tables/id/Details.vue'
 import TablesIdLoader from '@/components/tables/id/Loader.vue'
