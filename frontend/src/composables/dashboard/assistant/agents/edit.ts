@@ -32,33 +32,24 @@ export const useEditAgent = () => {
         }
     })
 
-    const updateSystemInfo = async (id: string, spec: Record<string, any>) => {
-        if (id === '0') return
-
-        updateSystemInfoLoading.value = true
+    const updateSystemInfo = async (id: string, spec: any) => {
         try {
-            const updatedSpec = {
-                ...spec,
-                systemInfo: systemInfoModel.value
-            }
+            updateSystemInfoLoading.value = true
 
             await updateFirestoreDocument('agents', id, {
-                spec: updatedSpec,
-                updated_at: Timestamp.fromDate(new Date())
+                spec: {
+                    ...spec,
+                    // Strip any potentially dangerous HTML tags while preserving basic formatting
+                    systemInfo: systemInfoModel.value.replace(/<(?!\/?(p|br|strong|em|u|s|ul|ol|li|h[1-6]|blockquote)(?=>|\s.*>))\/?.*?>/g, '')
+                }
             })
+
             isEditingSystemInfo.value = false
-            useAlert().openAlert({ type: 'SUCCESS', msg: 'System information updated successfully' })
-
-            if (selectedAgent.value?.id === id) {
-                selectedAgent.value.spec = updatedSpec
-            }
-
-            return updatedSpec
-        } catch (error: any) {
-            useAlert().openAlert({ type: 'ERROR', msg: `Error updating system information: ${error.message}` })
-            throw error
-        } finally {
             updateSystemInfoLoading.value = false
+            useAlert().openAlert({ type: 'SUCCESS', msg: 'System information updated successfully' })
+        } catch (error) {
+            updateSystemInfoLoading.value = false
+            useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
         }
     }
 

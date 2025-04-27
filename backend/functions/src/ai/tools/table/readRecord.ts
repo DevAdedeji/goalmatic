@@ -2,6 +2,7 @@ import { verifyTableAccess } from "./verify";
 import { getUserUid, getUserToolConfig } from "../../index";
 import { tool } from 'ai';
 import { z } from 'zod';
+import { goals_db } from "../../../init";
 
 // Helper functions for type conversion
 const convertToNumber = (value: any): number | null => {
@@ -169,26 +170,29 @@ const readTableRecord = async (params: {
     if (!exists) throw new Error('Table not found or access denied');
 
     try {
-        // Get the records array
-        const records = [...(tableData.records || [])];
-
-        // If recordId is specified, return just that record
+        // If recordId is specified, get that specific record from the subcollection
         if (params.recordId) {
-            const record = records.find(r => r.id === params.recordId);
-            if (!record) {
+            const recordDoc = await goals_db.collection('tables').doc(tableId).collection('records').doc(params.recordId).get();
+
+            if (!recordDoc.exists) {
                 return {
                     success: false,
                     message: 'Record not found',
                     records: []
                 };
             }
+
             return {
                 success: true,
                 message: 'Record found',
-                records: [record]
+                records: [recordDoc.data()]
             };
         }
 
+
+        // Get all records from the subcollection
+        const recordsSnapshot = await goals_db.collection('tables').doc(tableId).collection('records').get();
+        const records = recordsSnapshot.docs.map(doc => doc.data());
 
         // Apply filters if provided
         let filteredRecords = records;

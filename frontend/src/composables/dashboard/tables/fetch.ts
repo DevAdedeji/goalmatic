@@ -1,12 +1,13 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
-import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
+import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
 
 // Store for tables data
 const userTables = ref([] as any[])
 const tableData = ref<any>(null)
+const tableRecords = ref([] as any[])
 const loading = ref(false)
 
 // Track fetched states
@@ -61,12 +62,32 @@ export const useFetchUserTables = () => {
     }
   }
 
+  // Fetch records for a specific table
+  const fetchTableRecords = async (tableId: string) => {
+    if (!tableId) return []
+
+    loading.value = true
+    try {
+      // Fetch records from the subcollection
+      await getFirestoreSubCollection('tables', tableId, 'records', tableRecords)
+      return tableRecords.value
+    } catch (error: any) {
+      console.error('Error fetching table records:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error fetching table records: ${error.message}` })
+      return []
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     userTables,
     loading,
     fetchAllTables,
     fetchTableById,
+    fetchTableRecords,
     tableData,
+    tableRecords,
     hasInitialFetch
   }
 }

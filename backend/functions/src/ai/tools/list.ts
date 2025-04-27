@@ -24,11 +24,6 @@ export const availableTools: Record<string, ToolSignature> = {
 
 
 
-    // Todo tools
-    // [TODO_READ.id]: TODO_READ,
-    // [TODO_CREATE.id]: TODO_CREATE,
-    // [TODO_UPDATE.id]: TODO_UPDATE,
-    // [TODO_DELETE.id]: TODO_DELETE,
 
     // Table tools
     [TABLE_CREATE.id]: TABLE_CREATE,

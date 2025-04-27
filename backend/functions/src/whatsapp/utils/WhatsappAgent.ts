@@ -59,9 +59,8 @@ export const WhatsappAgent = async (
             });
             
             
-            // Create a special message array specifically for this image request
             const imageMessages = [
-                ...history, // Include previous conversation history
+                ...history,
                 {
                     role: 'user',
                     content: [

@@ -61,7 +61,7 @@
 			</p>
 		</section>
 
-		<section id="system-info" class="card border md:mt-8 mt-4 gap-2">
+		<section id="system-info" class="card md:mt-10 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
 					System Information
@@ -74,7 +74,7 @@
 					Edit
 				</button>
 				<div v-else class="flex gap-2">
-					<button class="btn-text" @click="isEditingSystemInfo = false">
+					<button class="btn-text" @click="cancelEdit">
 						Cancel
 					</button>
 					<button
@@ -87,18 +87,13 @@
 					</button>
 				</div>
 			</div>
-			<div
-				v-if="!isEditingSystemInfo"
-				class="text-subText md:text-[15px] text-xs whitespace-pre-wrap"
-			>
-				{{ agentDetails?.spec?.systemInfo || 'No system information provided' }}
-			</div>
-			<textarea
-				v-else
+			<Editor
 				v-model="systemInfoModel"
-				rows="5"
-				class="input-textarea"
-				placeholder="Enter system information..."
+				:editable="isEditingSystemInfo"
+				:class="{
+					'bg-white rounded-lg border': isEditingSystemInfo,
+					'view-only': !isEditingSystemInfo
+				}"
 			/>
 		</section>
 
@@ -255,6 +250,7 @@
 <script setup lang="ts">
 import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, CheckCircle2, XCircle } from 'lucide-vue-next'
 import { watch } from 'vue'
+import Editor from '@/components/core/Editor.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
 import { useEditAgent } from '@/composables/dashboard/assistant/agents/edit'
 import { formatDateString } from '@/composables/utils/formatter'
@@ -303,6 +299,18 @@ const editTools = () => {
 	toolsModel.value = agentDetails.value?.spec?.tools || []
 }
 
+const cancelEdit = () => {
+	isEditingSystemInfo.value = false
+	// Reset the model to the original content
+	systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
+}
+
+watch(() => agentDetails.value?.spec?.systemInfo, (newValue) => {
+	if (newValue !== undefined) {
+		systemInfoModel.value = newValue
+	}
+}, { immediate: true })
+
 definePageMeta({
 	layout: 'dashboard',
 	middleware: 'is-authenticated'
@@ -339,5 +347,30 @@ definePageMeta({
 		background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
 		@apply bg-primary;
 	}
+}
+:deep(.tiptap-editor) {
+  .ProseMirror {
+    min-height: 150px;
+    @apply text-sm text-subText;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+:deep(.view-only) {
+  .ProseMirror {
+    min-height: auto;
+    padding: 0;
+
+    &:hover {
+      cursor: default;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
 </style>

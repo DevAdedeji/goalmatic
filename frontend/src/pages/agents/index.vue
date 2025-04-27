@@ -40,7 +40,7 @@
 		<div class="fixed  bg-white pt-2.5 px-3 center z-20 md:w-[800px] w-full mx-auto bottom-20  md:bottom-4 ">
 			<form class="relative w-full md:max-w-[var(--mw)] flex flex-wrap mt-auto" @submit.prevent="sendMessage">
 				<AssistantDropDown class="-top-1.5 absolute" :selected-agent="selectedAgent" />
-				<textarea ref="textarea" v-model="userInput" class="input-field  shadow !pb-4 !pt-4 !pr-16 w-full resize-none overflow-hidden h-auto  transition-all duration-300 ease-in-out" placeholder="Enter a goal" rows="1" @input="adjustTextareaHeight"
+				<textarea ref="textarea" v-model="userInput" class="input-field  shadow !pb-4 !pt-4 !pr-16 w-full resize-none overflow-hidden h-auto  transition-all duration-300 ease-in-out" placeholder="How can I help you?" rows="1" @input="adjustTextareaHeight"
 					@keydown="handleKeyDown" />
 
 				<button
@@ -117,7 +117,7 @@ definePageMeta({
     middleware: ['is-authenticated', () => {
         usePageHeader().setPageHeader({
             title: 'Assistant',
-            description: 'Your personal goal assistant',
+            description: 'Your personal AI assistant',
             btnText: '',
             btnCall: () => useRouter().push('/booking-types/create'),
             shouldShowFab: false,

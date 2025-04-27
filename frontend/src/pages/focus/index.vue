@@ -1,7 +1,7 @@
 <template>
 	<main class="flex  h-dvh w-full overflow-hidden">
-		<section id="todo" class="w-full">
-			<!-- <FocusTodoMain /> -->
+		<section id="agents" class="w-full">
+			<!-- <FocusAgents /> -->
 		</section>
 		<section id="calendar" class="w-full">
 			<FocusCalendar />
@@ -17,7 +17,7 @@ import Split from 'split.js'
 
 
 onMounted(() => {
-    Split(['#todo', '#calendar', '#notes'], {
+    Split(['#agents', '#calendar', '#notes'], {
     gutterSize: 5
 })
 })

@@ -12,17 +12,6 @@
 				@createNewTable="createNewTable"
 			/>
 		</div>
-
-		<!-- Floating Action Button -->
-		<button
-			v-if="userTables.length"
-			class="fixed bottom-6 right-6 bg-primary text-white rounded-full p-4 shadow-lg hover:bg-primary-dark transition-all"
-			:disabled="creatingTable"
-			@click="createNewTable"
-		>
-			<PlusCircle v-if="!creatingTable" :size="24" />
-			<span v-else class="loading-spinner" />
-		</button>
 	</main>
 </template>
 

@@ -2,12 +2,11 @@
 	<div class="p-4 sm:p-6">
 		<TablesIdLoader v-if="loading" />
 
-		<!-- Table details -->
+
 		<div v-else-if="tableData">
-			<!-- Use the Header component -->
 			<TablesIdHeader v-model:current-tab="currentTab" :table-data="tableData" />
 
-			<!-- Use the Details component -->
+
 			<TablesIdDetails
 				:current-tab="currentTab"
 				:table-data="tableData"
@@ -15,7 +14,6 @@
 			/>
 		</div>
 
-		<!-- Error state -->
 		<TablesIdErrorState v-else @back-to-tables="router.push('/tables')" />
 	</div>
 </template>

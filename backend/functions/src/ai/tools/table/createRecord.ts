@@ -142,9 +142,6 @@ const createTableRecord = async (params: {
     if (!exists) throw new Error('Table not found or access denied');
 
     try {
-        // Get the current records array
-        const records = [...(tableData.records || [])];
-
         // Generate a new ID for the record
         const recordId = uuidv4();
         const now = new Date();
@@ -218,12 +215,11 @@ const createTableRecord = async (params: {
             }
         }
 
-        // Add the record to the array
-        records.push(newRecord);
+        // Add the record to the records subcollection
+        await goals_db.collection('tables').doc(tableId).collection('records').doc(recordId).set(newRecord);
 
-        // Update the table in Firestore
+        // Update the table's updated_at timestamp
         await goals_db.collection('tables').doc(tableId).update({
-            records: records,
             updated_at: now
         });
 

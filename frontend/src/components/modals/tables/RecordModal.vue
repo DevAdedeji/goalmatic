@@ -1,11 +1,12 @@
 <template>
-	<Modal :show="true" @close="$emit('cancel')">
+	<Modal
+		modal="$atts.modal"
+		:title="editingRecordIndex === -1 ? 'Add New Record' : 'Edit Record'"
+		:is-full-height="false"
+		:props-modal="propsModal"
+	>
 		<div class="p-6">
-			<h2 class="text-xl font-medium text-headline mb-4">
-				{{ editingRecordIndex === -1 ? 'Add New Record' : 'Edit Record' }}
-			</h2>
-
-			<form @submit.prevent="$emit('save')">
+			<form @submit.prevent="onSave">
 				<div class="space-y-4">
 					<div v-for="field in fields" :key="field.id">
 						<!-- Text Field -->
@@ -126,7 +127,7 @@
 					<button
 						type="button"
 						class="btn-outline border border-border px-4 py-2 rounded-md"
-						@click="$emit('cancel')"
+						@click="closeModal"
 					>
 						Cancel
 					</button>
@@ -143,7 +144,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import Modal from '@/components/core/modal/Modal.vue'
+import { useTablesModal } from '@/composables/core/modals'
 
 interface Field {
 	id: string;
@@ -154,22 +157,35 @@ interface Field {
 	options?: string[];
 }
 
-defineProps({
-	recordForm: {
-		type: Object as () => Record<string, any>,
-		required: true
+const props = defineProps({
+	payload: {
+		type: Object,
+		default: null,
+		required: false
 	},
-	fields: {
-		type: Array as () => Field[],
-		required: true
-	},
-	editingRecordIndex: {
-		type: Number,
-		required: true
+	propsModal: {
+		type: String,
+		required: false
 	}
 })
 
-defineEmits(['save', 'cancel'])
+// Extract data from payload
+const recordForm = computed(() => props.payload?.recordForm || {})
+const fields = computed(() => props.payload?.fields || [])
+const editingRecordIndex = computed(() => props.payload?.editingRecordIndex || -1)
+const onSaveCallback = computed(() => props.payload?.onSave)
+
+// Close the modal
+const closeModal = () => {
+	useTablesModal().closeRecordModal()
+}
+
+// Handle save
+const onSave = async () => {
+	if (onSaveCallback.value && typeof onSaveCallback.value === 'function') {
+		await onSaveCallback.value()
+	}
+}
 </script>
 
 <style scoped>

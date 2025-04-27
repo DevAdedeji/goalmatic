@@ -1,11 +1,12 @@
 <template>
-	<Modal :show="true" @close="$emit('cancel')">
+	<Modal
+		modal="$atts.modal"
+		:title="editingFieldIndex === -1 ? 'Add New Field' : 'Edit Field'"
+		:is-full-height="false"
+		:props-modal="propsModal"
+	>
 		<div class="p-6">
-			<h2 class="text-xl font-medium text-headline mb-4">
-				{{ editingFieldIndex === -1 ? 'Add New Field' : 'Edit Field' }}
-			</h2>
-
-			<form @submit.prevent="$emit('save')">
+			<form @submit.prevent="onSave">
 				<div class="space-y-4">
 					<!-- Field Name -->
 					<div>
@@ -111,7 +112,7 @@
 					<button
 						type="button"
 						class="btn-outline border border-border px-4 py-2 rounded-md"
-						@click="$emit('cancel')"
+						@click="closeModal"
 					>
 						Cancel
 					</button>
@@ -131,6 +132,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Modal from '@/components/core/modal/Modal.vue'
+import { useTablesModal } from '@/composables/core/modals'
 
 interface FieldForm {
 	id: string;
@@ -143,28 +145,44 @@ interface FieldForm {
 }
 
 const props = defineProps({
-	fieldForm: {
-		type: Object as () => FieldForm,
-		required: true
+	payload: {
+		type: Object,
+		default: null,
+		required: false
 	},
-	editingFieldIndex: {
-		type: Number,
-		required: true
+	propsModal: {
+		type: String,
+		required: false
 	}
 })
 
-const emit = defineEmits(['save', 'cancel'])
+// Extract data from payload
+const fieldForm = computed(() => props.payload?.fieldForm || {})
+const editingFieldIndex = computed(() => props.payload?.editingFieldIndex || -1)
+const onSaveCallback = computed(() => props.payload?.onSave)
+
+// Close the modal
+const closeModal = () => {
+	useTablesModal().closeFieldModal()
+}
+
+// Handle save
+const onSave = async () => {
+	if (onSaveCallback.value && typeof onSaveCallback.value === 'function') {
+		await onSaveCallback.value()
+	}
+}
 
 const isFormValid = computed(() => {
-	if (!props.fieldForm.name.trim()) return false
+	if (!fieldForm.value.name?.trim()) return false
 
-	if (props.fieldForm.type === 'select') {
-		const options = props.fieldForm.optionsText
-			.split('\n')
+	if (fieldForm.value.type === 'select') {
+		const options = fieldForm.value.optionsText
+			?.split('\n')
 			.map((option) => option.trim())
 			.filter((option) => option)
 
-		return options.length > 0
+		return options && options.length > 0
 	}
 
 	return true

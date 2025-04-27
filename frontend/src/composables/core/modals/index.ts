@@ -27,6 +27,10 @@ import EditConfig from '@/components/modals/integrations/EditConfig.vue'
 import SelectNode from '@/components/modals/flows/SelectNode.vue'
 import EditNode from '@/components/modals/flows/EditNode.vue'
 
+// ==================== TABLES ===============================
+import TablesIdFieldModal from '@/components/modals/tables/FieldModal.vue'
+import TablesIdRecordModal from '@/components/modals/tables/RecordModal.vue'
+
 type OptionalPayload = Record<string, any> | null;
 
 // Update type definitions to include optional payload parameter
@@ -37,6 +41,7 @@ type BottombarTypes = 'BottomMenu'
 type AssistantTypes = 'CreateAgent' | 'EditToolConfig'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
 type FlowsTypes = 'SelectNode' | 'EditNode'
+type TablesTypes = 'FieldModal' | 'RecordModal'
 
 // Define helper function types with payload
 type ModalHelpers<Keys extends string> = Record<
@@ -54,6 +59,7 @@ const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
 const AssistantModals = { CreateAgent, EditToolConfig } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>
 const FlowsModals = { SelectNode, EditNode } as Record<FlowsTypes, any>
+const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal } as Record<TablesTypes, any>
 
 
 const authModal = modal.register('Auth', AuthModals)
@@ -63,6 +69,7 @@ const bottombarModal = modal.register('Bottombar', BottombarModals)
 const assistantModal = modal.register('Assistant', AssistantModals)
 const integrationsModal = modal.register('Integrations', IntegrationsModals)
 const flowsModal = modal.register('Flows', FlowsModals)
+const tablesModal = modal.register('Tables', TablesModals)
 
 
 // Export with updated types
@@ -73,5 +80,6 @@ export const useBottombarModal = (): ModalHelpers<BottombarTypes> => bottombarMo
 export const useAssistantModal = (): ModalHelpers<AssistantTypes> => assistantModal
 export const useIntegrationsModal = (): ModalHelpers<IntegrationsTypes> => integrationsModal
 export const useFlowsModal = (): ModalHelpers<FlowsTypes> => flowsModal
+export const useTablesModal = (): ModalHelpers<TablesTypes> => tablesModal
 
 

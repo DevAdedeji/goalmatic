@@ -59,23 +59,14 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- Field Modal -->
-		<TablesIdFieldModal
-			v-if="fieldModalVisible"
-			:field-form="fieldForm"
-			:editing-field-index="editingFieldIndex"
-			@save="saveField"
-			@cancel="fieldModalVisible = false"
-		/>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
-import TablesIdFieldModal from './FieldModal.vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
+import { useTablesModal } from '@/composables/core/modals'
 
 interface Field {
 	id: string;
@@ -107,7 +98,6 @@ interface FieldForm extends Omit<Field, 'options'> {
 }
 
 // Field management
-const fieldModalVisible = ref(false)
 const editingFieldIndex = ref(-1)
 const fieldForm = ref<FieldForm>({
 	id: crypto.randomUUID(),
@@ -118,6 +108,9 @@ const fieldForm = ref<FieldForm>({
 	options: [],
 	optionsText: ''
 })
+
+// Get the tables modal helper
+
 
 const addNewField = () => {
 	// Reset form
@@ -131,7 +124,13 @@ const addNewField = () => {
 		optionsText: ''
 	}
 	editingFieldIndex.value = -1
-	fieldModalVisible.value = true
+
+	// Open the field modal with the current form data and editing index
+	useTablesModal().openFieldModal({
+		fieldForm: fieldForm.value,
+		editingFieldIndex: editingFieldIndex.value,
+		onSave: saveField
+	})
 }
 
 const editField = (index: number) => {
@@ -146,7 +145,13 @@ const editField = (index: number) => {
 		optionsText: field.options ? field.options.join('\n') : ''
 	}
 	editingFieldIndex.value = index
-	fieldModalVisible.value = true
+
+	// Open the field modal with the current form data and editing index
+	useTablesModal().openFieldModal({
+		fieldForm: fieldForm.value,
+		editingFieldIndex: editingFieldIndex.value,
+		onSave: saveField
+	})
 }
 
 const saveField = async () => {
@@ -171,7 +176,8 @@ const saveField = async () => {
 		)
 	}
 
-	fieldModalVisible.value = false
+	// Close the modal
+	useTablesModal().closeFieldModal()
 }
 
 const deleteField = async (index: number) => {

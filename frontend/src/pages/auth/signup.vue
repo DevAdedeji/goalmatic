@@ -3,7 +3,7 @@
 		<div class="flex flex-col gap-8 w-full max-w-[400px] mx-auto">
 			<div class="flex flex-col gap-3.5 text-center">
 				<h2 class="text-headline text-[34px] font-bold leading-[40px]">
-					You’re one step closer to creating your goal
+					You're one step closer to getting started
 				</h2>
 				<p class="text-textSecondary text-base font-semibold">
 					Create your free account
@@ -33,7 +33,7 @@
 				<div class="flex items-center gap-1">
 					<input v-model="accepetedTerms" type="checkbox" required>
 					<p class="text-xs text-[#101928] font-medium">
-						I consent to Goalmatic’s <span class="underline">Privacy Policy</span> and <span class="underline">Terms of Service</span>
+						I consent to Goalmatic's <span class="underline">Privacy Policy</span> and <span class="underline">Terms of Service</span>
 					</p>
 				</div>
 

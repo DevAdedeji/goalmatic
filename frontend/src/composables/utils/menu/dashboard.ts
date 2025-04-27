@@ -1,27 +1,9 @@
 import { Settings, Grid3X3, FileSpreadsheetIcon, Workflow } from 'lucide-vue-next'
 
-import Goal from '@/assets/icons/Goal.vue'
-import Todo from '@/assets/icons/Todo.vue'
 import Bot from '@/assets/icons/Bot.vue'
 
 
 export const dashboardRoutes = () => [
-
-	{
-		icon: Goal,
-		name: 'Goals',
-		route: '/goals',
-		main: true,
-		subRoutes: [
-			{ url: '/', propagate: true }
-		]
-	},
-	{
-		icon: Todo,
-		name: 'Todos',
-		route: '/todos',
-		main: true
-	},
 
 		{
 		icon: Bot,

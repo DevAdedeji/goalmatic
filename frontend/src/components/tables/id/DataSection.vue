@@ -5,9 +5,14 @@
 				<h2 class="text-lg font-medium text-headline">
 					Table Records
 				</h2>
+				<div v-if="loading" class="flex items-center gap-2 text-text-secondary">
+					<div class="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full" />
+					<span class="text-sm">Loading...</span>
+				</div>
 				<button
 					v-if="selectedRecords.length > 0"
 					class="btn-outline-danger flex items-center gap-2 px-4 py-2 rounded-md text-sm"
+					:disabled="loading"
 					@click="deleteSelectedRecords"
 				>
 					<Trash2 :size="16" />
@@ -16,7 +21,7 @@
 			</div>
 			<button
 				class="btn-primary flex items-center gap-2 px-4 py-2 rounded-md text-sm"
-				:disabled="!tableData.fields || tableData.fields.length === 0"
+				:disabled="loading || !tableData.fields || tableData.fields.length === 0"
 				@click="addNewRecord"
 			>
 				<PlusCircle :size="16" />
@@ -40,7 +45,7 @@
 			</button>
 		</div>
 
-		<div v-else-if="!tableData.records || tableData.records.length === 0" class="text-center py-12 border border-dashed border-border rounded-lg">
+		<div v-else-if="!tableRecords || tableRecords.length === 0" class="text-center py-12 border border-dashed border-border rounded-lg">
 			<Database :size="48" class="mx-auto mb-4 text-text-secondary opacity-40" />
 			<h3 class="text-lg font-medium text-headline mb-2">
 				No Records Yet
@@ -85,7 +90,7 @@
 						</tr>
 					</thead>
 					<tbody class="bg-white divide-y divide-border">
-						<tr v-for="(record, index) in tableData.records" :key="record.id" class="hover:bg-gray-50">
+						<tr v-for="(record) in tableRecords" :key="record.id" class="hover:bg-gray-50">
 							<td class="px-4 py-3 whitespace-nowrap text-sm">
 								<div class="flex items-center">
 									<input
@@ -115,10 +120,18 @@
 							</td>
 							<td class="px-4 py-3 whitespace-nowrap text-sm">
 								<div class="flex gap-2">
-									<button class="icon-btn text-text-secondary hover:text-primary" @click="editRecord(index)">
+									<button
+										class="icon-btn text-text-secondary hover:text-primary"
+										:disabled="loading"
+										@click="editRecord(record.id)"
+									>
 										<Edit2 :size="16" />
 									</button>
-									<button class="icon-btn text-text-secondary hover:text-red" @click="deleteRecord(index)">
+									<button
+										class="icon-btn text-text-secondary hover:text-red"
+										:disabled="loading"
+										@click="deleteRecord(record.id)"
+									>
 										<Trash2 :size="16" />
 									</button>
 								</div>
@@ -128,26 +141,16 @@
 				</table>
 			</div>
 		</div>
-
-		<!-- Record Modal -->
-		<TablesIdRecordModal
-			v-if="recordModalVisible"
-			:record-form="recordForm"
-			:fields="tableData.fields || []"
-			:editing-record-index="editingRecordIndex"
-			@save="saveRecord"
-			@cancel="recordModalVisible = false"
-		/>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
-import TablesIdRecordModal from './RecordModal.vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
+import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 import { formatDate } from '@/composables/utils/formatter'
-import { useAlert } from '@/composables/core/notification'
+import { useTablesModal } from '@/composables/core/modals'
+
 
 interface Field {
 	id: string;
@@ -177,21 +180,45 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['switchTab'])
-const { addRecordToTable, updateRecordInTable, removeRecordFromTable, removeMultipleRecordsFromTable } = useEditTable()
-const alert = useAlert()
+const { addRecordToTable, updateRecordInTable, removeRecordFromTable, removeMultipleRecordsFromTable, loading: editLoading } = useEditTable()
+const { fetchTableRecords, tableRecords, loading: fetchLoading } = useFetchUserTables()
+
 
 // Record management
-const recordModalVisible = ref(false)
 const editingRecordIndex = ref(-1)
-const recordForm = ref({})
+const recordForm = ref({} as any)
+const localLoading = ref(false)
+
+
+// Computed property for overall loading state
+const loading = computed(() => editLoading.value || fetchLoading.value || localLoading.value)
+
+// Reset form function
+const resetForm = () => {
+  recordForm.value = {}
+  editingRecordIndex.value = -1
+}
+
+// Fetch records when component mounts or table changes
+onMounted(async () => {
+  if (props.tableData && props.tableData.id) {
+    await fetchTableRecords(props.tableData.id)
+  }
+})
+
+watch(() => props.tableData?.id, async (newId) => {
+  if (newId) {
+    await fetchTableRecords(newId)
+  }
+})
 
 // Selection management
 const selectedRecords = ref<string[]>([])
 
 // Computed property to check if all records are selected
 const isAllSelected = computed(() => {
-	if (!props.tableData.records || props.tableData.records.length === 0) return false
-	return props.tableData.records.length === selectedRecords.value.length
+	if (!tableRecords.value || tableRecords.value.length === 0) return false
+	return tableRecords.value.length === selectedRecords.value.length
 })
 
 // Toggle selection of a single record
@@ -218,7 +245,7 @@ const toggleSelectAll = () => {
 		selectedRecords.value = []
 	} else {
 		// Select all
-		selectedRecords.value = props.tableData.records?.map((record) => record.id) || []
+		selectedRecords.value = tableRecords.value?.map((record) => record.id) || []
 	}
 }
 
@@ -227,17 +254,27 @@ const deleteSelectedRecords = async () => {
 	if (selectedRecords.value.length === 0) return
 
 	if (confirm(`Are you sure you want to delete ${selectedRecords.value.length} selected record(s)?`)) {
-		const success = await removeMultipleRecordsFromTable(props.tableData, selectedRecords.value)
-		if (success) {
-			alert.openAlert({ type: 'SUCCESS', msg: `${selectedRecords.value.length} record(s) deleted successfully` })
-			selectedRecords.value = []
-		} else {
-			alert.openAlert({ type: 'ERROR', msg: 'Failed to delete records' })
+		localLoading.value = true
+		try {
+			const success = await removeMultipleRecordsFromTable(props.tableData, selectedRecords.value)
+			if (success) {
+				// Refresh records after delete
+				await fetchTableRecords(props.tableData.id)
+				// Clear selection
+				selectedRecords.value = []
+			}
+		} catch (error) {
+			console.error('Error deleting selected records:', error)
+		} finally {
+			localLoading.value = false
 		}
 	}
 }
 
 const addNewRecord = () => {
+	// Reset form first
+	resetForm()
+
 	// Initialize empty record with all fields
 	const newRecord: Record = { id: crypto.randomUUID() }
 	if (props.tableData.fields) {
@@ -248,38 +285,80 @@ const addNewRecord = () => {
 
 	recordForm.value = newRecord
 	editingRecordIndex.value = -1
-	recordModalVisible.value = true
+
+	// Open the record modal with the current form data and editing index
+	useTablesModal().openRecordModal({
+		recordForm: recordForm.value,
+		fields: props.tableData.fields || [],
+		editingRecordIndex: editingRecordIndex.value,
+		onSave: saveRecord
+	})
 }
 
-const editRecord = (index: number) => {
-	// Clone the record to avoid direct mutation
-	if (props.tableData.records && props.tableData.records[index]) {
-		recordForm.value = JSON.parse(JSON.stringify(props.tableData.records[index]))
-		editingRecordIndex.value = index
-		recordModalVisible.value = true
+const editRecord = (recordId: string) => {
+	// Reset form first
+	resetForm()
+
+	// Find the record in tableRecords
+	const record = tableRecords.value.find((r) => r.id === recordId)
+	if (record) {
+		// Clone the record to avoid direct mutation
+		recordForm.value = JSON.parse(JSON.stringify(record))
+		editingRecordIndex.value = tableRecords.value.findIndex((r) => r.id === recordId)
+
+		// Open the record modal with the current form data and editing index
+		useTablesModal().openRecordModal({
+			recordForm: recordForm.value,
+			fields: props.tableData.fields || [],
+			editingRecordIndex: editingRecordIndex.value,
+			onSave: saveRecord
+		})
 	}
 }
 
 const saveRecord = async () => {
-	// Check if we're adding a new record or updating an existing one
-	if (editingRecordIndex.value === -1) {
-		// Add new record
-		await addRecordToTable(props.tableData, recordForm.value)
-	} else if (props.tableData.records && props.tableData.records[editingRecordIndex.value]) {
-		// Update existing record
-		await updateRecordInTable(
-			props.tableData,
-			props.tableData.records[editingRecordIndex.value].id,
-			recordForm.value
-		)
-	}
+	localLoading.value = true
+	try {
+		// Check if we're adding a new record or updating an existing one
+		if (editingRecordIndex.value === -1) {
+			// Add new record
+			await addRecordToTable(props.tableData, recordForm.value)
+		} else {
+			// Update existing record
+			await updateRecordInTable(
+				props.tableData,
+				recordForm.value?.id,
+				recordForm.value
+			)
+		}
 
-	recordModalVisible.value = false
+		// Refresh records after save
+		await fetchTableRecords(props.tableData.id)
+
+		// Reset the form
+		resetForm()
+
+		// Close the modal
+		useTablesModal().closeRecordModal()
+	} catch (error) {
+		console.error('Error saving record:', error)
+	} finally {
+		localLoading.value = false
+	}
 }
 
-const deleteRecord = async (index: number) => {
-	if (props.tableData.records && props.tableData.records[index] && confirm('Are you sure you want to delete this record?')) {
-		await removeRecordFromTable(props.tableData, props.tableData.records[index].id)
+const deleteRecord = async (recordId: string) => {
+	if (confirm('Are you sure you want to delete this record?')) {
+		localLoading.value = true
+		try {
+			await removeRecordFromTable(props.tableData, recordId)
+			// Refresh records after delete
+			await fetchTableRecords(props.tableData.id)
+		} catch (error) {
+			console.error('Error deleting record:', error)
+		} finally {
+			localLoading.value = false
+		}
 	}
 }
 

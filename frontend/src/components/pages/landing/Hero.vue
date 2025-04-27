@@ -10,16 +10,16 @@
 
 		<div class="flex flex-col items-center md:gap-10 gap-7 z-30 2xl:mt-64  mt-16">
 			<h1 class="text-headline font-bold text-[49px] md:text-[80px] lg:max-w-[800px] text-center leading-[40px] md:leading-[80px]">
-				Your AI-Powered Goal Assistant
+				Your AI-Powered Assistant
 			</h1>
 			<p class="text-sm md:text-[18px] text-dark text-center  md:max-w-[760px] leading-[30px]">
-				Goalmatic transforms your aspirations into clear, actionable steps—complete with milestones, to-dos, and an AI assistant that keeps you on track. Stay focused on what matters most, and let us handle the rest.
+				Goalmatic transforms your workflows with powerful agents, automated flows, and structured tables. Stay focused on what matters most, and let us handle the rest.
 			</p>
 			<div class="bg-transparent border border-dark rounded-lg px-4 py-2 md:py-3 flex items-center gap-4 justify-between w-full max-w-[600px]">
 				<textarea
 					ref="textarea"
 					v-model="userGoal"
-					placeholder="What's your goal today?"
+					placeholder="What can I help you with today?"
 					class="h-full flex-grow focus:outline-none text-subText resize-none overflow-hidden bg-transparent"
 					rows="1"
 					@input="adjustTextareaHeight"
@@ -34,9 +34,9 @@
 					<MoveRight :stroke-width="2.5" :size="14" />
 				</button>
 			</div>
-			<button class="text-sm font-semibold text-secondary center gap-0.5 mt-4 py-2 px-3 bg-secondaryLight hover:bg-[#ccc2efc4] bordertransition-all duration-500 rounded-md custom_shadow object-contain" @click="generateSampleGoal">
+			<button class="text-sm font-semibold text-secondary center gap-0.5 mt-4 py-2 px-3 bg-secondaryLight hover:bg-[#ccc2efc4] bordertransition-all duration-500 rounded-md custom_shadow object-contain" @click="generateSamplePrompt">
 				<IconsMagicwand />
-				No Goal in Mind? Try a Sample Goal!
+				Try a Sample Prompt!
 			</button>
 		</div>
 	</main>
@@ -46,16 +46,20 @@
 import { MoveRight } from 'lucide-vue-next'
 import { watchUserStateChange } from '@/firebase/auth'
 import { useUser } from '@/composables/auth/user'
-import { useSmartGoal, smartGoals } from '@/composables/genericGoals/smart'
-
 
 const { isLoggedIn } = useUser()
-const { userGoal } = useSmartGoal()
+const userGoal = ref('')
 const textarea = ref()
 
-const generateSampleGoal = () => {
-	const randomIndex = Math.floor(Math.random() * smartGoals.length)
-	userGoal.value = smartGoals[randomIndex]
+const samplePrompts = [
+  "Create a table to track my project tasks",
+  "Set up a flow to send email notifications",
+  "Help me build an agent that can answer questions about my data"
+]
+
+const generateSamplePrompt = () => {
+	const randomIndex = Math.floor(Math.random() * samplePrompts.length)
+	userGoal.value = samplePrompts[randomIndex]
 	setTimeout(() => {
 		adjustTextareaHeight()
 	}, 200)
@@ -69,8 +73,8 @@ const adjustTextareaHeight = () => {
 }
 
 const urlRedirect = () => {
-	const encodedGoal = encodeURIComponent(userGoal.value)
-	useRouter().push(`/create?goal=${encodedGoal}`)
+	const encodedPrompt = encodeURIComponent(userGoal.value)
+	useRouter().push(`/agents?prompt=${encodedPrompt}`)
 }
 const handleKeyDown = (event: KeyboardEvent) => {
 	if (event.key === 'Enter' && !event.shiftKey) {

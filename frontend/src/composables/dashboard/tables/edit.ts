@@ -1,7 +1,9 @@
 import { ref } from 'vue'
 import { Timestamp } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
-import { updateFirestoreDocument } from '@/firebase/firestore/edit'
+import { updateFirestoreDocument, updateFirestoreSubDocument } from '@/firebase/firestore/edit'
+import { setFirestoreSubDocument } from '@/firebase/firestore/create'
+import { deleteFirestoreSubCollectionDocument } from '@/firebase/firestore/delete'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 
@@ -105,81 +107,120 @@ export const useEditTable = () => {
 
   // Add a record to the table
   const addRecordToTable = async (table: Record<string, any>, record: Record<string, any>) => {
-    const records = [...(table.records || [])]
+    if (!user_id.value) return
 
-    // Add a unique ID and timestamps
-    record.id = record.id || uuidv4()
-    record.created_at = Timestamp.fromDate(new Date())
-    record.updated_at = Timestamp.fromDate(new Date())
+    loading.value = true
+    try {
+      // Add a unique ID and timestamps
+      const recordId = record.id || uuidv4()
+      record.id = recordId
+      record.created_at = Timestamp.fromDate(new Date())
+      record.updated_at = Timestamp.fromDate(new Date())
 
-    records.push(record)
-    await updateTable({
-      ...table,
-      records
-    })
+      // Add the record to the records subcollection
+      await setFirestoreSubDocument('tables', table.id, 'records', recordId, record)
 
-    return record.id
+      // Update the table's updated_at timestamp
+      await updateTable({
+        ...table,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      useAlert().openAlert({ type: 'SUCCESS', msg: 'Record added successfully' })
+      return recordId
+    } catch (error: any) {
+      console.error('Error adding record:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error adding record: ${error.message}` })
+      return null
+    } finally {
+      loading.value = false
+    }
   }
 
   // Remove a record from the table
   const removeRecordFromTable = async (table: Record<string, any>, recordId: string) => {
-    const records = [...(table.records || [])]
-    const index = records.findIndex((record) => record.id === recordId)
+    if (!user_id.value) return false
 
-    if (index === -1) {
+    loading.value = true
+    try {
+      // Delete the record from the subcollection
+      await deleteFirestoreSubCollectionDocument('tables', table.id, 'records', recordId)
+
+      // Update the table's updated_at timestamp
+      await updateTable({
+        ...table,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      useAlert().openAlert({ type: 'SUCCESS', msg: 'Record deleted successfully' })
+      return true
+    } catch (error: any) {
+      console.error('Error removing record:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error deleting record: ${error.message}` })
       return false
+    } finally {
+      loading.value = false
     }
-
-    records.splice(index, 1)
-    await updateTable({
-      ...table,
-      records
-    })
-
-    return true
   }
 
   // Update a specific record in the table
   const updateRecordInTable = async (table: Record<string, any>, recordId: string, updatedRecord: Record<string, any>) => {
-    const records = [...(table.records || [])]
-    const index = records.findIndex((record) => record.id === recordId)
+    if (!user_id.value) return false
 
-    if (index === -1) {
+    loading.value = true
+    try {
+      // Preserve the record ID and update timestamp
+      updatedRecord.id = recordId
+      updatedRecord.updated_at = Timestamp.fromDate(new Date())
+
+      // Update the record in the subcollection
+      await updateFirestoreSubDocument('tables', table.id, 'records', recordId, updatedRecord)
+
+      // Update the table's updated_at timestamp
+      await updateTable({
+        ...table,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      useAlert().openAlert({ type: 'SUCCESS', msg: 'Record updated successfully' })
+      return true
+    } catch (error: any) {
+      console.error('Error updating record:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error updating record: ${error.message}` })
       return false
+    } finally {
+      loading.value = false
     }
-
-    // Preserve the record ID and update timestamp
-    updatedRecord.id = recordId
-    updatedRecord.created_at = records[index].created_at
-    updatedRecord.updated_at = Timestamp.fromDate(new Date())
-
-    records[index] = updatedRecord
-    await updateTable({
-      ...table,
-      records
-    })
-
-    return true
   }
 
   // Bulk remove multiple records from the table
   const removeMultipleRecordsFromTable = async (table: Record<string, any>, recordIds: string[]) => {
-    if (!recordIds.length) return false
+    if (!recordIds.length || !user_id.value) return false
 
-    const records = [...(table.records || [])]
-    const filteredRecords = records.filter((record) => !recordIds.includes(record.id))
+    loading.value = true
+    try {
+      // Delete each record from the subcollection
+      const deletePromises = recordIds.map((recordId) =>
+        deleteFirestoreSubCollectionDocument('tables', table.id, 'records', recordId)
+      )
 
-    // If no records were removed, return false
-    if (filteredRecords.length === records.length) {
+      await Promise.all(deletePromises)
+
+      // Update the table's updated_at timestamp
+      await updateTable({
+        ...table,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      useAlert().openAlert({ type: 'SUCCESS', msg: `${recordIds.length} records deleted successfully` })
+      return true
+    } catch (error: any) {
+      console.error('Error removing multiple records:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error deleting records: ${error.message}` })
       return false
+    } finally {
+      loading.value = false
     }
-
-    await updateTable({
-      ...table,
-      records: filteredRecords
-    })
-
-    return true
   }
 
   return {

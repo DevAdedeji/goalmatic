@@ -1,6 +1,3 @@
-export * from './checkUsernameForGoals'
-export * from './createUserProfileForGoals'
-export * from './getUserGoalDetails'
 export * from './whatsapp/webhook'
 export * from './messageAgent'
 export * from './sendWhatsappOTP'
