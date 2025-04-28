@@ -17,7 +17,7 @@
 							:id="`field-${field.id}`"
 							v-model="recordForm[field.id]"
 							:type="field.type === 'email' ? 'email' : field.type === 'url' ? 'url' : 'text'"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+							class="input-field"
 							:placeholder="`Enter ${field.name.toLowerCase()}`"
 							:required="field.required"
 						>
@@ -32,7 +32,7 @@
 							:id="`field-${field.id}`"
 							v-model.number="recordForm[field.id]"
 							type="number"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+							class="input-field"
 							:placeholder="`Enter ${field.name.toLowerCase()}`"
 							:required="field.required"
 						>
@@ -47,7 +47,7 @@
 							:id="`field-${field.id}`"
 							v-model="recordForm[field.id]"
 							type="date"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+							class="input-field"
 							:required="field.required"
 						>
 					</div>
@@ -61,7 +61,7 @@
 							:id="`field-${field.id}`"
 							v-model="recordForm[field.id]"
 							type="time"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+							class="input-field"
 							:required="field.required"
 						>
 					</div>
@@ -89,7 +89,7 @@
 						<select
 							:id="`field-${field.id}`"
 							v-model="recordForm[field.id]"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+							class="input-field"
 							:required="field.required"
 						>
 							<option value="">
@@ -109,7 +109,7 @@
 						<textarea
 							:id="`field-${field.id}`"
 							v-model="recordForm[field.id]"
-							class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[80px]"
+							class="input-field min-h-[80px]"
 							:placeholder="`Enter ${field.name.toLowerCase()}`"
 							:required="field.required"
 						/>

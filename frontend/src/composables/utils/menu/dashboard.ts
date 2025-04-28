@@ -12,7 +12,8 @@ export const dashboardRoutes = () => [
 		type: 'all',
 		main: true,
 		subRoutes: [
-			{ url: '/', propagate: true }
+			{ url: '/', propagate: true },
+			{ url: '/:sessionId', propagate: true }
 		]
 	},
 		{

@@ -60,13 +60,13 @@ export const useTableDataSection = (tableData: TableData) => {
         try {
           const success = await removeMultipleRecordsFromTable(tableData, selectedRecords.value)
           if (success) {
-            await fetchTableRecords(tableData.id)
             selectedRecords.value = []
           }
         } catch (error) {
           console.error('Error deleting selected records:', error)
         } finally {
           localLoading.value = false
+          useConfirmationModal().closeAlert()
         }
       },
       loading: localLoading
@@ -149,6 +149,7 @@ export const useTableDataSection = (tableData: TableData) => {
           console.error('Error deleting record:', error)
         } finally {
           localLoading.value = false
+          useConfirmationModal().closeAlert()
         }
       },
       loading: localLoading

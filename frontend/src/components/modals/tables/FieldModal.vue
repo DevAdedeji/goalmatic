@@ -16,7 +16,7 @@
 						id="field-name"
 						v-model="fieldForm.name"
 						type="text"
-						class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+						class="input-field"
 						placeholder="Enter field name"
 						required
 					>
@@ -30,7 +30,7 @@
 					<select
 						id="field-type"
 						v-model="fieldForm.type"
-						class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
+						class="input-field"
 						required
 					>
 						<option value="text">
@@ -71,7 +71,7 @@
 					<textarea
 						id="field-options"
 						v-model="fieldForm.optionsText"
-						class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[100px]"
+						class="input-field min-h-[100px]"
 						placeholder="Enter one option per line"
 						required
 					/>
@@ -88,7 +88,7 @@
 					<textarea
 						id="field-description"
 						v-model="fieldForm.description"
-						class="w-full p-2 border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[80px]"
+						class="input-textarea"
 						placeholder="Enter field description (optional)"
 					/>
 				</div>

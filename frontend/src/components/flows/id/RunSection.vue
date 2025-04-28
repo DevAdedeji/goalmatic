@@ -93,7 +93,7 @@ const emit = defineEmits(['refreshRuns'])
 // Define Props
 defineProps({
 	flowRuns: {
-		type: Array,
+		type: Array as PropType<any[]>,
 		default: () => []
 	},
 	loading: {
