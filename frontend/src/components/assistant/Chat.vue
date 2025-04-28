@@ -58,7 +58,7 @@
 
 <script setup lang="ts">
 import { MoveRight } from 'lucide-vue-next'
-import { useChatAssistant } from '@/composables/dashboard/assistant'
+import { useChatAssistant } from '@/composables/dashboard/assistant/messaging'
 import { useOnAssistantLoad } from '@/composables/dashboard/assistant/agents/select'
 import { markdownProcessor } from '~/src/composables/utils/markdown'
 
@@ -67,7 +67,7 @@ import { markdownProcessor } from '~/src/composables/utils/markdown'
 const { fetchSelectedAgent, selectedAgent } = useOnAssistantLoad()
 fetchSelectedAgent()
 
-const { conversationHistory, userInput, sendMessage, ai_loading, sessionId, loadConversationHistory } = useChatAssistant()
+const { conversationHistory, userInput, sendMessage, ai_loading, sessionId, loadConversationHistory, handleUrlChange } = useChatAssistant()
 const textarea = ref()
 
 
@@ -83,7 +83,13 @@ const textarea = ref()
   }, { immediate: true })
 
 
+  onMounted(() => {
+    window.addEventListener('url-changed', handleUrlChange)
+  })
 
+  onUnmounted(() => {
+    window.removeEventListener('url-changed', handleUrlChange)
+  })
 
 
 const adjustTextareaHeight = () => {

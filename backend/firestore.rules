@@ -32,7 +32,24 @@ service cloud.firestore {
 
       allow delete: if false;
 
+      // Chat Sessions subcollection: stores user's chat sessions with agents
+      match /chatSessions/{sessionId} {
+        allow create: if isSignedIn() &&
+          isOwner(userId) &&
+          request.resource.data.keys().hasAll(['id', 'created_at', 'messages']) &&
+          validTimestamp(request.resource.data.created_at) &&
+          request.resource.data.messages is list;
 
+        allow read: if isSignedIn() && isOwner(userId);
+
+        allow update: if isSignedIn() &&
+          isOwner(userId) &&
+          request.resource.data.keys().hasAll(['messages', 'updated_at']) &&
+          validTimestamp(request.resource.data.updated_at) &&
+          request.resource.data.messages is list;
+
+        allow delete: if isSignedIn() && isOwner(userId);
+      }
 
         // Integrations collection: settings for third-party integrations.
       match /integrations/{integrationId} {
