@@ -73,7 +73,7 @@
 								:id="`field-${field.id}`"
 								v-model="recordForm[field.id]"
 								type="checkbox"
-								class="h-4 w-4 text-primary focus:ring-primary border-border rounded"
+								class="form-checkbox h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
 							>
 							<label :for="`field-${field.id}`" class="ml-2 block text-sm text-text-secondary">
 								{{ field.name }}
@@ -142,9 +142,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { Timestamp } from 'firebase/firestore'
 import Modal from '@/components/core/modal/Modal.vue'
 import { useTablesModal } from '@/composables/core/modals'
-
+import { formatTimeWithSeconds } from '@/composables/utils/formatter'
+import { Field } from '@/composables/dashboard/tables/types'
 
 
 const props = defineProps({
@@ -170,8 +173,51 @@ const closeModal = () => {
 	useTablesModal().closeRecordModal()
 }
 
+// Format time and date fields before saving
+const formatFields = () => {
+	if (!fields.value || !recordForm.value) return
+
+	fields.value.forEach((field: Field) => {
+		// Handle time fields
+		if (field.type === 'time' && recordForm.value[field.id]) {
+			try {
+				// HTML time input returns format like "13:45" or "13:45:00"
+				// We need to create a Date object and format it as "12:11:47 PM"
+				const timeValue = recordForm.value[field.id]
+				const [hours, minutes, seconds = '00'] = timeValue.split(':').map(Number)
+
+				// Create a date object with today's date and the time values
+				const dateObj = new Date()
+				dateObj.setHours(hours, minutes, seconds)
+
+				// Format the time in 12-hour format with AM/PM
+				recordForm.value[field.id] = formatTimeWithSeconds(dateObj)
+			} catch (error) {
+				console.error('Error formatting time:', error)
+			}
+		}
+
+		// Handle date fields - convert to Firebase Timestamp
+		if (field.type === 'date' && recordForm.value[field.id]) {
+			try {
+				// Convert the date string to a Date object and then to a Firebase Timestamp
+				const dateValue = recordForm.value[field.id]
+				const dateObj = new Date(dateValue)
+
+				if (!isNaN(dateObj.getTime())) {
+					recordForm.value[field.id] = Timestamp.fromDate(dateObj)
+				}
+			} catch (error) {
+				console.error('Error converting date to Timestamp:', error)
+			}
+		}
+	})
+}
+
 // Handle save
 const onSave = async () => {
+	formatFields()
+
 	if (onSaveCallback.value && typeof onSaveCallback.value === 'function') {
 		await onSaveCallback.value()
 	}

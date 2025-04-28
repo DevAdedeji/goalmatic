@@ -136,3 +136,22 @@ export const isToday = (date: Date | string): boolean => {
 }
 
 export const capitalize = (text: string) => (text[0] ?? '').toUpperCase() + text.slice(1)
+
+export const formatTimeWithSeconds = (date: Date | string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : date
+
+  if (isNaN(dateObj.getTime())) {
+    return ''
+  }
+
+  const hours = dateObj.getHours()
+  const minutes = dateObj.getMinutes()
+  const seconds = dateObj.getSeconds()
+  const period = hours >= 12 ? 'PM' : 'AM'
+
+  // Convert to 12-hour format
+  const displayHours = hours % 12 || 12
+
+  // Format with padding for minutes and seconds
+  return `${displayHours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`
+}

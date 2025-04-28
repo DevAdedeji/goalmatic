@@ -70,6 +70,7 @@
 				:checkbox="true"
 				:selected="selectedRecords.map(id => ({ id }))"
 				@checked="toggleRecordSelection($event.id)"
+				@toggle-all="toggleSelectAll"
 			>
 				<template #empty>
 					<Database :size="48" class="mx-auto mb-4 text-text-secondary opacity-40" />
@@ -85,18 +86,18 @@
 					<span v-if="item.id" class="text-text-secondary">
 						{{ item.data.id.substring(0, 8) }}...
 					</span>
+					<span v-else-if="item[getValueType('date')]" class="text-text-secondary">
+						{{ formatDate(item.data[getValueType('date')].toDate()) }}
+					</span>
+					<span v-else-if="item[getValueType('time')]" class="text-text-secondary">
+						{{ item.data[getValueType('time')] }}
+					</span>
 
-					<!-- Render different field types appropriately -->
+					<span v-else-if="item[getValueType('boolean')]" class="text-text-secondary">
+						{{ item.data[getValueType('boolean')] ? 'Yes' : 'No' }}
+					</span>
 
-					<span v-if="getFieldType(item.key) === 'boolean'" class="text-text-secondary">
-						{{ item.data[item.key as string] ? 'Yes' : 'No' }}
-					</span>
-					<span v-else-if="getFieldType(item.key) === 'date' && item.data[item.key as string]" class="text-text-secondary">
-						{{ formatDate(item.data[item.key as string]) }} ss
-					</span>
-					<span v-else-if="getFieldType(item.key) === 'time' && item.data[item.key as string]" class="text-text-secondary">
-						{{ item.data[item.key as string] }}
-					</span>
+
 
 
 
@@ -116,9 +117,6 @@
 							<Trash2 :size="16" />
 						</button>
 					</div>
-					<span v-else class="text-text-secondary">
-						{{ item.data[item.key as string] || '-' }}
-					</span>
 				</template>
 			</Table>
 		</div>
@@ -127,7 +125,7 @@
 
 <script setup lang="ts">
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { formatDate } from '@/composables/utils/formatter'
 import { TableData } from '@/composables/dashboard/tables/types'
 import { useTableDataSection } from '@/composables/dashboard/tables/dataSection'
@@ -147,9 +145,7 @@ const {
 	tableRecords,
 	loading,
 	selectedRecords,
-	isAllSelected,
 	toggleRecordSelection,
-	isRecordSelected,
 	toggleSelectAll,
 	deleteSelectedRecords,
 	addNewRecord,
@@ -161,8 +157,8 @@ const {
 // Generate headers dynamically based on table fields
 const tableHeaders = computed(() => {
 	const headers = [
-		{ text: 'ID', value: 'id' }
-	]
+		// { text: 'ID', value: 'id' }
+	] as { text: string, value: string }[]
 
 	// Add headers for each field
 	if (props.tableData.fields) {
@@ -173,7 +169,6 @@ const tableHeaders = computed(() => {
 			})
 		})
 	}
-	console.log(headers)
 
 	// Add actions column
 	headers.push({ text: 'Actions', value: 'actions' })
@@ -183,11 +178,16 @@ const tableHeaders = computed(() => {
 
 
 
-const getFieldType = (fieldId) => {
+const getFieldType = (fieldId: string): string => {
 	const field = props.tableData.fields?.find((f) => f.id === fieldId)
 	return field?.type || 'text'
 }
 
+
+const getValueType = (key: string) => {
+	const res = props.tableData.fields?.find((f) => f.type === key)
+	return res?.id || ''
+}
 // Initialize records when component is mounted
 onMounted(async () => {
 	await initializeRecords()

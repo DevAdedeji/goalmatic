@@ -106,6 +106,10 @@ export const useTableStructureSection = (tableData: TableData) => {
       title: 'Delete Field',
       desc: 'Are you sure you want to delete this field? This will also remove this field from all records.',
       call_function: async () => {
+        if (!tableData.fields || !tableData.fields[index]) {
+          console.error('Field not found at the time of deletion.')
+          return
+        }
         localLoading.value = true
         try {
           await removeFieldFromTable(tableData, tableData.fields[index].id)

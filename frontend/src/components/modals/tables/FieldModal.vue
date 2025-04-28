@@ -99,7 +99,7 @@
 						id="field-required"
 						v-model="fieldForm.required"
 						type="checkbox"
-						class="h-4 w-4 text-primary focus:ring-primary border-border rounded"
+						class="form-checkbox h-4 w-4 text-primary focus:ring-primary border-border rounded"
 					>
 					<label for="field-required" class="ml-2 block text-sm text-text-secondary">
 						Required field

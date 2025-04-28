@@ -28,11 +28,12 @@ export const useTableDataSection = (tableData: TableData) => {
   })
 
   const toggleRecordSelection = (recordId: string) => {
+    // Create a new array to ensure reactivity
     const index = selectedRecords.value.indexOf(recordId)
     if (index === -1) {
-      selectedRecords.value.push(recordId)
+      selectedRecords.value = [...selectedRecords.value, recordId]
     } else {
-      selectedRecords.value.splice(index, 1)
+      selectedRecords.value = selectedRecords.value.filter(id => id !== recordId)
     }
   }
 
@@ -42,9 +43,11 @@ export const useTableDataSection = (tableData: TableData) => {
 
   const toggleSelectAll = () => {
     if (isAllSelected.value) {
+      // Create a new empty array to ensure reactivity
       selectedRecords.value = []
     } else {
-      selectedRecords.value = tableRecords.value?.map((record) => record.id) || []
+      // Create a new array with all record IDs to ensure reactivity
+      selectedRecords.value = [...(tableRecords.value?.map((record) => record.id) || [])]
     }
   }
 
@@ -166,6 +169,7 @@ export const useTableDataSection = (tableData: TableData) => {
         return new Date().toISOString().split('T')[0]
       case 'time': {
         const now = new Date()
+        // Return in HH:MM format for the time input
         return `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
       }
       default:
