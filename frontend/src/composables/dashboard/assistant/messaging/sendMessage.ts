@@ -4,12 +4,15 @@ import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
 import { selectedAgent } from '../agents/select'
 import { ai_loading, conversationHistory, sessionId } from './state'
+import { loadConversationHistory } from './loadMessages'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { setFirestoreSubDocument } from '@/firebase/firestore/create'
 import { getSingleFirestoreSubDocument } from '@/firebase/firestore/fetch'
 import { updateFirestoreSubDocument } from '@/firebase/firestore/edit'
+
+
 
 // Define message type
 interface ChatMessage {
@@ -104,6 +107,7 @@ export const sendMessage = async (currentRoute?: RouteLocationNormalizedLoaded) 
       // If chat session doesn't exist, create it
       chatSessionData.created_at = Timestamp.fromDate(new Date())
       await setFirestoreSubDocument('users', userId.value!, 'chatSessions', sessionId.value!, chatSessionData)
+      loadConversationHistory(sessionId.value!)
     } else {
       await updateFirestoreSubDocument('users', userId.value!, 'chatSessions', sessionId.value!, chatSessionData)
     }

@@ -3,16 +3,24 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { generateAgentTools } from './tools';
 import { setUserToolConfig } from ".";
 
-
-
-
-
-export const initialiseAIChat = async (history: any[] = [], agent: Record<string, any>, isImageRequest: boolean = false) => {
-
-const google = createGoogleGenerativeAI({
-    apiKey: process.env.GOOGLE_API_KEY,
-})
-
+/**
+ * Initialize AI chat with conversation history and agent configuration
+ *
+ * @param history Array of conversation messages
+ * @param agent Agent configuration object
+ * @param sessionId Chat session ID for logging tool calls
+ * @param isImageRequest Whether this is an image request
+ * @returns The AI response text
+ */
+export const initialiseAIChat = async (
+    history: any[] = [],
+    agent: Record<string, any>,
+    sessionId: string,
+    isImageRequest: boolean = false
+) => {
+    const google = createGoogleGenerativeAI({
+        apiKey: process.env.GOOGLE_API_KEY,
+    })
 
     setUserToolConfig(agent.spec.toolsConfig);
     try {
@@ -31,7 +39,8 @@ const google = createGoogleGenerativeAI({
             };
         });
 
-        const agentTools = generateAgentTools(agent.spec.tools);
+        // Pass the sessionId to generateAgentTools for tool call logging
+        const agentTools = generateAgentTools(agent.spec.tools, sessionId);
         const agentSystemInfo = customSystemInfo(agent.spec.tools, agent.spec.systemInfo);
         const result = await generateText({
             model: google("gemini-2.5-flash-preview-04-17"),
@@ -40,7 +49,6 @@ const google = createGoogleGenerativeAI({
             tools: agentTools,
             system: agentSystemInfo,
         });
-
 
         return result.text;
     } catch (error) {
@@ -57,7 +65,7 @@ const customSystemInfo = (agentTools: Record<string, any>[], agentSystemInfo: st
     <Available Tools>
     ${agentTools.map((tool) => tool.id)}
     </Available Tools>
-    
+
     <Agent System Info>
     ${agentSystemInfo}
     </Agent System Info>

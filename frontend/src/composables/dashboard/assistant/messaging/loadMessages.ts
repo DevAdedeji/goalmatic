@@ -20,7 +20,7 @@ export const loadConversationHistory = async (sid: string): Promise<boolean> => 
       ai_loading.value = false
       throw new Error('User not authenticated')
     }
-
+console.log(sid)
     // Fetch the chat session document directly into rawConversationData
     await getSingleFirestoreSubDocument('users', userId.value, 'chatSessions', sid, rawConversationData)
 

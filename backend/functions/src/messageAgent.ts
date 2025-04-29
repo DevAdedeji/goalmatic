@@ -2,6 +2,8 @@ import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { initialiseAIChat } from './ai/initialise'
 import { setUserUid, setUserToolConfig } from './ai';
 import { v4 as uuidv4 } from 'uuid';
+import { goals_db } from './init';
+import { Timestamp } from 'firebase-admin/firestore';
 
 export const messageAgent = onCall({
     cors: true,
@@ -14,23 +16,32 @@ export const messageAgent = onCall({
         const { history, agent, sessionId } = request.data;
         setUserToolConfig(agent.spec.toolsConfig);
 
+
         if (!history) throw new Error('Missing required parameter: prompt');
 
         // Use provided sessionId or generate a new one
         const conversationSessionId = sessionId || uuidv4();
 
-        // Initialize chat with history from frontend
-        const result = await initialiseAIChat(history, agent)
+        // Ensure the chat session exists in Firestore before processing
+        const chatSessionRef = goals_db.collection('users').doc(uid).collection('chatSessions').doc(conversationSessionId);
+        const chatSessionDoc = await chatSessionRef.get();
 
-        // Store the conversation history with the sessionId
-        // In a production app, you would store this in Firestore
-        // For example:
-        // await admin.firestore().collection('conversations').doc(conversationSessionId).set({
-        //     userId: uid,
-        //     agentId: agent.id,
-        //     history: history,
-        //     updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        // }, { merge: true });
+        if (!chatSessionDoc.exists) {
+            // Create a new chat session if it doesn't exist
+            await chatSessionRef.set({
+                id: conversationSessionId,
+                agent_id: agent.id,
+                created_at: Timestamp.now(),
+                updated_at: Timestamp.now(),
+                messages: history.map((msg: any) => ({
+                    ...msg,
+                    timestamp: Timestamp.now()
+                }))
+            });
+        }
+
+        // Initialize chat with history from frontend, passing the sessionId for tool logging
+        const result = await initialiseAIChat(history, agent, conversationSessionId);
 
         return {
             response: result,

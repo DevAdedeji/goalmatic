@@ -4,7 +4,7 @@ import { tool } from 'ai';
 import {  z } from 'zod';
 import { goals_db } from '../../../init';
 import { v4 as uuidv4 } from 'uuid';
-import { formatDate, formatTime, dateStringToTimestamp } from '../utils/dateTimeFormatters';
+import { formatDate, formatTime } from '../utils/dateTimeFormatters';
 import { Timestamp } from 'firebase-admin/firestore';
 
 const createTableRecord = async (params: {

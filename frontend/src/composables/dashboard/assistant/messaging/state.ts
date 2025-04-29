@@ -22,11 +22,6 @@ export const conversationHistory = computed({
         const bTime = b.timestamp?.toDate?.() || new Date(0)
         return aTime - bTime
       })
-      .map(msg => ({
-        role: msg.role,
-        content: msg.content,
-        id: msg.id
-      }))
   },
   set: (newValue) => {
     // This setter is used when manually updating the conversation history
@@ -35,7 +30,7 @@ export const conversationHistory = computed({
       rawConversationData.value = { messages: [] }
     }
 
-    rawConversationData.value.messages = newValue.map(msg => ({
+    rawConversationData.value.messages = newValue.map((msg) => ({
       ...msg,
       timestamp: msg.timestamp || new Date()
     }))

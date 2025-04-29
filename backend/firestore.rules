@@ -42,11 +42,22 @@ service cloud.firestore {
 
         allow read: if isSignedIn() && isOwner(userId);
 
+        // Allow messages with role 'user', 'assistant', or 'tool'
+        function validMessageRole(message) {
+          return message.role == 'user' || message.role == 'assistant' || message.role == 'tool';
+        }
+
+        // Validate that all messages in the array have valid roles
+        function validMessages(messages) {
+          return messages.size() == 0 || messages.size() > 0 && messages[0].role != null && validMessageRole(messages[0]);
+        }
+
         allow update: if isSignedIn() &&
           isOwner(userId) &&
           request.resource.data.keys().hasAll(['messages', 'updated_at']) &&
           validTimestamp(request.resource.data.updated_at) &&
-          request.resource.data.messages is list;
+          request.resource.data.messages is list &&
+          validMessages(request.resource.data.messages);
 
         allow delete: if isSignedIn() && isOwner(userId);
       }

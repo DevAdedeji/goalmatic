@@ -18,19 +18,42 @@
 			</div>
 			<div v-for="(message, index) in conversationHistory" :key="index"
 				class="message-container"
-				:class="{ '!items-end': message.role === 'user' }">
-				<div class="header-container" :class="{ 'flex-row-reverse': message.role === 'user' }">
-					<div v-if="message.role === 'user'" class="user-avatar">
-						<UserAvatar :size="30" />
+				:class="{'!items-end': message.role === 'user'}">
+				<!-- User or Assistant message -->
+				<template v-if="(message.role === 'user' || message.role === 'assistant') && !message.toolId">
+					<div class="header-container" :class="{ 'flex-row-reverse': message.role === 'user' }">
+						<div v-if="message.role === 'user'" class="user-avatar">
+							<UserAvatar :size="30" />
+						</div>
+						<div v-else class="assistant-avatar">
+							<img class="size-5" src="/og.png" alt="goalmatic logo">
+						</div>
+						<p class="name-label" :class="{ 'text-right': message.role === 'user' }">
+							{{ message.role === 'user' ? 'You' : `Goalmatic  ${selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)'}` }}
+						</p>
 					</div>
-					<div v-else class="assistant-avatar">
-						<img class="size-5" src="/og.png" alt="goalmatic logo">
+					<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }" v-html="markdownProcessor(message.content)" />
+				</template>
+
+
+				<template v-else-if="message.toolId">
+					<div class="header-container">
+						<div class="assistant-avatar">
+							<img class="size-5" src="/og.png" alt="goalmatic logo">
+						</div>
+						<p class="name-label">
+							Tool Call: {{ message.toolId }}
+						</p>
 					</div>
-					<p class="name-label" :class="{ 'text-right': message.role === 'user' }">
-						{{ message.role === 'user' ? 'You' : `Goalmatic  ${selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)'}` }}
-					</p>
-				</div>
-				<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }" v-html="markdownProcessor(message.content)" />
+					<article class="message-bubble tool-bubble">
+						<div class="tool-parameters">
+							<h4 class="tool-parameters-title">
+								Parameters:
+							</h4>
+							<pre class="tool-parameters-code">{{ JSON.stringify(message.parameters, null, 2) }}</pre>
+						</div>
+					</article>
+				</template>
 			</div>
 		</section>
 
@@ -62,6 +85,16 @@ import { useChatAssistant } from '@/composables/dashboard/assistant/messaging'
 import { useOnAssistantLoad } from '@/composables/dashboard/assistant/agents/select'
 import { markdownProcessor } from '~/src/composables/utils/markdown'
 
+// Add Material Icons for tool call icons
+useHead({
+  link: [
+    {
+      rel: 'stylesheet',
+      href: 'https://fonts.googleapis.com/icon?family=Material+Icons'
+    }
+  ]
+})
+
 
 
 const { fetchSelectedAgent, selectedAgent } = useOnAssistantLoad()
@@ -72,7 +105,6 @@ const textarea = ref()
 
 
   watch(() => useRoute().params.sessionId, (newSessionId) => {
-    console.log('newSessionId', newSessionId)
     if (newSessionId && typeof newSessionId === 'string' && newSessionId !== sessionId.value) {
       sessionId.value = newSessionId
       loadConversationHistory(sessionId.value)
@@ -163,6 +195,23 @@ watch(conversationHistory, () => {
   p {
     @apply text-sm text-subText ;
   }
+}
+
+
+.tool-bubble {
+  @apply bg-[#F5F5F5] border-[#E0E0E0];
+}
+
+.tool-parameters {
+  @apply flex flex-col gap-1;
+}
+
+.tool-parameters-title {
+  @apply text-sm font-semibold text-gray-700;
+}
+
+.tool-parameters-code {
+  @apply text-xs bg-[#EAEAEA] p-2 rounded overflow-x-auto text-gray-800 font-mono;
 }
 
 
