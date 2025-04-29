@@ -2,12 +2,11 @@
 	<div class="p-4 sm:p-6">
 		<TablesIdLoader v-if="loading" />
 
-		<!-- Table details -->
+
 		<div v-else-if="tableData">
-			<!-- Use the Header component -->
 			<TablesIdHeader v-model:current-tab="currentTab" :table-data="tableData" />
 
-			<!-- Use the Details component -->
+
 			<TablesIdDetails
 				:current-tab="currentTab"
 				:table-data="tableData"
@@ -15,16 +14,13 @@
 			/>
 		</div>
 
-		<!-- Error state -->
 		<TablesIdErrorState v-else @back-to-tables="router.push('/tables')" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
-import { useAlert } from '@/composables/core/notification'
 import TablesIdHeader from '@/components/tables/id/Header.vue'
 import TablesIdDetails from '@/components/tables/id/Details.vue'
 import TablesIdLoader from '@/components/tables/id/Loader.vue'

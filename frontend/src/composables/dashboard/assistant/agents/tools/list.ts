@@ -31,19 +31,7 @@ const availableTools = ref([
 			// { name: 'Delete Events', id: 'GOOGLECALENDAR_DELETE_EVENT', icon: '/icons/googleCalendar.svg' }
 		]
 	},
-	{
-		id: 'TODO',
-		name: 'Todo Manager',
-		icon: '/icons/todo.svg', // You may need to create this icon
-		description: 'Manage your todo items',
-		checkStatus: false,
-		abilities: [
-			{ name: 'Read Todos', id: 'TODO_READ', icon: '/icons/todo.svg', primary_id: 'TODO' },
-			{ name: 'Create Todo', id: 'TODO_CREATE', icon: '/icons/todo.svg', primary_id: 'TODO' },
-			{ name: 'Update Todo', id: 'TODO_UPDATE', icon: '/icons/todo.svg', primary_id: 'TODO' },
-			{ name: 'Delete Todo', id: 'TODO_DELETE', icon: '/icons/todo.svg', primary_id: 'TODO' }
-		]
-	},
+
 	{
 		id: 'DATETIME',
 		name: 'Date Time',

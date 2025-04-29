@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
-    "paths": {
-      "@": [
-        "./src"
-      ],
-    },
-    "module": "commonjs",
+    "rootDir": "./src",
+    "module": "Node16",
     "allowJs": true,
     "noImplicitAny": false,
     "esModuleInterop": true,
@@ -14,8 +10,12 @@
     "outDir": "lib",
     "sourceMap": true,
     "strict": true,
-    "target": "es2017"
+    "target": "es2017",
+    "noEmit": false
   },
   "compileOnSave": true,
-  "include": ["vercel-ai.d.ts"]
+  "include": [
+    "src/**/*",
+    "vercel-ai.d.ts"
+  ]
 }

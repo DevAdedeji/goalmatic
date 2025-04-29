@@ -12,28 +12,17 @@
 				@createNewTable="createNewTable"
 			/>
 		</div>
-
-		<!-- Floating Action Button -->
-		<button
-			v-if="userTables.length"
-			class="fixed bottom-6 right-6 bg-primary text-white rounded-full p-4 shadow-lg hover:bg-primary-dark transition-all"
-			:disabled="creatingTable"
-			@click="createNewTable"
-		>
-			<PlusCircle v-if="!creatingTable" :size="24" />
-			<span v-else class="loading-spinner" />
-		</button>
 	</main>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { PlusCircle } from 'lucide-vue-next'
+
 import { usePageHeader } from '@/composables/utils/header'
-import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
+import { useFetchUserTables, useFetchTableRecords } from '@/composables/dashboard/tables/fetch'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
 import { useDeleteTable } from '@/composables/dashboard/tables/delete'
 import { useCreateTable } from '@/composables/dashboard/tables/create'
+import { Table } from '@/composables/dashboard/tables/types'
 
 import { useAlert } from '@/composables/core/notification'
 
@@ -43,36 +32,12 @@ import TablesLoader from '@/components/tables/Loader.vue'
 import TablesEmptyState from '@/components/tables/EmptyState.vue'
 import TablesList from '@/components/tables/List.vue'
 
-// Define the table interfaces
-interface TableField {
-	id: string;
-	name: string;
-	type: string;
-	description?: string;
-	required: boolean;
-	options?: string[];
-	default?: any;
-	[key: string]: any;
-}
-
-interface Table {
-	id: string;
-	name: string;
-	description?: string;
-	type: string;
-	fields: TableField[];
-	records: any[];
-	creator_id: string;
-	created_at: any;
-	updated_at: any;
-}
-
 const router = useRouter()
 const { userTables, loading, fetchAllTables } = useFetchUserTables()
 const { highlightTable } = useEditTable()
 const { setDeleteTableData } = useDeleteTable()
 const { createTable, createTableForm, loading: createLoading } = useCreateTable()
-
+const { fetchTableRecords } = useFetchTableRecords()
 // Track loading states
 const creatingDemo = ref(false)
 const creatingTable = ref(false)

@@ -70,23 +70,8 @@
 					</Popover>
 				</div>
 			</div>
-			<div class="flex gap-3 w-full md:w-auto md:min-w-[200px]">
-				<Popover v-if="tableData.status === 'active'" side="top" align="center" :modal="false">
-					<template #trigger>
-						<button class="btn-outline flex-1">
-							Deactivate Table
-						</button>
-					</template>
-					<template #content>
-						<div class="p-2 max-w-xs">
-							<p>Deactivating will make this table unavailable for use in flows and agents.</p>
-						</div>
-					</template>
-				</Popover>
-				<button v-else class="btn-outline flex-1">
-					Activate Table
-				</button>
-				<button class="btn-primary flex-1" @click="saveTable">
+			<div class="flex gap-3 w-full justify-end md:w-auto md:min-w-[200px]">
+				<button class="btn-primary " @click="saveTable">
 					Save Table
 				</button>
 			</div>
@@ -95,7 +80,7 @@
 		<!-- Table info -->
 		<div class="mb-6">
 			<span class="text-text-secondary text-sm">
-				{{ tableData.fields?.length || 0 }} fields · {{ tableData.records?.length || 0 }} records
+				{{ tableData.fields?.length || 0 }} fields · {{ recordsCount || 0 }} records
 			</span>
 		</div>
 
@@ -104,7 +89,7 @@
 			:tabs="['structure', 'data']"
 			:selected="currentTab"
 			:icons="[Columns, Database]"
-			:counts="[tableData.fields?.length, tableData.records?.length]"
+			:counts="[tableData.fields?.length, recordsCount]"
 			class="mb-6"
 			@changed="$emit('update:currentTab', $event)"
 		/>
@@ -112,11 +97,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, onMounted } from 'vue'
 import { Edit2, Columns, Database } from 'lucide-vue-next'
 import Tabs from '@/components/core/Tabs.vue'
 import Popover from '@/components/core/Popover.vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
+import { useFetchTableRecordsCount } from '@/composables/dashboard/tables/fetch'
 
 const props = defineProps({
 	tableData: {
@@ -131,6 +117,14 @@ const props = defineProps({
 
 const emit = defineEmits(['update:currentTab'])
 const { updateTable } = useEditTable()
+const { fetchTableRecordsCount, recordsCount } = useFetchTableRecordsCount()
+
+// Fetch records count when component is mounted
+onMounted(async () => {
+	if (props.tableData.id) {
+		await fetchTableRecordsCount(props.tableData.id)
+	}
+})
 
 // Function to save the table
 const saveTable = async () => {

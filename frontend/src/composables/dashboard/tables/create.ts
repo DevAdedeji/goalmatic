@@ -1,21 +1,10 @@
 import { ref, reactive } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
+import { TableField } from './types'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
-
-// Define the table field interface
-interface TableField {
-  id: string;
-  name: string;
-  type: string;
-  description?: string;
-  required: boolean;
-  options?: string[];
-  default?: any;
-  [key: string]: any; // Allow for additional properties
-}
 
 // Form for creating a new table
 const createTableForm = reactive({

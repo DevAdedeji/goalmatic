@@ -2,6 +2,8 @@ import { verifyTableAccess } from "./verify";
 import { getUserUid, getUserToolConfig } from "../../index";
 import { tool } from 'ai';
 import { z } from 'zod';
+import { goals_db } from "../../../init";
+import { parseTime } from '../utils/dateTimeFormatters';
 
 // Helper functions for type conversion
 const convertToNumber = (value: any): number | null => {
@@ -21,101 +23,6 @@ const convertToDate = (value: any): Date | null => {
     }
     return null;
 };
-
-/**
- * Parses a time string in "H:mm:ss AM/PM", "HH:mm:ss", or "HH:mm" format and returns a Date object with today's date.
- * Returns null if parsing fails or results in an invalid date.
- * @private Used internally and exported for potential future use
- */
-export function parseTime(timeString: string): Date | null {
-  // Updated regex to make seconds and AM/PM optional, and handle HH:mm format
-  const parts = timeString.match(/^(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?(?:\s*(AM|PM))?$/i);
-
-  if (!parts) {
-    return null;
-  }
-
-  let hours = parseInt(parts[1], 10);
-  const minutes = parseInt(parts[2], 10);
-  // Default seconds to 0 if not provided
-  const seconds = parts[3] ? parseInt(parts[3], 10) : 0;
-  const ampm = parts[4]; // AM/PM part, might be undefined
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const day = now.getDate();
-
-  // Adjust hours based on AM/PM if present
-  if (ampm !== undefined) {
-    const upperAmpm = ampm.toUpperCase();
-    if (upperAmpm === 'PM' && hours !== 12) {
-      hours += 12;
-    } else if (upperAmpm === 'AM' && hours === 12) { // Handle 12 AM
-      hours = 0;
-    }
-    // No adjustment needed for 12 PM or other AM hours
-  }
-  // Note: If AM/PM is not present, we assume 24-hour format (e.g., 20:08)
-
-  // Validate parsed components
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
-      return null; // Invalid time components
-  }
-
-  const resultDate = new Date(year, month, day, hours, minutes, seconds);
-
-  // Final check if the constructed date is valid
-  if (isNaN(resultDate.getTime())) {
-    return null;
-  }
-
-  return resultDate;
-}
-
-/**
- * Formats a Date object, timestamp, or recognizable date/time string into "H:mm:ss AM/PM" format.
- * Returns null if the input cannot be converted to a valid Date.
- * @private Exported for potential future use
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function formatTime(value: Date | number | string): string | null {
-  try {
-    let date: Date;
-
-    if (typeof value === 'string') {
-      const parsedDate = parseTime(value);
-      date = parsedDate !== null ? parsedDate : new Date(value);
-    } else if (value instanceof Date) {
-      date = value;
-    } else if (typeof value === 'number') {
-      date = new Date(value);
-    } else {
-      return null;
-    }
-
-    if (isNaN(date.getTime())) {
-      return null;
-    }
-
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
-    const seconds = date.getSeconds();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-
-    const minutesStr = minutes.toString().padStart(2, '0');
-    const secondsStr = seconds.toString().padStart(2, '0');
-    const hoursStr = hours.toString();
-
-    return `${hoursStr}:${minutesStr}:${secondsStr} ${ampm}`;
-
-  } catch (e) {
-    return null;
-  }
-}
 
 const convertToTime = (value: any): Date | null => {
     // First try to parse the time string using our parseTime function
@@ -169,26 +76,29 @@ const readTableRecord = async (params: {
     if (!exists) throw new Error('Table not found or access denied');
 
     try {
-        // Get the records array
-        const records = [...(tableData.records || [])];
-
-        // If recordId is specified, return just that record
+        // If recordId is specified, get that specific record from the subcollection
         if (params.recordId) {
-            const record = records.find(r => r.id === params.recordId);
-            if (!record) {
+            const recordDoc = await goals_db.collection('tables').doc(tableId).collection('records').doc(params.recordId).get();
+
+            if (!recordDoc.exists) {
                 return {
                     success: false,
                     message: 'Record not found',
                     records: []
                 };
             }
+
             return {
                 success: true,
                 message: 'Record found',
-                records: [record]
+                records: [recordDoc.data()]
             };
         }
 
+
+        // Get all records from the subcollection
+        const recordsSnapshot = await goals_db.collection('tables').doc(tableId).collection('records').get();
+        const records = recordsSnapshot.docs.map(doc => doc.data());
 
         // Apply filters if provided
         let filteredRecords = records;

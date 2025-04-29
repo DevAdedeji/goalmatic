@@ -16,11 +16,7 @@ export const availableNodes: Record<string, NodeSignature> = {
     // Calendar nodes
     [createGoogleCalendarEventNode.nodeId]: createGoogleCalendarEventNode,
 
-    // Todo nodes
-    // [readTodoNode.nodeId]: readTodoNode,
-    // [createTodoNode.nodeId]: createTodoNode,
-    // [updateTodoNode.nodeId]: updateTodoNode,
-    // [deleteTodoNode.nodeId]: deleteTodoNode,
+
 
     // Table nodes
     [readTableNode.nodeId]: readTableNode,

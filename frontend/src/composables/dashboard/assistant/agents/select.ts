@@ -18,7 +18,7 @@ export const useSelectAgent = () => {
         await updateFirestoreDocument('users', user_id.value!, { selected_agent_id: agentDetails.id, updated_at: Timestamp.fromDate(new Date()) })
         selectedAgent.value = agentDetails as any
         loading.value = false
-        useRouter().push('/assistant')
+        useRouter().push('/agents')
     }
 
     return { loading, selectAgent, selectedAgent }

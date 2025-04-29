@@ -31,7 +31,6 @@
 		</div>
 
 		<div v-else>
-			<!-- Field list -->
 			<div class="space-y-3">
 				<div v-for="(field, index) in tableData.fields" :key="field.id" class="border border-border rounded-lg p-4 hover:border-primary/40 transition-colors">
 					<div class="flex justify-between items-start">
@@ -59,37 +58,13 @@
 				</div>
 			</div>
 		</div>
-
-		<!-- Field Modal -->
-		<TablesIdFieldModal
-			v-if="fieldModalVisible"
-			:field-form="fieldForm"
-			:editing-field-index="editingFieldIndex"
-			@save="saveField"
-			@cancel="fieldModalVisible = false"
-		/>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
-import TablesIdFieldModal from './FieldModal.vue'
-import { useEditTable } from '@/composables/dashboard/tables/edit'
-
-interface Field {
-	id: string;
-	name: string;
-	type: string;
-	description?: string;
-	required?: boolean;
-	options?: string[];
-}
-
-interface TableData {
-	fields?: Field[];
-	[key: string]: any;
-}
+import { useTableStructureSection } from '@/composables/dashboard/tables/structureSection'
+import { TableData } from '@/composables/dashboard/tables/types'
 
 const props = defineProps({
 	tableData: {
@@ -98,89 +73,7 @@ const props = defineProps({
 	}
 })
 
-const { updateFieldInTable, removeFieldFromTable, addFieldToTable } = useEditTable()
-
-// Define field form interface
-interface FieldForm extends Omit<Field, 'options'> {
-	options: string[];
-	optionsText: string;
-}
-
-// Field management
-const fieldModalVisible = ref(false)
-const editingFieldIndex = ref(-1)
-const fieldForm = ref<FieldForm>({
-	id: crypto.randomUUID(),
-	name: '',
-	type: 'text',
-	description: '',
-	required: false,
-	options: [],
-	optionsText: ''
-})
-
-const addNewField = () => {
-	// Reset form
-	fieldForm.value = {
-		id: crypto.randomUUID(),
-		name: '',
-		type: 'text',
-		description: '',
-		required: false,
-		options: [],
-		optionsText: ''
-	}
-	editingFieldIndex.value = -1
-	fieldModalVisible.value = true
-}
-
-const editField = (index: number) => {
-	if (!props.tableData.fields) return
-
-	const field = props.tableData.fields[index]
-	if (!field) return
-
-	// Clone the field to avoid direct mutation
-	fieldForm.value = {
-		...JSON.parse(JSON.stringify(field)),
-		optionsText: field.options ? field.options.join('\n') : ''
-	}
-	editingFieldIndex.value = index
-	fieldModalVisible.value = true
-}
-
-const saveField = async () => {
-	// Process options if it's a select field
-	if (fieldForm.value.type === 'select') {
-		fieldForm.value.options = fieldForm.value.optionsText
-			.split('\n')
-			.map((option) => option.trim())
-			.filter((option) => option)
-	}
-
-	// Check if we're adding a new field or updating an existing one
-	if (editingFieldIndex.value === -1) {
-		// Add new field
-		await addFieldToTable(props.tableData, fieldForm.value)
-	} else if (props.tableData.fields && props.tableData.fields[editingFieldIndex.value]) {
-		// Update existing field
-		await updateFieldInTable(
-			props.tableData,
-			props.tableData.fields[editingFieldIndex.value].id,
-			fieldForm.value
-		)
-	}
-
-	fieldModalVisible.value = false
-}
-
-const deleteField = async (index: number) => {
-	if (!props.tableData.fields || !props.tableData.fields[index]) return
-
-	if (confirm('Are you sure you want to delete this field? This will also remove this field from all records.')) {
-		await removeFieldFromTable(props.tableData, props.tableData.fields[index].id)
-	}
-}
+const { addNewField, editField, deleteField } = useTableStructureSection(props.tableData)
 </script>
 
 <style scoped>

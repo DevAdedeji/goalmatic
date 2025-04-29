@@ -21,7 +21,9 @@
 						v-model="modalData.config[field.key]"
 						class="input-field"
 					>
-						<option value="" disabled>Select an option</option>
+						<option value="" disabled>
+							Select an option
+						</option>
 						<option
 							v-for="option in selectOptions[field.key] || []"
 							:key="option.value"
@@ -45,7 +47,7 @@
 
 <script setup lang="ts">
 import { useEditToolConfig } from '@/composables/dashboard/assistant/agents/tools/config'
-import { onMounted, ref } from 'vue'
+
 
 const { modalData, loading, updateConfig } = useEditToolConfig()
 

@@ -1,6 +1,6 @@
 import { onDocumentCreated } from 'firebase-functions/v2/firestore'
-import { goals_db_string } from '../../apps/init'
-import { notifyUser } from '../../apps/helpers/emailNotifier'
+import { goals_db_string } from '../init'
+import { notifyUser } from '../helpers/emailNotifier'
 import { welcomeNewGoalmaticUserMsg } from './onCreatedMail'
 
 

@@ -5,7 +5,7 @@ import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { setFirestoreSubDocument } from '@/firebase/firestore/create'
 import { formatDateTimeForInput } from '@/composables/utils/formatter'
-import { useDashboardModal } from '@/composables/core/modals'
+
 import { useFetchAllCalendarEvents } from '@/composables/dashboard/integrations/googleCalendar/fetch'
 
 
@@ -45,7 +45,6 @@ export const useCreateCalendarEvent = () => {
 
             const result = await createCalendarEvent(eventData)
             if (result) {
-                useDashboardModal().closeCalendarEvent()
                 fetchedEvents.value = [...fetchedEvents.value, result]
                 resetEventForm()
             }

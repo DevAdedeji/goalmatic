@@ -5,21 +5,21 @@ import { goals_db } from "../../../../../init";
 const readTable = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     console.log('previousStepResult', previousStepResult);
     console.log(step.name, step.propsData);
-    
+
     try {
         // Extract user ID from the flow data
         const { userId } = context.requestPayload as { userId: string };
         if (!userId) {
             throw new Error('User ID not found in flow data');
         }
-        
+
         // Extract query parameters from props
-        const { 
+        const {
             tableId,
             recordId,
             limit = 10
         } = step.propsData;
-        
+
         if (!tableId) {
             return {
                 success: false,
@@ -27,7 +27,7 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
                 records: []
             };
         }
-        
+
         // Get the table document
         const tableDoc = await goals_db.collection('tables').doc(tableId).get();
         if (!tableDoc.exists) {
@@ -37,9 +37,9 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
                 records: []
             };
         }
-        
+
         const tableData = tableDoc.data();
-        
+
         // Check if the table belongs to the user
         if (tableData?.creator_id !== userId) {
             return {
@@ -48,34 +48,34 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
                 records: []
             };
         }
-        
+
         // If a specific record ID is provided, return just that record
         if (recordId) {
-            const records = tableData.records || [];
-            const record = records.find(r => r.id === recordId);
-            
-            if (!record) {
+            const recordDoc = await goals_db.collection('tables').doc(tableId).collection('records').doc(recordId).get();
+
+            if (!recordDoc.exists) {
                 return {
                     success: false,
                     message: 'Record not found',
                     records: []
                 };
             }
-            
+
             return {
                 success: true,
                 message: 'Record retrieved successfully',
-                records: [record]
+                records: [recordDoc.data()]
             };
         }
-        
+
         // Otherwise, return all records (with optional limit)
-        let records = tableData.records || [];
-        
+        let recordsSnapshot = await goals_db.collection('tables').doc(tableId).collection('records').get();
+        let records = recordsSnapshot.docs.map(doc => doc.data());
+
         if (limit && records.length > limit) {
             records = records.slice(0, limit);
         }
-        
+
         return {
             success: true,
             message: 'Records retrieved successfully',

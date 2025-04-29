@@ -6,6 +6,7 @@ import { WhatsappAgent, defaultGoalmaticAgent } from './utils/WhatsappAgent'
 import { is_dev, goals_db } from '../init'
 import { transcribeWhatsAppAudio } from './utils/transcribeAudio'
 import { processWhatsAppImage } from './utils/processImage'
+import { setWhatsAppPhone } from '../ai'
 
 
 
@@ -38,6 +39,9 @@ export const goals_WA_message_webhook = onRequest({
                     const phone_number_id = req.body.entry[0].changes[0].value.metadata.phone_number_id
                     const from = req.body.entry[0].changes[0].value.messages[0].from
                     const message = req.body.entry[0].changes[0].value.messages[0]
+
+
+                    setWhatsAppPhone(from);
 
 
                     // In development, only respond to the dev test number
@@ -82,10 +86,10 @@ export const goals_WA_message_webhook = onRequest({
                         } else if (message.type === 'audio') {
                             // Process audio message by transcribing it into text
                             msg_body = await transcribeWhatsAppAudio(message.audio.id, from, phone_number_id)
-                        } 
+                        }
 
                         // Get agent data based on user configuration
-                        let agentData;
+                        let agentData: Record<string, any>;
                         const userData = user_data.data || {};
                         // Use type assertion to avoid TypeScript error
                         const userConfig = (userData as any).config;
@@ -96,14 +100,14 @@ export const goals_WA_message_webhook = onRequest({
                             const agent = await goals_db.collection('agents').doc(agentId).get();
                             agentData = agent.data() as Record<string, any>;
                         }
-                        
+
                         try {
                             // Process image after getting agent data so we can pass it to the image processor
                             if (message.type === 'image') {
                                 // Process image message, getting the buffer to pass directly to the WhatsApp agent
                                 msg_body = await processWhatsAppImage(message.image.id, from, phone_number_id, agentData)
                             }
-    
+
                             const gpt_response = await WhatsappAgent(user_data.data!, msg_body, agentData)
                             const data = get_WA_TextMessageInput(from, gpt_response.msg)
                             await send_WA_Message(data, phone_number_id)

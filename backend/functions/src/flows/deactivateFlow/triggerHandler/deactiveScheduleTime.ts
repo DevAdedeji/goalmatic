@@ -2,7 +2,8 @@ import { goals_db } from '../../../init';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Client } from "@upstash/qstash";
 
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
+const token = "eyJVc2VySUQiOiI4ZjU3MmQxZi02YjdlLTQ1MTktYWE5MS03YmMyYmFmYzkzZjYiLCJQYXNzd29yZCI6ImEyNzRhNzUwODdiNjRhNTQ4ZWI5ZDdiNzhiMjRmNTNhIn0="
+const UPSTASH_QSTASH_TOKEN = token;
 
 const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
 
