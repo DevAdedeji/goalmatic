@@ -2,7 +2,7 @@
 	<main class="p-4 sm:p-6">
 		<TablesHeader :creating-table="creatingTable" @createNewTable="createNewTable" />
 		<TablesLoader v-if="loading" />
-		<TablesEmptyState v-else-if="!userTables.length" @createNewTable="createNewTable" @createDemoTable="createDemoTable" />
+		<TablesEmptyState v-else-if="!userTables.length" @createNewTable="createNewTable" />
 
 		<div v-else>
 			<TablesList
@@ -84,76 +84,7 @@ const createNewTable = async () => {
 	}
 }
 
-// Create a demo table with pre-configured fields
-const createDemoTable = async () => {
-	if (creatingDemo.value) return
 
-	creatingDemo.value = true
-
-	try {
-		// Create a custom table object with demo data
-		const demoFields = [
-			{
-				id: '1',
-				name: 'Name',
-				type: 'text',
-				description: 'Full name of the person',
-				required: true
-			},
-			{
-				id: '2',
-				name: 'Email',
-				type: 'email',
-				description: 'Email address',
-				required: true
-			},
-			{
-				id: '3',
-				name: 'Phone',
-				type: 'text',
-				description: 'Contact phone number',
-				required: false
-			},
-			{
-				id: '4',
-				name: 'Date Added',
-				type: 'date',
-				description: 'When the contact was added',
-				required: true,
-				default: 'now'
-			}
-		]
-
-		// Set values for the table
-		createTableForm.name = 'Contacts'
-		createTableForm.description = 'A demo table for tracking contacts and their information'
-		createTableForm.type = 'contacts'
-
-		createTableForm.fields = demoFields
-		createTableForm.records = []
-
-		// Create the table
-		const tableId = await createTable()
-
-		if (tableId) {
-			useAlert().openAlert({
-				type: 'SUCCESS',
-				msg: 'Demo table created! You can now add records and customize it to your needs.'
-			})
-
-			// Navigate to the new table
-			router.push(`/tables/${tableId}`)
-		}
-	} catch (error: any) {
-		console.error('Error creating demo table:', error)
-		useAlert().openAlert({
-			type: 'ERROR',
-			msg: `Failed to create demo table: ${error.message || 'Unknown error'}`
-		})
-	} finally {
-		creatingDemo.value = false
-	}
-}
 
 // Edit table
 const editTable = (table: Table) => {

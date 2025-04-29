@@ -87,12 +87,14 @@
 					</button>
 				</div>
 			</div>
+
+
 			<Editor
 				v-model="systemInfoModel"
 				:editable="isEditingSystemInfo"
 				:class="{
 					'bg-white rounded-lg border': isEditingSystemInfo,
-					'view-only': !isEditingSystemInfo
+					'view-only': !isEditingSystemInfo,
 				}"
 			/>
 		</section>

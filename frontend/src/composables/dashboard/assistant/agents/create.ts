@@ -25,7 +25,7 @@ export const useCreateAgent = () => {
     const loading = ref(false)
 
     const isDisabled = computed(() => {
-        return !createAgentForm.name || !createAgentForm.description
+        return !createAgentForm.name
     })
 
     const resetForm = () => {

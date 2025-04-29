@@ -1,0 +1,21 @@
+[debug] [2025-04-29T21:38:39.932Z] ----------------------------------------------------------------------
+[debug] [2025-04-29T21:38:39.933Z] Command:       /Users/anthonyakpan/.nvm/versions/node/v20.19.1/bin/node /Users/anthonyakpan/.nvm/versions/node/v20.19.1/bin/firebase deploy --only functions
+[debug] [2025-04-29T21:38:39.933Z] CLI Version:   14.2.1
+[debug] [2025-04-29T21:38:39.933Z] Platform:      darwin
+[debug] [2025-04-29T21:38:39.933Z] Node Version:  v20.19.1
+[debug] [2025-04-29T21:38:39.934Z] Time:          Tue Apr 29 2025 22:38:39 GMT+0100 (West Africa Standard Time)
+[debug] [2025-04-29T21:38:39.934Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-29T21:38:40.027Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-29T21:38:40.027Z] > authorizing via signed-in user (akpananthony33@gmail.com)
+[debug] [2025-04-29T21:38:40.028Z] [iam] checking project goalmatics for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-04-29T21:38:40.028Z] Checked if tokens are valid: false, expires at: 1745961686974
+[debug] [2025-04-29T21:38:40.028Z] Checked if tokens are valid: false, expires at: 1745961686974
+[debug] [2025-04-29T21:38:40.029Z] > refreshing access token with scopes: []
+[debug] [2025-04-29T21:38:40.029Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-04-29T21:38:40.030Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-04-29T21:38:45.244Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-04-29T21:38:45.245Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-04-29T21:38:45.258Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/goalmatics:testIamPermissions [none]
+[debug] [2025-04-29T21:38:45.258Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/goalmatics:testIamPermissions x-goog-quota-user=projects/goalmatics
+[debug] [2025-04-29T21:38:45.258Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/goalmatics:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}

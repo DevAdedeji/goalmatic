@@ -47,6 +47,13 @@ watch(
   }
 )
 
+watch(
+  () => props.editable,
+  (newEditable) => {
+    editor.value?.setEditable(newEditable)
+  }
+)
+
 // Cleanup
 onBeforeUnmount(() => {
   editor.value?.destroy()

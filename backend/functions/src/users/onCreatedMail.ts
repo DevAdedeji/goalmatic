@@ -40,7 +40,7 @@ const welcomeNewUserTemplate = (name: string) => `
                             <!-- Welcome Text -->
                             <h1 style="font-size: 24px; margin-top: 0; margin-bottom: 15px; color: #333333;">Welcome to Goalmatic!</h1>
 
-                            <p style="margin-top: 0; margin-bottom: 15px; font-size: 16px;">Hi ${name || 'New User'}, We're so excited to have you join our community! You've taken the first step towards turning your dreams into reality with Goalmatic.</p>
+                            <p style="margin-top: 0; margin-bottom: 15px; font-size: 16px;">Hi ${name || 'New User'}, We're so excited to have you join our community! You've taken the first step towards automating your life with powerful AI agents and workflows.</p>
 
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                 <tr>
@@ -57,7 +57,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td width="25" style="vertical-align: top;">•</td>
-                                                <td style="font-size: 16px;">Transform your aspirations into clear, actionable plans.</td>
+                                                <td style="font-size: 16px;">Build custom AI agents that automate repetitive tasks in your life.</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -67,7 +67,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td width="25" style="vertical-align: top;">•</td>
-                                                <td style="font-size: 16px;">Break down big goals into manageable milestones and to-dos.</td>
+                                                <td style="font-size: 16px;">Create powerful workflows that connect to your favorite apps and services.</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -77,7 +77,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td width="25" style="vertical-align: top;">•</td>
-                                                <td style="font-size: 16px;">Get personalized support from our AI assistant to stay on track.</td>
+                                                <td style="font-size: 16px;">Stay in control with personalized AI assistants that work for you.</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -93,7 +93,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td width="25" style="vertical-align: top;">•</td>
-                                                <td style="font-size: 16px;">Create your first goal: Start by defining what you want to achieve.</td>
+                                                <td style="font-size: 16px;">Create your first agent: Start by defining what tasks you want to automate.</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -113,7 +113,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
                                             <tr>
                                                 <td width="25" style="vertical-align: top;">•</td>
-                                                <td style="font-size: 16px;">Utilize our AI Agents: Select a public agent or create your own to guide you towards your goal.</td>
+                                                <td style="font-size: 16px;">Utilize our AI Agents: Select a public agent or create your own to automate your workflows.</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -127,7 +127,7 @@ const welcomeNewUserTemplate = (name: string) => `
                             </table>
 
                             <!-- Call to Action -->
-                            <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 20px; color: #333333; text-align: center;">Ready to Make Your Goals a Reality?</h2>
+                            <h2 style="font-size: 18px; margin-top: 0; margin-bottom: 20px; color: #333333; text-align: center;">Ready to Automate Your Life with AI?</h2>
 
                             <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 30px 0;">
                                 <tr>
@@ -135,7 +135,7 @@ const welcomeNewUserTemplate = (name: string) => `
                                         <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="width:100%;">
                                             <tr style="width:100%;">
                                                 <td style="border-radius: 8px; background-color: #111827; text-align: center; width:100%;">
-                                                    <a href="https://www.goalmatic.io/goals" target="_blank" style="display: inline-block; padding: 15px 30px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; width:100%;">Go to dashboard</a>
+                                                    <a href="https://www.goalmatic.io/agents" target="_blank" style="display: inline-block; padding: 15px 30px; font-size: 16px; color: #ffffff; text-decoration: none; font-weight: bold; width:100%;">Get Started</a>
                                                 </td>
                                             </tr>
                                         </table>
@@ -175,7 +175,7 @@ const welcomeNewUserTemplate = (name: string) => `
 type WelcomeNewUserType = {
     email: string
     name: string,
-    
+
 }
 export const welcomeNewGoalmaticUserMsg = (data: WelcomeNewUserType) => {
     return {
