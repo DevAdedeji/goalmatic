@@ -1,8 +1,8 @@
 import { Timestamp } from 'firebase/firestore'
+import { ref } from 'vue'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
-import { ref } from 'vue'
 
 export const defaultGoalmaticAgent = {
     id: 0,

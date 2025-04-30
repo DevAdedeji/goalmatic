@@ -86,10 +86,9 @@ service cloud.firestore {
         request.resource.data.keys().hasAll(['name', 'user_id', 'created_at', 'description', 'public']) &&
         validTimestamp(request.resource.data.created_at);
 
-      // Allow reading public agents to anyone, even if not signed in
-      // Allow reading private agents only to the owner
-      allow read: if resource.data.public == true || isSignedIn() && isOwner(request.resource.data.user_id)
 
+      allow read: if isSignedIn() && (resource.data.public == true || resource.data.user_id == request.auth.uid);
+      
 
       // Allow update and delete only to the owner
       allow update, delete: if isSignedIn() &&
