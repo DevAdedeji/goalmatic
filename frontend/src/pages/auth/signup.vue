@@ -19,7 +19,7 @@
 						</button> -->
 					</div>
 					<input v-if="isEmail" v-model.trim="authCredentienalsForm.email.value" type="email" required class="input-field" placeholder="Enter email">
-					<NewPhoneInput v-else />
+					<!-- <NewPhoneInput v-else />  -->
 				</div>
 
 				<div class="flex flex-col gap-0.5">
@@ -58,9 +58,6 @@
 					<span class="text-[#667185]">Already have an account?</span>
 					<NuxtLink to="/auth/login">
 						Sign in
-					</NuxtLink>
-					<NuxtLink to="/auth/profile">
-						to profile
 					</NuxtLink>
 				</div>
 			</div>

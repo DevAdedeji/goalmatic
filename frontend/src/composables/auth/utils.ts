@@ -22,9 +22,21 @@ export const afterAuthCheck = async (user: User | null) => {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             })
         }
+         // Check for saved URL in localStorage first
+         let savedRedirectUrl = null as string | null
+         if (process.client) {
+             savedRedirectUrl = localStorage.getItem('redirect_after_login')
+             if (savedRedirectUrl) {
+                 localStorage.removeItem('redirect_after_login')
+             }
+         }
+
+         // Fall back to the redirectUrl from the user composable if no saved URL
          const redirectUrl = useUser().redirectUrl.value
          useUser().redirectUrl.value = null
-         useRouter().push(redirectUrl ?? '/agents')
+
+         // Use the saved URL or the redirectUrl from the user composable, or default to /agents
+         useRouter().push(savedRedirectUrl || redirectUrl || '/agents')
         }
     } catch (error) {
         console.error(error)

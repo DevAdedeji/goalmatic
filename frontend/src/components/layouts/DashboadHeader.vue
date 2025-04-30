@@ -38,7 +38,7 @@
 					</DropdownMenuRoot>
 				</ClientOnly>
 			</div>
-			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn">
+			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn" @click="saveCurrentUrl">
 				Login
 			</nuxt-link>
 			<AvatarDropdown v-if="isLoggedIn" class="md:hidden" />
@@ -58,6 +58,12 @@ import { useUser } from '@/composables/auth/user'
 const { isLoggedIn } = useUser()
 const { headstate } = usePageHeader()
 const { openAlert } = useAlert()
+
+const saveCurrentUrl = () => {
+  if (process.client) {
+    localStorage.setItem('redirect_after_login', window.location.pathname)
+  }
+}
 
 const copyToClipboard = async (text: string) => {
 	try {
