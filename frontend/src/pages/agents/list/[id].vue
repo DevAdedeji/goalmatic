@@ -44,6 +44,15 @@
 						Use agent
 						<MoveUpRight :size="16" />
 					</button>
+					<button
+						class="btn-icon gap-2 text-primary"
+						:disabled="cloneLoading"
+						:title="!canCloneAgent(agentDetails) ? (agentDetails.user_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
+						@click="cloneAgent(agentDetails)"
+					>
+						Clone
+						<Copy :size="16" color="#601DED" />
+					</button>
 					<button class="btn-icon gap-2" @click="setDeleteAgentData(agentDetails)">
 						<Trash :size="16" color="#601DED" />
 					</button>
@@ -250,7 +259,7 @@
 </template>
 
 <script setup lang="ts">
-import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, CheckCircle2, XCircle } from 'lucide-vue-next'
+import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, CheckCircle2, XCircle, Copy } from 'lucide-vue-next'
 import { watch } from 'vue'
 import Editor from '@/components/core/Editor.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
@@ -261,9 +270,13 @@ import { useDeleteAgent } from '@/composables/dashboard/assistant/agents/delete'
 import { useConnectIntegration } from '~/src/composables/dashboard/integrations/connect'
 import { isConfigSet } from '~/src/composables/dashboard/assistant/agents/tools/list'
 import { useEditToolConfig, agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
+import { useCloneAgent } from '@/composables/dashboard/assistant/agents/clone'
+import { useUser } from '@/composables/auth/user'
 
 
 const { connectIntegration } = useConnectIntegration()
+const { cloneAgent, loading: cloneLoading, canCloneAgent } = useCloneAgent()
+const { id: user_id } = useUser()
 
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
@@ -287,7 +300,7 @@ watch(agentDetails, (newVal) => {
 	}
 }, { immediate: true })
 
-const removeTool = (toolToRemove) => {
+const removeTool = (toolToRemove: { id: string }) => {
 	toolsModel.value = toolsModel.value.filter((tool) => tool.id !== toolToRemove.id)
 }
 
