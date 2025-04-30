@@ -1,5 +1,16 @@
 <template>
+	<div v-if="loading" class="p-4 sm:p-6">
+		<div class="flex flex-col gap-4 center pt-10 px-4 animate-pulse">
+			<div class="h-20 bg-gray-200 rounded-lg w-full" />
+			<div class="h-32 bg-gray-200 rounded-lg w-full mt-4" />
+			<div class="h-48 bg-gray-200 rounded-lg w-full mt-4" />
+		</div>
+	</div>
+
+	<AgentsIdErrorState v-else-if="!agentDetails || Object.keys(agentDetails).length === 0" />
+
 	<div
+		v-else
 		class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full"
 	>
 		<section id="header" class="card">
@@ -31,9 +42,12 @@
 						<span class="dot" />
 						<div
 							class="flex items-center gap-1.5 bg-[#EFE8FD] border border-[#CFBBFA] text-[#601DED] px-2 py-1 rounded-lg text-sm font-semibold"
+							:class="{ 'cursor-pointer hover:bg-[#E5DBFA] transition-colors': isOwner(agentDetails) }"
+							:title="isOwner(agentDetails) ? 'Click to change visibility' : ''"
+							@click="isOwner(agentDetails) && openVisibilityConfirmation(agentDetails)"
 						>
-							<span>{{ agentDetails.published ? 'Public' : 'Private' }}</span>
-							<EyeClosed v-if="!agentDetails.published" :size="16" />
+							<span>{{ agentDetails.public ? 'Public' : 'Private' }}</span>
+							<EyeClosed v-if="!agentDetails.public" :size="16" />
 							<Eye v-else :size="16" />
 						</div>
 					</div>
@@ -53,13 +67,13 @@
 						Clone
 						<Copy :size="16" color="#601DED" />
 					</button>
-					<button class="btn-icon gap-2" @click="setDeleteAgentData(agentDetails)">
+					<!-- Only show delete button if user is the owner -->
+					<button v-if="isOwner(agentDetails)" class="btn-icon gap-2" @click="setDeleteAgentData(agentDetails)">
 						<Trash :size="16" color="#601DED" />
 					</button>
 				</div>
 			</div>
 		</section>
-
 
 		<section id="about" class="card md:mt-8 mt-4 gap-2">
 			<h1 class="text-headline text-base font-semibold">
@@ -70,19 +84,20 @@
 			</p>
 		</section>
 
+		<!-- Only show editable system info if user is the owner -->
 		<section id="system-info" class="card md:mt-10 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
 					System Information
 				</h1>
 				<button
-					v-if="!isEditingSystemInfo"
+					v-if="!isEditingSystemInfo && isOwner(agentDetails)"
 					class="btn-text"
 					@click="editSystemInfo"
 				>
 					Edit
 				</button>
-				<div v-else class="flex gap-2">
+				<div v-else-if="isEditingSystemInfo" class="flex gap-2">
 					<button class="btn-text" @click="cancelEdit">
 						Cancel
 					</button>
@@ -100,27 +115,28 @@
 
 			<Editor
 				v-model="systemInfoModel"
-				:editable="isEditingSystemInfo"
+				:editable="isEditingSystemInfo && isOwner(agentDetails)"
 				:class="{
-					'bg-white rounded-lg border': isEditingSystemInfo,
-					'view-only': !isEditingSystemInfo,
+					'bg-white rounded-lg border': isEditingSystemInfo && isOwner(agentDetails),
+					'view-only': !isEditingSystemInfo || !isOwner(agentDetails),
 				}"
 			/>
 		</section>
 
+		<!-- Only show editable tools if user is the owner -->
 		<section id="tools" class="card border md:mt-10 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
 					Agent Tool Library
 				</h1>
 				<button
-					v-if="!isEditingTools"
+					v-if="!isEditingTools && isOwner(agentDetails)"
 					class="btn-text"
 					@click="editTools"
 				>
 					Edit
 				</button>
-				<div v-else class="flex gap-2">
+				<div v-else-if="isEditingTools" class="flex gap-2">
 					<button class="btn-text" @click="isEditingTools = false">
 						Cancel
 					</button>
@@ -259,7 +275,7 @@
 </template>
 
 <script setup lang="ts">
-import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, CheckCircle2, XCircle, Copy } from 'lucide-vue-next'
+import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, XCircle, Copy } from 'lucide-vue-next'
 import { watch } from 'vue'
 import Editor from '@/components/core/Editor.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
@@ -272,26 +288,47 @@ import { isConfigSet } from '~/src/composables/dashboard/assistant/agents/tools/
 import { useEditToolConfig, agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
 import { useCloneAgent } from '@/composables/dashboard/assistant/agents/clone'
 import { useUser } from '@/composables/auth/user'
-
+import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
+import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
+import Spinner from '@/components/core/Spinner.vue'
+import { useAssistantModal } from '@/composables/core/modals'
 
 const { connectIntegration } = useConnectIntegration()
 const { cloneAgent, loading: cloneLoading, canCloneAgent } = useCloneAgent()
 const { id: user_id } = useUser()
+const { isOwner } = useAgentOwner()
 
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
-const { fetchAgentsById, agentDetails, defaultGoalmaticAgent } = useFetchAgentsById()
+const { fetchAgentsById, agentDetails, loading, defaultGoalmaticAgent } = useFetchAgentsById()
 const {
  updateSystemInfoLoading, isEditingSystemInfo, systemInfoModel, updateSystemInfo,
-	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch
+	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch,
+	toggleAgentVisibility, toggleVisibilityLoading
 } = useEditAgent()
+
+// Function to open the visibility confirmation modal
+const openVisibilityConfirmation = (agent: Record<string, any>) => {
+  useAssistantModal().openConfirmVisibility({
+    agent,
+    onConfirm: () => toggleAgentVisibility(agent)
+  })
+}
 
 const { editToolConfig } = useEditToolConfig()
 
 const { id } = useRoute().params
 
+// Fetch agent details or use default agent
+const fetchData = async () => {
+  if (id === '0') {
+    agentDetails.value = defaultGoalmaticAgent
+  } else {
+    await fetchAgentsById(id as string)
+  }
+}
 
-id === '0' ? (agentDetails.value = defaultGoalmaticAgent) : await fetchAgentsById(id as string)
+fetchData()
 
 // Prefill agentToolConfigs from agentDetails.spec.tools on load
 watch(agentDetails, (newVal) => {
@@ -327,10 +364,9 @@ watch(() => agentDetails.value?.spec?.systemInfo, (newValue) => {
 }, { immediate: true })
 
 definePageMeta({
-	layout: 'dashboard',
-	middleware: 'is-authenticated'
+	layout: 'dashboard'
+	// No authentication middleware - public agents can be viewed by anyone
 })
-
 </script>
 
 <style scoped lang="scss">

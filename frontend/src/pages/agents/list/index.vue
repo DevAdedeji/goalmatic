@@ -1,6 +1,7 @@
 <template>
 	<section class="flex flex-col gap-4 center pt-10 px-4">
-		<div class="flex w-full justify-end">
+		<!-- Only show Create Agent button for authenticated users -->
+		<div v-if="isLoggedIn" class="flex w-full justify-end">
 			<button class="btn-primary" @click="useAssistantModal().openCreateAgent()">
 				Create Agent
 			</button>
@@ -30,26 +31,45 @@ import all from './tabs/all.vue'
 import by_You from './tabs/byYou.vue'
 import { useAssistantModal } from '@/composables/core/modals'
 import { useTabs } from '@/composables/utils/tabs'
+import { useUser } from '@/composables/auth/user'
+import { watch } from 'vue'
 
-
+// Get user authentication status
+const { isLoggedIn } = useUser()
 
 definePageMeta({
 	layout: 'dashboard',
-	middleware: 'is-authenticated'
+	// No authentication middleware - public agents can be viewed by anyone
 })
 
 const { initTabs, selected, tabViews, updateTab, tabs, onTabMounted } = useTabs()
 
-// Initialize tabs with components from the tabs folder
-initTabs(
-  'all',
-  ['all', 'by_You'],
-  markRaw({ all, by_You })
-)
+// Initialize tabs with components based on authentication status
+const initializeTabsBasedOnAuth = () => {
+  if (isLoggedIn.value) {
+    // Show both tabs for authenticated users
+    initTabs(
+      'all',
+      ['all', 'by_You'],
+      markRaw({ all, by_You })
+    )
+  } else {
+    // Show only 'all' tab for unauthenticated users
+    initTabs(
+      'all',
+      ['all'],
+      markRaw({ all })
+    )
+  }
+}
+
+// Initialize tabs and watch for auth state changes
+initializeTabsBasedOnAuth()
+watch(isLoggedIn, () => {
+  initializeTabsBasedOnAuth()
+})
 
 onTabMounted()
-
-// Move agents data to all.vue tab component
 </script>
 
 

@@ -2,6 +2,7 @@ import { Timestamp } from 'firebase/firestore'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
+import { ref } from 'vue'
 
 export const defaultGoalmaticAgent = {
     id: 0,
@@ -18,23 +19,25 @@ export const defaultGoalmaticAgent = {
     created_at: Timestamp.fromDate(new Date('2025-01-01'))
 }
 
-
-
 const fetchedAllAgents = ref([] as any[])
 const fetchedUserAgents = ref([] as any[])
-
-
 
 export const useFetchAgents = () => {
     const loading = ref(false)
 
+    /**
+     * Fetch all public agents
+     * This function can be called by unauthenticated users
+     */
     const fetchAllAgents = async () => {
+        loading.value = true
         try {
             await getFirestoreCollectionWithWhereQuery('agents', fetchedAllAgents, { name: 'public', operator: '==', value: true })
-            loading.value = false
         } catch (e: any) {
-            loading.value = false
+            console.error('Error fetching public agents:', e)
             useAlert().openAlert({ type: 'ERROR', msg: `Error: ${e.message}` })
+        } finally {
+            loading.value = false
         }
     }
     return { loading, fetchedAllAgents, fetchedUserAgents, fetchAllAgents, defaultGoalmaticAgent }

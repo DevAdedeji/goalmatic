@@ -1,9 +1,10 @@
 <template>
 	<ClientOnly>
 		<div class="flex w-full h-screen bg-light relative  md:py-0  px-0 overflow-y-hidden ">
-			<LayoutsSideBarLeftSidebar :routes="mainShowRoutes" class="!w-[268px]" />
+			<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" class="!w-[268px]" />
 
-			<div class="relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden md:!w-[calc(100vw-268px)]">
+			<div :class="['relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden ',
+				!isLoggedIn ? '!w-full' : 'md:!w-[calc(100vw-268px)]']">
 				<LayoutsDashboadHeader :is-business="false" />
 				<Alert />
 				<div class="w-full h-full relative  overflow-x-hidden bg-light   pb-40">
@@ -13,7 +14,7 @@
 				</div>
 				<ModalBase />
 			</div>
-			<LayoutsBottomBar :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+			<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
 		</div>
 	</ClientOnly>
 </template>

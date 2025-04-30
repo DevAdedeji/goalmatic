@@ -5,6 +5,8 @@ import { useAlert } from '@/composables/core/notification'
 import { formattedAvailableTools } from '~/src/composables/dashboard/assistant/agents/tools/list'
 import { useSelectAgent } from '@/composables/dashboard/assistant/agents/select'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { ref, computed, watch } from 'vue'
+
 const isEditingSystemInfo = ref(false)
 const systemInfoModel = ref('')
 const isEditingTools = ref(false)
@@ -21,6 +23,7 @@ const filteredTools = computed(() => {
 export const useEditAgent = () => {
     const updateSystemInfoLoading = ref(false)
     const updateToolsLoading = ref(false)
+    const toggleVisibilityLoading = ref(false)
     const { selectedAgent } = useSelectAgent()
     const { getConfiguredTools } = useEditToolConfig()
 
@@ -60,8 +63,6 @@ export const useEditAgent = () => {
             // Get configured tools
             const configuredTools = getConfiguredTools()
 
-
-
             await updateFirestoreDocument('agents', id, {
                 spec: {
                     ...spec,
@@ -79,9 +80,44 @@ export const useEditAgent = () => {
         }
     }
 
+    /**
+     * Toggle agent visibility between public and private
+     * @param agent The agent to toggle visibility for
+     */
+    const toggleAgentVisibility = async (agent: Record<string, any>) => {
+        if (!agent || !agent.id) {
+            useAlert().openAlert({ type: 'ERROR', msg: 'Invalid agent data' })
+            return
+        }
+
+        toggleVisibilityLoading.value = true
+        try {
+            // Toggle the public flag
+            const isPublic = agent.public === true
+
+            await updateFirestoreDocument('agents', agent.id, {
+                public: !isPublic,
+                updated_at: Timestamp.fromDate(new Date())
+            })
+
+            // Update the local agent object to reflect the change
+            agent.public = !isPublic
+
+            useAlert().openAlert({
+                type: 'SUCCESS',
+                msg: `Agent is now ${!isPublic ? 'public' : 'private'}`
+            })
+        } catch (error) {
+            console.error('Error toggling agent visibility:', error)
+            useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+        } finally {
+            toggleVisibilityLoading.value = false
+        }
+    }
+
     return {
-        systemInfoModel, updateSystemInfoLoading, updateToolsLoading,
-        updateSystemInfo, updateTools, isEditingSystemInfo, isEditingTools,
+        systemInfoModel, updateSystemInfoLoading, updateToolsLoading, toggleVisibilityLoading,
+        updateSystemInfo, updateTools, toggleAgentVisibility, isEditingSystemInfo, isEditingTools,
         toolsModel, filteredTools, toolSearch
     }
 }
