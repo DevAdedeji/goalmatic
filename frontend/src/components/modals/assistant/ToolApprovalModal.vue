@@ -36,12 +36,26 @@
 						</p>
 					</div>
 
-					<button
-						class="btn-primary text-sm w-full"
-						@click="configureToolAndClose(tool)"
-					>
-						Configure {{ tool.name }}
-					</button>
+					<div class="flex flex-col gap-2">
+						<!-- Clone Table button (only for TABLE tools) -->
+						<button
+							v-if="isTableTool(tool)"
+							class="btn-secondary text-sm w-full flex items-center justify-center gap-2"
+							:disabled="cloningTable === tool.id"
+							@click="cloneTable(tool)"
+						>
+							<Spinner v-if="cloningTable === tool.id" size="14px" />
+							<span v-else>Clone Table</span>
+						</button>
+
+						<!-- Configure button for all tools -->
+						<button
+							class="btn-primary text-sm w-full"
+							@click="configureToolAndClose(tool)"
+						>
+							Configure {{ tool.name }}
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -67,7 +81,9 @@ import { ref, computed } from 'vue'
 import Modal from '@/components/core/modal/Modal.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useAssistantModal } from '@/composables/core/modals'
-import { useEditToolConfig } from '@/composables/dashboard/assistant/agents/tools/config'
+import { useEditToolConfig, agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
+import { useAlert } from '@/composables/core/notification'
+import { callFirebaseFunction } from '@/firebase/functions'
 
 const props = defineProps({
 	payload: {
@@ -81,17 +97,95 @@ const props = defineProps({
 })
 
 const loading = ref(false)
+const cloningTable = ref<string | null>(null)
 const { editToolConfig } = useEditToolConfig()
+const { openAlert } = useAlert()
 
 // Get tools that require configuration from the payload
 const toolsRequiringConfig = computed(() => {
 	return props.payload?.toolsRequiringConfig || []
 })
 
+// Check if a tool is a table tool
+const isTableTool = (tool: Record<string, any>): boolean => {
+	return tool.id === 'TABLE' || tool.primary_id === 'TABLE'
+}
+
+// Clone a table from the original agent
+const cloneTable = async (tool: Record<string, any>) => {
+	if (!props.payload?.agent?.id) {
+		openAlert({
+			type: 'ERROR',
+			msg: 'Agent ID not found'
+		})
+		return
+	}
+
+	// Get the agent ID
+	const agentId = props.payload.agent.id
+
+	// Set loading state
+	cloningTable.value = tool.id
+
+	try {
+		// Call the cloud function to clone the table, passing the agent ID instead of table ID
+		const result = await callFirebaseFunction('cloneTable', { agentId }) as any
+
+		// Get the new table ID from the result
+		const newTableId = result?.tableId
+
+		if (!newTableId) {
+			throw new Error('Failed to clone table: No table ID returned')
+		}
+
+		// Update the tool configuration with the new table ID
+		const toolId = tool.primary_id || tool.id
+		if (agentToolConfigs.value[toolId]) {
+			agentToolConfigs.value[toolId].selected_table_id = newTableId
+
+			// Show success message
+			openAlert({
+				type: 'SUCCESS',
+				msg: 'Table cloned successfully'
+			})
+
+			// Refresh the tools requiring configuration list
+			// This will remove the tool from the list if it was the only blocking requirement
+			const updatedToolsRequiringConfig = toolsRequiringConfig.value.filter((t: Record<string, any>) => {
+				// If this is the tool we just configured, check if it's still required
+				if (t.id === tool.id || t.primary_id === tool.primary_id) {
+					// The tool is now configured, so it should be removed from the list
+					return false
+				}
+				return true
+			})
+
+			// Update the toolsRequiringConfig in the payload
+			if (props.payload) {
+				props.payload.toolsRequiringConfig = updatedToolsRequiringConfig
+			}
+
+			// If there are no more tools requiring configuration, enable the Clone Agent button
+			// if (updatedToolsRequiringConfig.length === 0) {
+			// 	// Automatically proceed with cloning if no more tools require configuration
+			// 	confirmClone()
+			// }
+		}
+	} catch (error) {
+		console.error('Error cloning table:', error)
+		openAlert({
+			type: 'ERROR',
+			msg: `Error cloning table: ${error instanceof Error ? error.message : 'Unknown error'}`
+		})
+	} finally {
+		cloningTable.value = null
+	}
+}
+
 // Configure a specific tool
 const configureToolAndClose = (tool: Record<string, any>) => {
-	// Close this modal first
-	useAssistantModal().closeToolApprovalModal()
+	// // Close this modal first
+	// useAssistantModal().closeToolApprovalModal()
 
 	// Open the tool config modal
 	editToolConfig(tool)

@@ -286,6 +286,11 @@ import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useAssistantModal } from '@/composables/core/modals'
+import { useAPI } from '@/api_factory'
+import { useCustomHead } from '@/composables/core/head'
+
+const loading = ref(false)
+const agentDetails = ref({} as Record<string, any>)
 
 const { connectIntegration } = useConnectIntegration()
 const { cloneAgent, loading: cloneLoading, canCloneAgent } = useCloneAgent()
@@ -294,7 +299,7 @@ const { isOwner } = useAgentOwner()
 
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
-const { fetchAgentsById, agentDetails, loading, defaultGoalmaticAgent } = useFetchAgentsById()
+const { defaultGoalmaticAgent } = useFetchAgentsById()
 const {
  updateSystemInfoLoading, isEditingSystemInfo, systemInfoModel, updateSystemInfo,
 	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch,
@@ -313,16 +318,41 @@ const { editToolConfig } = useEditToolConfig()
 
 const { id } = useRoute().params
 
-// Fetch agent details or use default agent
+// Fetch agent details using API
 const fetchData = async () => {
+  loading.value = true
+
   if (id === '0') {
     agentDetails.value = defaultGoalmaticAgent
+    loading.value = false
   } else {
-    await fetchAgentsById(id as string)
+    try {
+      const { data, error } = await useAPI('/getAgentDetails', {
+        method: 'POST',
+        body: { id: id as string }
+      }) as { data: Ref<any>, error: any }
+
+      if (error.value) {
+        console.error('Error fetching agent details:', error.value)
+	  } else {
+		console.log(data)
+        agentDetails.value = data.value
+      }
+    } catch (e) {
+      console.error('Error in API call:', e)
+    } finally {
+      loading.value = false
+    }
   }
 }
 
-fetchData()
+await fetchData()
+
+    useCustomHead({
+          title: `${agentDetails.value.name} | Agent Details`,
+          desc: agentDetails.value.description || 'View agent details and capabilities',
+          img: '/bot.png'
+        })
 
 // Prefill agentToolConfigs from agentDetails.spec.tools on load
 watch(agentDetails, (newVal) => {

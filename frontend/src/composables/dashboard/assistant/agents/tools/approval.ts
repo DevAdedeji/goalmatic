@@ -26,6 +26,22 @@ export const checkAgentToolRequirements = (agent: Record<string, any>) => {
     )
     // If tool definition has config requirements
     if (toolDefinition && toolDefinition.config) {
+      // Check if the tool is already configured in agentToolConfigs
+      const isConfigured = agentToolConfigs.value[toolId] &&
+                          toolDefinition.config.every((field: any) => {
+                            if (field.required) {
+                              const value = agentToolConfigs.value[toolId][field.key]
+                              return value !== undefined && value !== null && value !== ''
+                            }
+                            return true
+                          })
+
+      // If the tool is already configured, don't require configuration
+      if (isConfigured) {
+        return false
+      }
+
+      // Otherwise, require configuration
       return true
     }
 
