@@ -70,6 +70,7 @@ export const truncateString = (input: string, maxLength = 80): string => {
 }
 
 export const formatDateString = (dateStr: string, options: Intl.DateTimeFormatOptions = { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }): string => {
+  console.log(dateStr)
   const date = new Date(dateStr)
 
   return new Intl.DateTimeFormat('en-US', options).format(date)

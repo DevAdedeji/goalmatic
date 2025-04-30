@@ -88,8 +88,8 @@ service cloud.firestore {
 
       // Allow reading public agents to anyone, even if not signed in
       // Allow reading private agents only to the owner
-      allow read: if resource.data.public == true ||
-        (isSignedIn() && resource.data.user_id == request.auth.uid);
+      allow read: if resource.data.public == true || isSignedIn() && isOwner(request.resource.data.user_id)
+
 
       // Allow update and delete only to the owner
       allow update, delete: if isSignedIn() &&

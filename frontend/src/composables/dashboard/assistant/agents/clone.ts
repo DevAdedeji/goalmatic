@@ -1,11 +1,14 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { checkAgentToolRequirements, initializeToolConfigs } from './tools/approval'
 import { agentToolConfigs } from './tools/config'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useAssistantModal } from '@/composables/core/modals'
+import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
 
 export const useCloneAgent = () => {
     const { id: user_id, userProfile, isLoggedIn } = useUser()
@@ -94,8 +97,13 @@ export const useCloneAgent = () => {
             return
         }
 
-        // Check if the agent has tools that require configuration
-        const { hasRequiredTools, toolsRequiringConfig } = checkAgentToolRequirements(agentToClone)
+        // Fetch user integrations to check for required integrations
+        const { fetchedIntegrations, fetchUserIntegrations } = useFetchIntegrations()
+        await fetchUserIntegrations()
+        const userIntegrations = fetchedIntegrations.value || []
+
+        // Check if the agent has tools that require configuration or integrations
+        const { hasRequiredTools, toolsRequiringConfig } = checkAgentToolRequirements(agentToClone, userIntegrations)
 
         if (hasRequiredTools) {
             // Initialize tool configs from the agent being cloned
@@ -105,10 +113,16 @@ export const useCloneAgent = () => {
             useAssistantModal().openToolApprovalModal({
                 agent: agentToClone,
                 toolsRequiringConfig,
+                userIntegrations,
+                refreshUserIntegrations: async () => {
+                    // Refresh user integrations
+                    await fetchUserIntegrations()
+                    return fetchedIntegrations.value
+                },
                 onConfirm: () => performClone(agentToClone)
             })
         } else {
-            // No tool configuration needed, proceed with cloning
+            // No tool configuration or integrations needed, proceed with cloning
             await performClone(agentToClone)
         }
     }

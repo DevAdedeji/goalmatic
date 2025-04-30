@@ -26,10 +26,10 @@
 					<div class="info">
 						{{ agentDetails.user.name }} <span class="dot" />
 						{{
-							formatDateString(agentDetails.created_at.toDate(), {
+							formatDateString(agentDetails.created_at, {
 								month: 'short',
 								day: 'numeric',
-								year: 'numeric',
+								year: 'numeric'
 							})
 						}}
 
@@ -271,6 +271,7 @@
 <script setup lang="ts">
 import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, XCircle, Copy } from 'lucide-vue-next'
 import { watch } from 'vue'
+import { Timestamp } from 'firebase/firestore'
 import Editor from '@/components/core/Editor.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
 import { useEditAgent } from '@/composables/dashboard/assistant/agents/edit'
@@ -286,8 +287,9 @@ import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useAssistantModal } from '@/composables/core/modals'
-import { useAPI } from '@/api_factory'
 import { useCustomHead } from '@/composables/core/head'
+import { callFirebaseFunction } from '@/firebase/functions'
+import { useAlert } from '@/composables/core/notification'
 
 const loading = ref(false)
 const agentDetails = ref({} as Record<string, any>)
@@ -318,33 +320,30 @@ const { editToolConfig } = useEditToolConfig()
 
 const { id } = useRoute().params
 
-// Fetch agent details using API
+// Fetch agent details using Firebase function
 const fetchData = async () => {
   loading.value = true
 
   if (id === '0') {
     agentDetails.value = defaultGoalmaticAgent
     loading.value = false
-  } else {
-    try {
-      const { data, error } = await useAPI('/getAgentDetails', {
-        method: 'POST',
-        body: { id: id as string }
-      }) as { data: Ref<any>, error: any }
+    return
+  }
 
-      if (error.value) {
-        console.error('Error fetching agent details:', error.value)
-	  } else {
-		console.log(data)
-        agentDetails.value = data.value
-      }
-    } catch (e) {
-      console.error('Error in API call:', e)
-    } finally {
-      loading.value = false
-    }
+  try {
+    const result = await callFirebaseFunction('getAgentDetails', { id: id as string }) as Record<string, any>
+	  agentDetails.value = result
+  } catch (e: any) {
+    console.error('Error fetching agent details:', e)
+    useAlert().openAlert({
+      type: 'ERROR',
+      msg: `Error: ${e.message || 'Failed to fetch agent details'}`
+    })
+  } finally {
+    loading.value = false
   }
 }
+
 
 await fetchData()
 

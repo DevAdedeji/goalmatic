@@ -6,7 +6,7 @@ import { agentToolConfigs } from './config'
  * @param agent The agent to check
  * @returns Object with hasRequiredTools and toolsRequiringConfig
  */
-export const checkAgentToolRequirements = (agent: Record<string, any>) => {
+export const checkAgentToolRequirements = (agent: Record<string, any>, userIntegrations: Record<string, any>[] = []) => {
   // Check if agent has tools
   if (!agent?.spec?.tools || agent.spec.tools.length === 0) {
     return {
@@ -15,7 +15,7 @@ export const checkAgentToolRequirements = (agent: Record<string, any>) => {
     }
   }
 
-  // Get the available tools that require configuration
+  // Get the available tools that require configuration or integration check
   const toolsRequiringConfig = agent.spec.tools.filter((agentTool: Record<string, any>) => {
     // For abilities, we need to check the primary_id
     const toolId = agentTool.primary_id || agentTool.id
@@ -24,17 +24,33 @@ export const checkAgentToolRequirements = (agent: Record<string, any>) => {
     const toolDefinition = availableTools.value.find(
       (availableTool: Record<string, any>) => availableTool.id === toolId
     )
+
+    if (!toolDefinition) return false
+
+    // Check if tool requires integration status verification
+    if (toolDefinition.checkStatus) {
+      // Check if the user has the required integration
+      const hasIntegration = userIntegrations.some(
+        (integration: Record<string, any>) => integration.integration_id === toolId
+      )
+
+      // If integration is required but not available, tool needs configuration
+      if (!hasIntegration) {
+        return true
+      }
+    }
+
     // If tool definition has config requirements
-    if (toolDefinition && toolDefinition.config) {
+    if (toolDefinition.config) {
       // Check if the tool is already configured in agentToolConfigs
       const isConfigured = agentToolConfigs.value[toolId] &&
-                          toolDefinition.config.every((field: any) => {
-                            if (field.required) {
-                              const value = agentToolConfigs.value[toolId][field.key]
-                              return value !== undefined && value !== null && value !== ''
-                            }
-                            return true
-                          })
+        toolDefinition.config.every((field: any) => {
+          if (field.required) {
+            const value = agentToolConfigs.value[toolId][field.key]
+            return value !== undefined && value !== null && value !== ''
+          }
+          return true
+        })
 
       // If the tool is already configured, don't require configuration
       if (isConfigured) {
@@ -66,7 +82,8 @@ export const checkAgentToolRequirements = (agent: Record<string, any>) => {
         config: toolDefinition?.config || [],
         name: toolDefinition?.name || agentTool.name,
         icon: toolDefinition?.icon || agentTool.icon,
-        description: toolDefinition?.description || ''
+        description: toolDefinition?.description || '',
+        checkStatus: toolDefinition?.checkStatus || false
       }
     })
   }

@@ -1,51 +1,33 @@
-import { onRequest } from 'firebase-functions/v2/https'
+import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { goals_db } from './init'
+import { defaultGoalmaticAgent } from './whatsapp/utils/WhatsappAgent'
 
-export const getAgentDetails = onRequest(async (req, res) => {
-    if (req.method !== 'POST') {
-        res.status(400).send('Please send a POST request')
-        return
-    }
-    const { id } = req.body
+export const getAgentDetails = onCall({
+    cors: true,
+    region: 'us-central1'
+}, async (request) => {
+    const { id } = request.data
 
     if (!id) {
-        res.status(400).send('Please provide an agent id')
-        return
+        throw new HttpsError('invalid-argument', 'Please provide an agent id')
+    }
+
+    // Return default agent if id is 0
+    if (id === '0' || id === 0) {
+        return defaultGoalmaticAgent
     }
 
     try {
         const snapshot = await goals_db.collection('agents').doc(id).get()
 
         if (!snapshot.exists) {
-            res.status(404).send(`This agent doesn't exist`)
-            return
+            throw new HttpsError('not-found', `This agent doesn't exist`)
         }
 
         const agentData = snapshot.data()!
 
-        // Get user data for the agent owner
-        let userData: Record<string, any> = { name: 'Unknown User' }
-
-        if (agentData.user_id) {
-            try {
-                const userDoc = await goals_db.collection('users').doc(agentData.user_id).get()
-                if (userDoc.exists) {
-                    const userDataObj = userDoc.data()!
-                    userData = {
-                        id: userDataObj.id || agentData.user_id,
-                        name: userDataObj.name || 'Unknown User',
-                        username: userDataObj.username,
-                        photo_url: userDataObj.photo_url,
-                    }
-                }
-            } catch (userError) {
-                console.error('Error fetching user data:', userError)
-                // Continue with default user data if there's an error
-            }
-        }
-
-        // Set all toolConfig values to null
-        if (agentData.spec && agentData.spec.toolsConfig) {
+        // Set all toolConfig values to null only if the requester is not the creator
+        if (agentData.spec && agentData.spec.toolsConfig && request.auth && request.auth.uid !== agentData.user_id) {
             const toolsConfig = { ...agentData.spec.toolsConfig }
 
             // Iterate through all tools and set their config values to null
@@ -61,18 +43,15 @@ export const getAgentDetails = onRequest(async (req, res) => {
             // Update the agent data with nullified toolsConfig
             agentData.spec.toolsConfig = toolsConfig
         }
-
-
-        res.status(200).send({
+        console.log(agentData.created_at.toDate());
+        console.log(agentData.created_at);
+        return {
             ...agentData,
-        })
+            created_at: new Date(agentData.created_at._seconds * 1000).toISOString()
+        }
 
     } catch (error: any) {
-        console.error(error);
-        res.status(500).send({
-            message: 'An error occurred',
-            error: error,
-            msg: error.message,
-        })
+        console.error('Error in getAgentDetails:', error);
+        throw new HttpsError('internal', `${error.message || 'An error occurred'}`)
     }
 })
