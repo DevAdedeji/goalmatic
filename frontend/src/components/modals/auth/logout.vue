@@ -14,7 +14,7 @@
 			<button class="btn-primary text-light flex-1" @click="useAuthModal().closeLogout()">
 				No, Cancel
 			</button>
-			<button class="btn-primary !border-red !bg-red text-light flex-1" @click="signOut">
+			<button class="btn-primary !border-danger !bg-danger text-light flex-1" @click="signOut">
 				Yes, Sign Out
 			</button>
 		</div>

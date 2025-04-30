@@ -1,11 +1,11 @@
 import { Timestamp } from 'firebase/firestore'
+import { ref, computed, watch } from 'vue'
 import { useEditToolConfig } from './tools/config'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useAlert } from '@/composables/core/notification'
 import { formattedAvailableTools } from '~/src/composables/dashboard/assistant/agents/tools/list'
 import { useSelectAgent } from '@/composables/dashboard/assistant/agents/select'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
-import { ref, computed, watch } from 'vue'
 
 const isEditingSystemInfo = ref(false)
 const systemInfoModel = ref('')

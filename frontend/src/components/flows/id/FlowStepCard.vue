@@ -16,7 +16,7 @@
 					<span class="italic">{{ step.name.split(':').pop().trim() }}</span>
 				</span>
 				<!-- Node Validation Status -->
-				<span v-if="!isNodeValid" class="text-red text-sm flex items-center ml-2">
+				<span v-if="!isNodeValid" class="text-danger text-sm flex items-center ml-2">
 					<AlertCircle :size="14" class="mr-1" />
 					Invalid
 				</span>
@@ -31,7 +31,7 @@
 					<Edit2 :size="18" />
 				</button>
 				<!-- Remove Button -->
-				<button class="icon-btn text-text-secondary hover:text-red" @click="$emit('removeStep')">
+				<button class="icon-btn text-text-secondary hover:text-danger" @click="$emit('removeStep')">
 					<Trash2 :size="18" />
 				</button>
 			</div>
@@ -43,7 +43,7 @@
 		</p>
 
 		<!-- Required Props Warning -->
-		<div v-if="!isNodeValid" class="mt-3 p-2 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
+		<div v-if="!isNodeValid" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
 			<p class="font-semibold">
 				This node is missing required properties:
 			</p>

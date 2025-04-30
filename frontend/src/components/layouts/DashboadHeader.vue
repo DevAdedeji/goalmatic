@@ -38,7 +38,10 @@
 					</DropdownMenuRoot>
 				</ClientOnly>
 			</div>
-			<AvatarDropdown class="md:hidden" />
+			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn">
+				Login
+			</nuxt-link>
+			<AvatarDropdown v-if="isLoggedIn" class="md:hidden" />
 		</div>
 	</header>
 </template>
@@ -49,7 +52,10 @@ import { Mail, MessageSquare, Copy } from 'lucide-vue-next'
 import { usePageHeader } from '@/composables/utils/header'
 import AvatarDropdown from '@/components/core/AvatarDropdown.vue'
 import { useAlert } from '@/composables/core/notification'
+import { useUser } from '@/composables/auth/user'
 
+
+const { isLoggedIn } = useUser()
 const { headstate } = usePageHeader()
 const { openAlert } = useAlert()
 
@@ -70,7 +76,7 @@ const copyToClipboard = async (text: string) => {
 </script>
 
 <style scoped>
-.btn-primary{
-@apply text-sm px-5 py-3 md:text-base md:px-10
+.btn{
+@apply text-sm px-5 py-[7px]  md:px-8
 }
 </style>

@@ -110,7 +110,7 @@
 							<Edit2 :size="16" />
 						</button>
 						<button
-							class="icon-btn text-text-secondary hover:text-red"
+							class="icon-btn text-text-secondary hover:text-danger"
 							:disabled="loading"
 							@click.stop="deleteRecord(item.data.id)"
 						>
@@ -200,6 +200,6 @@ onMounted(async () => {
 }
 
 .btn-outline-danger {
-	@apply border border-red text-red transition-colors;
+	@apply border border-danger text-danger transition-colors;
 }
 </style>

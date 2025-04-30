@@ -5,8 +5,8 @@
     --secondaryLight: #ccc2ef;
     --light_primary: #c4c4d0;
     --faded_primary: #03030321;
-    --blue: #554a27;
-    --red: #FF2A2A;
+    --sea: #554a27;
+    --danger: #FF2A2A;
     --light: #ffffff;
     --dark: #000000;
     --light_grey: #a4a4a4;
@@ -36,8 +36,8 @@
     --secondaryLight: #ccc2ef;
     --light_primary: #c4c4d0;
     --faded_primary: #03030321;
-    --blue: #554a27;
-    --red: #f02d3ace;
+    --sea: #554a27;
+    --danger: #f02d3ace;
     --light: #ffffff;
     --dark: #000000;
     --grey: #f4f7fa;
@@ -55,8 +55,8 @@
     --secondaryLight: #a897e6;
     --light_primary: #1e1e2d;
     --faded_primary: #ffffff21;
-    --blue: #26507f;
-    --red: #ff464fba;
+    --sea: #26507f;
+    --danger: #ff464fba;
     --light: #1e1e2d;
     --dark: #d8d8e6;
     --grey: #18181f;

@@ -40,7 +40,7 @@
 									{{ field.name }}
 								</h3>
 								<span class="bg-gray-100 text-text-secondary px-2 py-0.5 rounded text-xs">{{ field.type }}</span>
-								<span v-if="field.required" class="bg-red-50 text-red-700 px-2 py-0.5 rounded text-xs">Required</span>
+								<span v-if="field.required" class="bg-danger-50 text-danger-700 px-2 py-0.5 rounded text-xs">Required</span>
 							</div>
 							<p v-if="field.description" class="text-text-secondary text-sm">
 								{{ field.description }}
@@ -50,7 +50,7 @@
 							<button class="icon-btn text-text-secondary hover:text-primary" @click="editField(index)">
 								<Edit2 :size="18" />
 							</button>
-							<button class="icon-btn text-text-secondary hover:text-red" @click="deleteField(index)">
+							<button class="icon-btn text-text-secondary hover:text-danger" @click="deleteField(index)">
 								<Trash2 :size="18" />
 							</button>
 						</div>

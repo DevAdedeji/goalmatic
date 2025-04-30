@@ -1,6 +1,6 @@
 <template>
 	<div class="flex flex-col items-center justify-center min-h-[60vh]">
-		<AlertCircle class="text-red mb-4" :size="64" />
+		<AlertCircle class="text-danger mb-4" :size="64" />
 		<h2 class="text-2xl font-medium text-headline mb-2">
 			Agent Not Found
 		</h2>

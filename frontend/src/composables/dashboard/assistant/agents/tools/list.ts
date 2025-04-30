@@ -17,7 +17,7 @@ export const fetchUserTablesForConfig = async () => {
 	}))
 }
 
-const availableTools = ref([
+export const availableTools = ref([
 	{
 		id: 'GOOGLECALENDAR',
 		name: 'Google Calendar',

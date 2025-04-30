@@ -2,6 +2,7 @@ import { modal } from '../modal'
 
 // ==================== AUTH ===============================
 import Logout from '@/components/modals/auth/logout.vue'
+import LoginAlert from '@/components/modals/auth/loginAlert.vue'
 
 // ==================== CORE ===============================
 import Confirmation from '@/components/modals/core/Confirmation.vue'
@@ -15,6 +16,7 @@ import BottomMenu from '@/components/layouts/bottomBar/modal/Main.vue'
 import CreateAgent from '@/components/modals/assistant/CreateAgent.vue'
 import EditToolConfig from '@/components/modals/assistant/EditToolConfig.vue'
 import ConfirmVisibility from '@/components/modals/assistant/ConfirmVisibility.vue'
+import ToolApprovalModal from '@/components/modals/assistant/ToolApprovalModal.vue'
 
 // ==================== INTEGRATIONS ===============================
 import ConnectWhatsapp from '@/components/modals/integrations/ConnectWhatsapp.vue'
@@ -31,10 +33,10 @@ import TablesIdRecordModal from '@/components/modals/tables/RecordModal.vue'
 type OptionalPayload = Record<string, any> | null;
 
 // Update type definitions to include optional payload parameter
-type AuthTypes = 'Logout'
+type AuthTypes = 'Logout' | 'LoginAlert'
 type CoreTypes = 'Confirmation' | 'LoadingVerification'
 type BottombarTypes = 'BottomMenu'
-type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility'
+type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
 type FlowsTypes = 'SelectNode' | 'EditNode'
 type TablesTypes = 'FieldModal' | 'RecordModal'
@@ -48,10 +50,10 @@ type ModalHelpers<Keys extends string> = Record<
 	`toggle${Capitalize<Keys>}`, (payload?: OptionalPayload) => void
 > & { closeAll: () => void };
 
-const AuthModals = { Logout } as Record<AuthTypes, any>
+const AuthModals = { Logout, LoginAlert } as Record<AuthTypes, any>
 const CoreModals = { Confirmation, LoadingVerification } as Record<CoreTypes, any>
 const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
-const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility } as Record<AssistantTypes, any>
+const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>
 const FlowsModals = { SelectNode, EditNode } as Record<FlowsTypes, any>
 const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal } as Record<TablesTypes, any>

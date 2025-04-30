@@ -16,12 +16,6 @@
 		<section id="header" class="card">
 			<div class="flex flex-col md:flex-row gap-4 md:items-center">
 				<div class="flex items-center gap-2">
-					<button
-						class="btn-icon gap-2 hidden md:block"
-						@click="$router.back()"
-					>
-						<CircleArrowLeft :size="16" color="#601DED" />
-					</button>
 					<img src="/bot.png" alt="agent" class="size-14">
 				</div>
 
@@ -54,7 +48,7 @@
 				</div>
 
 				<div class="flex md:ml-auto gap-2">
-					<button class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
+					<button v-if="isOwner(agentDetails)" class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
 						Use agent
 						<MoveUpRight :size="16" />
 					</button>
@@ -242,7 +236,7 @@
 
 									<div class="flex flex-wrap gap-2 mt-1">
 										<div v-if="tool.config && !isConfigSet(tool)" class="w-full mb-2">
-											<p class="text-red text-xs">
+											<p class="text-danger text-xs">
 												Please set required configuration before using this tool
 											</p>
 										</div>
@@ -304,7 +298,7 @@ const { fetchAgentsById, agentDetails, loading, defaultGoalmaticAgent } = useFet
 const {
  updateSystemInfoLoading, isEditingSystemInfo, systemInfoModel, updateSystemInfo,
 	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch,
-	toggleAgentVisibility, toggleVisibilityLoading
+	toggleAgentVisibility
 } = useEditAgent()
 
 // Function to open the visibility confirmation modal

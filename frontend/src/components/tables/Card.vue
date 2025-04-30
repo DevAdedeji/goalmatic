@@ -9,7 +9,7 @@
 				<button class="icon-btn text-text-secondary hover:text-headline" @click="$emit('edit', table)">
 					<Edit2 :size="18" />
 				</button>
-				<button class="icon-btn text-text-secondary hover:text-red" @click="$emit('delete', table)">
+				<button class="icon-btn text-text-secondary hover:text-danger" @click="$emit('delete', table)">
 					<Trash2 :size="18" />
 				</button>
 			</div>

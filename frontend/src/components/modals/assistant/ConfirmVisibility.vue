@@ -46,12 +46,8 @@ import Spinner from '@/components/core/Spinner.vue'
 import { useAssistantModal } from '@/composables/core/modals'
 
 const props = defineProps({
-	agent: {
+	payload: {
 		type: Object,
-		required: true
-	},
-	onConfirm: {
-		type: Function,
 		required: true
 	},
 	propsModal: {
@@ -61,12 +57,13 @@ const props = defineProps({
 })
 
 const loading = ref(false)
-const isPublic = computed(() => props.agent?.public === true)
+const isPublic = computed(() => props.payload.agent?.public === true)
 
 const confirmToggle = async () => {
+	console.log(props.payload)
 	loading.value = true
 	try {
-		await props.onConfirm()
+		await props.payload.onConfirm()
 		useAssistantModal().closeConfirmVisibility()
 	} finally {
 		loading.value = false

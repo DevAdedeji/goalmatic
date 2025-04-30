@@ -9,7 +9,7 @@
 				<button class="icon-btn text-text-secondary hover:text-headline" @click="$emit('edit', flow)">
 					<Edit2 :size="18" />
 				</button>
-				<button class="icon-btn text-text-secondary hover:text-red" @click="$emit('delete', flow)">
+				<button class="icon-btn text-text-secondary hover:text-danger" @click="$emit('delete', flow)">
 					<Trash2 :size="18" />
 				</button>
 			</div>

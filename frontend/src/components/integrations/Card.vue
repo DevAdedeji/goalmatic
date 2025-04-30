@@ -12,7 +12,7 @@
 							'px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors duration-200',
 							status
 								? isHovering
-									? 'text-light bg-red border-red-700'
+									? 'text-light bg-danger border-danger-700'
 									: 'text-green-700 bg-green-50'
 								: 'text-light bg-primary',
 						]"

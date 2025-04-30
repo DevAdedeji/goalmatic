@@ -11,7 +11,7 @@
 					<!-- Text Field -->
 					<div v-if="field.type === 'text' || field.type === 'email' || field.type === 'url'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -26,7 +26,7 @@
 					<!-- Number Field -->
 					<div v-else-if="field.type === 'number'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -41,7 +41,7 @@
 					<!-- Date Field -->
 					<div v-else-if="field.type === 'date'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -55,7 +55,7 @@
 					<!-- Time Field -->
 					<div v-else-if="field.type === 'time'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -84,7 +84,7 @@
 					<!-- Select Field -->
 					<div v-else-if="field.type === 'select'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<select
 							:id="`field-${field.id}`"
@@ -104,7 +104,7 @@
 					<!-- Textarea Field -->
 					<div v-else-if="field.type === 'textarea'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
-							{{ field.name }} <span v-if="field.required" class="text-red">*</span>
+							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
 						</label>
 						<textarea
 							:id="`field-${field.id}`"

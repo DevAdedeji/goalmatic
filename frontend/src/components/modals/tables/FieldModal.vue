@@ -10,7 +10,7 @@
 				<!-- Field Name -->
 				<div>
 					<label for="field-name" class="block text-sm font-medium text-text-secondary mb-1">
-						Field Name <span class="text-red">*</span>
+						Field Name <span class="text-danger">*</span>
 					</label>
 					<input
 						id="field-name"
@@ -25,7 +25,7 @@
 				<!-- Field Type -->
 				<div>
 					<label for="field-type" class="block text-sm font-medium text-text-secondary mb-1">
-						Field Type <span class="text-red">*</span>
+						Field Type <span class="text-danger">*</span>
 					</label>
 					<select
 						id="field-type"
@@ -66,7 +66,7 @@
 				<!-- Options for Select Type -->
 				<div v-if="fieldForm.type === 'select'">
 					<label for="field-options" class="block text-sm font-medium text-text-secondary mb-1">
-						Options <span class="text-red">*</span>
+						Options <span class="text-danger">*</span>
 					</label>
 					<textarea
 						id="field-options"

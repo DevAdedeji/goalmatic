@@ -14,7 +14,7 @@
 						class="w-[200px] max-w-[100%]  my-2 mx-4 lg:ml-0 p-4 border border-dark rounded-md shadow-lg bg-white DropdownMenuContent"
 					>
 						<DropdownMenuItem
-							value="LogOut" class="hover:bg-grey p-1 px-2 rounded-md text-red cursor-pointer" @click="useSignin().signOut()">
+							value="LogOut" class="hover:bg-grey p-1 px-2 rounded-md text-danger cursor-pointer" @click="useSignin().signOut()">
 							Log Out
 						</DropdownMenuItem>
 					</DropdownMenuContent>

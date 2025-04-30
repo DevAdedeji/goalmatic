@@ -45,7 +45,7 @@
 					<span
 						:class="{
 							'bg-emerald-100 text-emerald-800': item.data.status === 'completed',
-							'bg-red-100 text-red-800': item.data.status === 'failed',
+							'bg-danger-100 text-danger-800': item.data.status === 'failed',
 							'bg-yellow-100 text-yellow-800': item.data.status === 'scheduled',
 							'bg-blue-100 text-blue-800': item.data.status === 'in-progress'
 						}"
@@ -73,7 +73,7 @@
 				<!-- Steps -->
 				<span v-else-if="item.steps" class="text-text-secondary">
 					{{ item.data.steps_completed }}/{{ item.data.steps_total }}
-					<span v-if="item.data.error" class="text-red ml-2 cursor-help inline-flex items-center" :title="item.data.error">
+					<span v-if="item.data.error" class="text-danger ml-2 cursor-help inline-flex items-center" :title="item.data.error">
 						<AlertCircle :size="14" />
 					</span>
 				</span>

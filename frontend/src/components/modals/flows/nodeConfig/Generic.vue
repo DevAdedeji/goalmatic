@@ -12,9 +12,9 @@
 						<span :class="{'text-text-secondary': !prop.required, 'font-medium': prop.required}">
 							{{ prop.name }}
 						</span>
-						<span v-if="prop.required" class="text-red ml-1">*</span>
+						<span v-if="prop.required" class="text-danger ml-1">*</span>
 						<span v-if="showValidation && !isValidField(prop.key)"
-							class="text-red text-xs ml-2">
+							class="text-danger text-xs ml-2">
 							{{ getValidationMessage(prop.key) }}
 						</span>
 
@@ -41,7 +41,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -58,7 +58,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -75,7 +75,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -91,7 +91,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -106,7 +106,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -133,7 +133,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -150,7 +150,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -167,7 +167,7 @@
 						:class="[
 							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
 							showValidation && !isValidField(prop.key)
-								? 'border-red-300 bg-red-50 focus:border-red'
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
 								: 'border-border focus:border-primary',
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
@@ -177,7 +177,7 @@
 			</template>
 
 			<!-- Required fields alert -->
-			<div v-if="showValidation && hasValidationErrors" class="p-3 bg-red-50 border border-red-200 rounded-md text-red-800 text-sm">
+			<div v-if="showValidation && hasValidationErrors" class="p-3 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
 				<p class="font-semibold">
 					Please address the following issues before saving:
 				</p>

@@ -173,7 +173,7 @@
     }
 
     .modal-btn-red {
-        @apply rounded-md center px-4 py-3 border-2 border-red text-red hover:text-light hover:bg-red transite w-full flex justify-center disabled:bg-gray-500 cursor-pointer disabled:cursor-not-allowed;
+        @apply rounded-md center px-4 py-3 border-2 border-danger text-danger hover:text-light hover:bg-danger transite w-full flex justify-center disabled:bg-gray-500 cursor-pointer disabled:cursor-not-allowed;
     }
     .card_ans {
         @apply p-2 border border-line w-full rounded-md;
