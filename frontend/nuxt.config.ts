@@ -5,7 +5,6 @@ import app from './app_config'
 const GA_ID = import.meta.env.VITE_GA_ID as string
 
 export default {
-  compatibilityDate: '2024-03-01',
   ssr: true,
   devtools: { enabled: false },
   modules: ['@vueuse/nuxt', '@nuxtjs/tailwindcss', 'nuxt-gtag'],
@@ -56,11 +55,11 @@ export default {
     }
   },
   app,
-    runtimeConfig: {
-                  public: {
-                  posthogPublicKey: 'phc_7yPmlIpEIie6711T938CfhafEXX8v0KUyu54MycxNnO',
-                    posthogHost: 'https://us.i.posthog.com'
-                  }
-                }
+  runtimeConfig: {
+    public: {
+      posthogPublicKey: import.meta.env.VITE_POSTHOG_PUBLIC_KEY as string,
+      posthogHost: 'https://us.i.posthog.com'
+    }
+  }
 }
 

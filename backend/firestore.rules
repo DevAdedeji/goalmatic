@@ -87,7 +87,7 @@ service cloud.firestore {
         validTimestamp(request.resource.data.created_at);
 
 
-      allow read: if isSignedIn() && (resource.data.public == true || resource.data.user_id == request.auth.uid);
+      allow read: if  (resource.data.public == true || resource.data.user_id == request.auth.uid);
       
 
       // Allow update and delete only to the owner

@@ -21,7 +21,7 @@ export const dashboardRoutes = () => [
 		name: 'Flows',
 		route: '/flows',
 		type: 'all',
-		main: false,
+		main: true,
 		subRoutes: [
 			{ url: '/', propagate: true }
 		]
@@ -40,7 +40,8 @@ export const dashboardRoutes = () => [
 		icon: Grid3X3,
 		name: 'Integrations',
 		route: '/integrations',
-		type: 'all'
+		type: 'all',
+		main: true
 	},
 	{
 		icon: Settings,

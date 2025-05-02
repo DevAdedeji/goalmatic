@@ -32,13 +32,12 @@ import by_You from './tabs/byYou.vue'
 import { useAssistantModal } from '@/composables/core/modals'
 import { useTabs } from '@/composables/utils/tabs'
 import { useUser } from '@/composables/auth/user'
-import { watch } from 'vue'
 
 // Get user authentication status
 const { isLoggedIn } = useUser()
 
 definePageMeta({
-	layout: 'dashboard',
+	layout: 'dashboard'
 	// No authentication middleware - public agents can be viewed by anyone
 })
 

@@ -31,6 +31,7 @@ export const useFetchAgents = () => {
      */
     const fetchAllAgents = async () => {
         loading.value = true
+        fetchedAllAgents.value = []
         try {
             await getFirestoreCollectionWithWhereQuery('agents', fetchedAllAgents, { name: 'public', operator: '==', value: true })
         } catch (e: any) {

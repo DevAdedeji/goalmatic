@@ -6,11 +6,16 @@ import { useAlert } from '@/composables/core/notification'
 import { formattedAvailableTools } from '~/src/composables/dashboard/assistant/agents/tools/list'
 import { useSelectAgent } from '@/composables/dashboard/assistant/agents/select'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { useAssistantModal } from '@/composables/core/modals'
 
 const isEditingSystemInfo = ref(false)
 const systemInfoModel = ref('')
 const isEditingTools = ref(false)
 const toolsModel = ref([] as any[])
+const isEditingName = ref(false)
+const nameModel = ref('')
+const isEditingDescription = ref(false)
+const descriptionModel = ref('')
 const toolSearch = ref('')
 const UserIntegrations = ref<Record<string, any>[]>([])
 
@@ -21,6 +26,8 @@ const filteredTools = computed(() => {
 })
 
 export const useEditAgent = () => {
+    const updateNameLoading = ref(false)
+    const updateDescriptionLoading = ref(false)
     const updateSystemInfoLoading = ref(false)
     const updateToolsLoading = ref(false)
     const toggleVisibilityLoading = ref(false)
@@ -115,9 +122,55 @@ export const useEditAgent = () => {
         }
     }
 
+
+    const updateName = async (id: string, name: string) => {
+        try {
+            updateNameLoading.value = true
+
+            await updateFirestoreDocument('agents', id, {
+                name: name.trim(),
+                updated_at: Timestamp.fromDate(new Date())
+            })
+
+            isEditingName.value = false
+            updateNameLoading.value = false
+            useAlert().openAlert({ type: 'SUCCESS', msg: 'Agent name updated successfully' })
+        } catch (error) {
+            updateNameLoading.value = false
+            useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+        }
+    }
+
+    const updateDescription = async (id: string, description: string) => {
+        try {
+            updateDescriptionLoading.value = true
+
+            await updateFirestoreDocument('agents', id, {
+                description: description.trim(),
+                updated_at: Timestamp.fromDate(new Date())
+            })
+
+            isEditingDescription.value = false
+            updateDescriptionLoading.value = false
+            useAlert().openAlert({ type: 'SUCCESS', msg: 'Agent description updated successfully' })
+        } catch (error) {
+            updateDescriptionLoading.value = false
+            useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+        }
+    }
+
+    const openVisibilityConfirmation = (agent: Record<string, any>) => {
+        useAssistantModal().openConfirmVisibility({
+            agent,
+            onConfirm: () => toggleAgentVisibility(agent)
+        })
+    }
+
     return {
-        systemInfoModel, updateSystemInfoLoading, updateToolsLoading, toggleVisibilityLoading,
-        updateSystemInfo, updateTools, toggleAgentVisibility, isEditingSystemInfo, isEditingTools,
+        systemInfoModel, nameModel, descriptionModel, openVisibilityConfirmation,
+        updateSystemInfoLoading, updateToolsLoading, updateNameLoading, updateDescriptionLoading, toggleVisibilityLoading,
+        updateSystemInfo, updateTools, updateName, updateDescription, toggleAgentVisibility,
+        isEditingSystemInfo, isEditingTools, isEditingName, isEditingDescription,
         toolsModel, filteredTools, toolSearch
     }
 }

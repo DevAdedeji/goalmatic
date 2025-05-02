@@ -8,7 +8,7 @@
 			squares-class-name="hover:fill-blue-500"
 		/>
 
-		<div class="flex flex-col items-center md:gap-10 gap-4 z-30 2xl:mt-64  mt-16">
+		<div class="flex flex-col items-center md:gap-10 gap-4 z-30  mt-16">
 			<h1 class="text-headline font-bold text-[49px] md:text-[72px] lg:max-w-[800px] text-center leading-[40px] md:leading-[80px]">
 				Your AI, Your Rules: Automate Your Life
 			</h1>

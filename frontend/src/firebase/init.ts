@@ -17,7 +17,8 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID as string
 }
 
-const useDefaultDb = import.meta.env.VITE_USE_DEFAULT_DB === 'true' ? '(default)' : 'goalmatic-dev'
+// const useDefaultDb = import.meta.env.VITE_USE_DEFAULT_DB === 'true' ? '(default)' : 'goalmatic-dev'
+const useDefaultDb = import.meta.env.VITE_USE_DEFAULT_DB !== 'true' ? '(default)' : 'goalmatic-dev'
 
 export const useFirebase = () => {
     if (getApps().length === 0) {
@@ -38,13 +39,13 @@ export const functions = getFunctions(useFirebase(), 'us-central1')
 
 
 
-if (import.meta.env.DEV) {
-  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
-  connectFirestoreEmulator(db, 'localhost', 8181)
-  connectFirestoreEmulator(db, 'localhost', 8181)
-  connectFunctionsEmulator(functions, 'localhost', 5001)
-  connectStorageEmulator(storage, 'localhost', 9199)
-}
+// if (import.meta.env.DEV) {
+//   connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true })
+//   connectFirestoreEmulator(db, 'localhost', 8181)
+//   connectFirestoreEmulator(db, 'localhost', 8181)
+//   connectFunctionsEmulator(functions, 'localhost', 5001)
+//   connectStorageEmulator(storage, 'localhost', 9199)
+// }
 
 
 

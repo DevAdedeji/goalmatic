@@ -20,17 +20,51 @@
 				</div>
 
 				<div class="flex flex-col gap-2 items-start">
-					<h2 class="text-sm font-semibold text-headline">
-						{{ agentDetails.name }}
-					</h2>
+					<div class="flex items-center gap-2">
+						<Popover align="start" :open="titlePopoverOpen" :modal="true" @update:open="titlePopoverOpen = $event">
+							<template #trigger>
+								<button :disabled="!isOwner(agentDetails)" class="flex items-center gap-2 cursor-pointer" @click="openTitlePopover">
+									<h2 class="text-sm font-semibold text-headline">
+										{{ agentDetails?.name || 'Unnamed Agent' }}
+									</h2>
+									<Edit2 v-if="isOwner(agentDetails)" :size="14" class="text-primary hover:text-primary-dark" />
+								</button>
+							</template>
+							<template #content>
+								<div class="min-w-[300px] p-1">
+									<input
+										ref="titleInputRef"
+										v-model="currentTitle"
+										type="text"
+										placeholder="Agent Name"
+										class="input-field w-full mb-2"
+										@keydown.enter.prevent="saveTitle"
+									>
+									<div class="flex justify-end gap-2">
+										<button class="btn-outline flex-1" @click="titlePopoverOpen = false">
+											Cancel
+										</button>
+										<button
+											class="btn-primary flex-1"
+											:disabled="!currentTitle.trim() || updateNameLoading"
+											@click="saveTitle"
+										>
+											<span v-if="!updateNameLoading">Save</span>
+											<Spinner v-else size="14px" />
+										</button>
+									</div>
+								</div>
+							</template>
+						</Popover>
+					</div>
 					<div class="info">
-						{{ agentDetails.user.name }} <span class="dot" />
+						{{ agentDetails?.user?.name || 'Unknown User' }} <span class="dot" />
 						{{
-							formatDateString(agentDetails.created_at, {
+							agentDetails?.created_at ? formatDateString(agentDetails.created_at, {
 								month: 'short',
 								day: 'numeric',
 								year: 'numeric'
-							})
+							}) : 'Unknown date'
 						}}
 
 						<span class="dot" />
@@ -40,8 +74,8 @@
 							:title="isOwner(agentDetails) ? 'Click to change visibility' : ''"
 							@click="isOwner(agentDetails) && openVisibilityConfirmation(agentDetails)"
 						>
-							<span>{{ agentDetails.public ? 'Public' : 'Private' }}</span>
-							<EyeClosed v-if="!agentDetails.public" :size="16" />
+							<span>{{ agentDetails?.public ? 'Public' : 'Private' }}</span>
+							<EyeClosed v-if="!agentDetails?.public" :size="16" />
 							<Eye v-else :size="16" />
 						</div>
 					</div>
@@ -53,9 +87,10 @@
 						<MoveUpRight :size="16" />
 					</button>
 					<button
+						v-if="id !== '0'"
 						class="btn-icon gap-2 text-primary"
 						:disabled="cloneLoading"
-						:title="!canCloneAgent(agentDetails) ? (agentDetails.user_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
+						:title="!canCloneAgent(agentDetails) ? (agentDetails?.user_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
 						@click="cloneAgent(agentDetails)"
 					>
 						Clone
@@ -70,12 +105,48 @@
 		</section>
 
 		<section id="about" class="card md:mt-8 mt-4 gap-2">
-			<h1 class="text-headline text-base font-semibold">
-				About
-			</h1>
-			<p class="text-subText md:text-[15px] text-xs">
-				{{ agentDetails?.description || 'No description provided' }}
-			</p>
+			<div class="flex justify-between items-center">
+				<h1 class="text-headline text-base font-semibold">
+					About
+				</h1>
+			</div>
+
+			<div class="flex items-start gap-2">
+				<Popover align="start" :open="descriptionPopoverOpen" :modal="true" @update:open="descriptionPopoverOpen = $event">
+					<template #trigger>
+						<div class="flex items-center gap-2 cursor-pointer" @click="openDescriptionPopover">
+							<p class="text-subText md:text-[15px] text-xs w-full max-w-2xl break-words whitespace-pre-wrap">
+								{{ agentDetails?.description || 'No description provided' }}
+							</p>
+							<Edit2 v-if="isOwner(agentDetails)" :size="14" class="text-primary hover:text-primary-dark" />
+						</div>
+					</template>
+					<template #content>
+						<div class="min-w-[350px] max-w-xl p-1">
+							<textarea
+								ref="descriptionInputRef"
+								v-model="currentDescription"
+								placeholder="Describe what this agent does"
+								class="input-textarea w-full"
+								rows="4"
+							/>
+							<div class="flex justify-end gap-2 mt-2">
+								<button class="btn-outline flex-1" @click="descriptionPopoverOpen = false">
+									Cancel
+								</button>
+								<button
+									class="btn-primary flex-1"
+									:disabled="!currentDescription.trim() || updateDescriptionLoading"
+									@click="saveDescription"
+								>
+									<span v-if="!updateDescriptionLoading">Save</span>
+									<Spinner v-else size="14px" />
+								</button>
+							</div>
+						</div>
+					</template>
+				</Popover>
+			</div>
 		</section>
 
 		<!-- Only show editable system info if user is the owner -->
@@ -97,8 +168,8 @@
 					</button>
 					<button
 						class="btn-text btn !bg-primary disabled:!bg-gray-500 text-light"
-						:disabled="updateSystemInfoLoading"
-						@click="updateSystemInfo(id as string, agentDetails.spec)"
+						:disabled="updateSystemInfoLoading || !agentDetails?.spec"
+						@click="updateSystemInfo(id as string, agentDetails?.spec || {})"
 					>
 						<span v-if="!updateSystemInfoLoading">save</span>
 						<Spinner v-else size="14px" />
@@ -137,7 +208,7 @@
 					<button
 						class="btn-text btn !bg-primary disabled:!bg-gray-500 text-light"
 						:disabled="updateToolsLoading"
-						@click="updateTools(id as string, agentDetails.spec)"
+						@click="updateTools(id as string, agentDetails?.spec || {})"
 					>
 						<span v-if="!updateToolsLoading">save</span>
 						<Spinner v-else size="14px" />
@@ -269,10 +340,10 @@
 </template>
 
 <script setup lang="ts">
-import { EyeClosed, MoveUpRight, Trash, CircleArrowLeft, Eye, PencilRuler, Search, XCircle, Copy } from 'lucide-vue-next'
-import { watch } from 'vue'
-import { Timestamp } from 'firebase/firestore'
+import { EyeClosed, MoveUpRight, Trash, Eye, PencilRuler, Search, XCircle, Copy, Edit2 } from 'lucide-vue-next'
+import { watch, ref, nextTick } from 'vue'
 import Editor from '@/components/core/Editor.vue'
+import Popover from '@/components/core/Popover.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
 import { useEditAgent } from '@/composables/dashboard/assistant/agents/edit'
 import { formatDateString } from '@/composables/utils/formatter'
@@ -292,7 +363,6 @@ import { callFirebaseFunction } from '@/firebase/functions'
 import { useAlert } from '@/composables/core/notification'
 
 const loading = ref(false)
-const agentDetails = ref({} as Record<string, any>)
 
 const { connectIntegration } = useConnectIntegration()
 const { cloneAgent, loading: cloneLoading, canCloneAgent } = useCloneAgent()
@@ -301,57 +371,26 @@ const { isOwner } = useAgentOwner()
 
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
-const { defaultGoalmaticAgent } = useFetchAgentsById()
+const { fetchAgentsById, agentDetails } = useFetchAgentsById()
 const {
  updateSystemInfoLoading, isEditingSystemInfo, systemInfoModel, updateSystemInfo,
 	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch,
-	toggleAgentVisibility
+	openVisibilityConfirmation, updateName, updateNameLoading, updateDescription, updateDescriptionLoading
 } = useEditAgent()
 
-// Function to open the visibility confirmation modal
-const openVisibilityConfirmation = (agent: Record<string, any>) => {
-  useAssistantModal().openConfirmVisibility({
-    agent,
-    onConfirm: () => toggleAgentVisibility(agent)
-  })
-}
 
 const { editToolConfig } = useEditToolConfig()
 
 const { id } = useRoute().params
 
-// Fetch agent details using Firebase function
-const fetchData = async () => {
-  loading.value = true
+await fetchAgentsById(id as string)
 
-  if (id === '0') {
-    agentDetails.value = defaultGoalmaticAgent
-    loading.value = false
-    return
-  }
-
-  try {
-    const result = await callFirebaseFunction('getAgentDetails', { id: id as string }) as Record<string, any>
-	  agentDetails.value = result
-  } catch (e: any) {
-    console.error('Error fetching agent details:', e)
-    useAlert().openAlert({
-      type: 'ERROR',
-      msg: `Error: ${e.message || 'Failed to fetch agent details'}`
+// Add null checks before using agentDetails in useCustomHead
+useCustomHead({
+      title: `${agentDetails.value?.name || 'Agent'} | Agent Details`,
+      desc: agentDetails.value?.description || 'View agent details and capabilities',
+      img: '/bot.png'
     })
-  } finally {
-    loading.value = false
-  }
-}
-
-
-await fetchData()
-
-    useCustomHead({
-          title: `${agentDetails.value.name} | Agent Details`,
-          desc: agentDetails.value.description || 'View agent details and capabilities',
-          img: '/bot.png'
-        })
 
 // Prefill agentToolConfigs from agentDetails.spec.tools on load
 watch(agentDetails, (newVal) => {
@@ -362,6 +401,48 @@ watch(agentDetails, (newVal) => {
 
 const removeTool = (toolToRemove: { id: string }) => {
 	toolsModel.value = toolsModel.value.filter((tool) => tool.id !== toolToRemove.id)
+}
+
+// Refs for title popover
+const titleInputRef = ref<HTMLInputElement | null>(null)
+const titlePopoverOpen = ref(false)
+const currentTitle = ref('')
+
+// Title popover functions
+const openTitlePopover = () => {
+	titlePopoverOpen.value = true
+	currentTitle.value = agentDetails.value?.name || ''
+	nextTick(() => {
+		titleInputRef.value?.focus()
+	})
+}
+
+const saveTitle = async () => {
+	if (currentTitle.value.trim()) {
+		await updateName(id as string, currentTitle.value)
+		titlePopoverOpen.value = false
+	}
+}
+
+// Refs for description popover
+const descriptionInputRef = ref<HTMLTextAreaElement | null>(null)
+const descriptionPopoverOpen = ref(false)
+const currentDescription = ref('')
+
+// Description popover functions
+const openDescriptionPopover = () => {
+	descriptionPopoverOpen.value = true
+	currentDescription.value = agentDetails.value?.description || ''
+	nextTick(() => {
+		descriptionInputRef.value?.focus()
+	})
+}
+
+const saveDescription = async () => {
+	if (currentDescription.value.trim()) {
+		await updateDescription(id as string, currentDescription.value)
+		descriptionPopoverOpen.value = false
+	}
 }
 
 const editSystemInfo = () => {
@@ -380,9 +461,23 @@ const cancelEdit = () => {
 	systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
 }
 
-watch(() => agentDetails.value?.spec?.systemInfo, (newValue) => {
-	if (newValue !== undefined) {
-		systemInfoModel.value = newValue
+// Watch for changes to agent details to update models
+watch(() => agentDetails.value, (newValue) => {
+	if (newValue) {
+		// Update title model
+		if (newValue.name !== undefined) {
+			currentTitle.value = newValue.name
+		}
+
+		// Update description model
+		if (newValue.description !== undefined) {
+			currentDescription.value = newValue.description
+		}
+
+		// Update system info model
+		if (newValue.spec?.systemInfo !== undefined) {
+			systemInfoModel.value = newValue.spec.systemInfo
+		}
 	}
 }, { immediate: true })
 

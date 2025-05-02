@@ -5,14 +5,22 @@ type CustomHeadTypes = {
   desc?: string
   img?: string
 }
-export const useCustomHead = ({ title, desc, img }:CustomHeadTypes) => {
+export const useCustomHead = ({ title, desc, img }: CustomHeadTypes) => {
+  useSeoMeta({
+    title,
+    ogTitle: title,
+    description: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows',
+    ogDescription: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows',
+    ogImage: img ?? 'https://www.goalmatic.io/og.png',
+    twitterCard: 'summary_large_image'
+  })
   useHead({
     title,
     meta: [
       {
         name: 'description',
         content:
-          desc ?? 'Create and managge your business smoothly with Taaskly'
+          desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows'
       },
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@taaskly' },
@@ -20,19 +28,19 @@ export const useCustomHead = ({ title, desc, img }:CustomHeadTypes) => {
       {
         name: 'twitter:description',
         content:
-          desc ?? 'Create and managge your business smoothly with Taaskly'
+          desc ?? 'Goalmatic - Get more done, effortlessly, with AI agents and workflows'
       },
-      { name: 'twitter:image', content: img ?? 'https://www.taaskly.xyz/og.png' },
+      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og.png' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: title ?? 'Taaskly | Your one stop destination for all your business needs' },
-      { property: 'og:url', content: 'https://taaskly.xyz/' },
-      { property: 'og:image', content: img ?? 'https://www.taaskly.xyz/og.png' },
-      { property: 'og:image:secure_url', content: img ?? 'https://www.taaskly.xyz/og.png' },
+      { property: 'og:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
+      { property: 'og:url', content: 'https://goalmatic.io/' },
+      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og.png' },
       { property: 'og:image:type', content: 'image/png' },
       {
         property: 'og:description',
         content:
-          desc ?? 'Create and managge your business smoothly with Taaskly'
+          desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows'
       }
     ]
   })
@@ -43,19 +51,19 @@ export const setCustomHead = ({ title, desc, img }: CustomHeadTypes) => {
   if (process.server) return
     document.title = title
     const metaTags = [
-      { name: 'description', content: desc ?? 'Bookings simplified with Taaskly Bookings' },
+      { name: 'description', content: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
       { name: 'twitter:card', content: 'summary_large_image' },
       { name: 'twitter:site', content: '@taaskly' },
-      { name: 'twitter:title', content: title ?? 'Taaskly | Bookings simplified, business amplified' },
-      { name: 'twitter:description', content: desc ?? 'Bookings simplified with Taaskly Bookings' },
-      { name: 'twitter:image', content: img ?? 'https://www.taaskly.xyz/og.png' },
+      { name: 'twitter:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
+      { name: 'twitter:description', content: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
+      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og.png' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:title', content: title ?? 'Taaskly | Bookings simplified, business amplified' },
-      { property: 'og:url', content: 'https://taaskly.xyz/' },
-      { property: 'og:image', content: img ?? 'https://www.taaskly.xyz/og.png' },
-      { property: 'og:image:secure_url', content: img ?? 'https://www.taaskly.xyz/og.png' },
+      { property: 'og:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
+      { property: 'og:url', content: 'https://goalmatic.io/' },
+      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og.png' },
       { property: 'og:image:type', content: 'image/png' },
-      { property: 'og:description', content: desc ?? 'Bookings simplified with Taaskly Bookings' }
+      { property: 'og:description', content: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' }
     ]
 
     metaTags.forEach((tag) => {
