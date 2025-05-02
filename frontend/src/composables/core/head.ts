@@ -11,7 +11,7 @@ export const useCustomHead = ({ title, desc, img }: CustomHeadTypes) => {
     ogTitle: title,
     description: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows',
     ogDescription: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows',
-    ogImage: img ?? 'https://www.goalmatic.io/og.png',
+    ogImage: img ?? 'https://www.goalmatic.io/og2.png',
     twitterCard: 'summary_large_image'
   })
   useHead({
@@ -30,12 +30,12 @@ export const useCustomHead = ({ title, desc, img }: CustomHeadTypes) => {
         content:
           desc ?? 'Goalmatic - Get more done, effortlessly, with AI agents and workflows'
       },
-      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og2.png' },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
       { property: 'og:url', content: 'https://goalmatic.io/' },
-      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og.png' },
-      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og2.png' },
+      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og2.png' },
       { property: 'og:image:type', content: 'image/png' },
       {
         property: 'og:description',
@@ -56,12 +56,12 @@ export const setCustomHead = ({ title, desc, img }: CustomHeadTypes) => {
       { name: 'twitter:site', content: '@taaskly' },
       { name: 'twitter:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
       { name: 'twitter:description', content: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
-      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { name: 'twitter:image', content: img ?? 'https://www.goalmatic.io/og2.png' },
       { property: 'og:type', content: 'website' },
       { property: 'og:title', content: title ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' },
       { property: 'og:url', content: 'https://goalmatic.io/' },
-      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og.png' },
-      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og.png' },
+      { property: 'og:image', content: img ?? 'https://www.goalmatic.io/og2.png' },
+      { property: 'og:image:secure_url', content: img ?? 'https://www.goalmatic.io/og2.png' },
       { property: 'og:image:type', content: 'image/png' },
       { property: 'og:description', content: desc ?? 'Goalmatic | Get more done, effortlessly, with AI agents and workflows' }
     ]

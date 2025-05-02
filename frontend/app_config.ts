@@ -27,7 +27,7 @@ export default {
                 name: 'twitter:title',
                 content: 'Goalmatic - Get more done, effortlessly, with AI agents and workflows'
             },
-            { name: 'twitter:image', content: 'https://goalmatic.io/og.png' },
+            { name: 'twitter:image', content: 'https://goalmatic.io/og2.png' },
             {
                 name: 'twitter:description',
                 content: 'Goalmatic - Get more done, effortlessly, with AI agents and workflows'
@@ -42,8 +42,8 @@ export default {
             { name: 'google-site-verification', content: 'tWttF6w3RHPlNPm5u7KSRgh4lgkRUZ2Bwl6QzECjY18' },
             { property: 'og:type', content: 'website' },
             { property: 'og:url', content: 'https://goalmatic.io/' },
-            { property: 'og:image', content: 'https://goalmatic.io/og.png' },
-            { property: 'og:image:secure_url', content: 'https://goalmatic.io/og.png' },
+            { property: 'og:image', content: 'https://goalmatic.io/og2.png' },
+            { property: 'og:image:secure_url', content: 'https://goalmatic.io/og2.png' },
             { property: 'og:image:type', content: 'image/png' },
             { property: 'og:site_name', content: 'Goalmatic' },
             {
@@ -55,7 +55,7 @@ export default {
         ],
 
         link: [
-            { rel: 'icon', type: 'image/x-icon', href: '/og.png' },
+            { rel: 'icon', type: 'image/x-icon', href: '/og2.png' },
             { href: 'https://fonts.googleapis.com', rel: 'preconnect' },
             { href: 'https://fonts.gstatic.com', rel: 'preconnect', crossorigin: true },
             { href: 'https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap', rel: 'stylesheet', crossorigin: true }

@@ -109,44 +109,36 @@
 				<h1 class="text-headline text-base font-semibold">
 					About
 				</h1>
+				<button
+					v-if="!isEditingDescription && isOwner(agentDetails)"
+					class="btn-text"
+					@click="editDescription"
+				>
+					Edit
+				</button>
+				<div v-else-if="isEditingDescription" class="flex gap-2">
+					<button class="btn-text" @click="cancelEditDescription">
+						Cancel
+					</button>
+					<button
+						class="btn-text btn !bg-primary disabled:!bg-gray-500 text-light"
+						:disabled="updateDescriptionLoading"
+						@click="saveDescription"
+					>
+						<span v-if="!updateDescriptionLoading">save</span>
+						<Spinner v-else size="14px" />
+					</button>
+				</div>
 			</div>
 
-			<div class="flex items-start gap-2">
-				<Popover align="start" :open="descriptionPopoverOpen" :modal="true" @update:open="descriptionPopoverOpen = $event">
-					<template #trigger>
-						<div class="flex items-center gap-2 cursor-pointer" @click="openDescriptionPopover">
-							<p class="text-subText md:text-[15px] text-xs w-full max-w-2xl break-words whitespace-pre-wrap">
-								{{ agentDetails?.description || 'No description provided' }}
-							</p>
-							<Edit2 v-if="isOwner(agentDetails)" :size="14" class="text-primary hover:text-primary-dark" />
-						</div>
-					</template>
-					<template #content>
-						<div class="min-w-[350px] max-w-xl p-1">
-							<textarea
-								ref="descriptionInputRef"
-								v-model="currentDescription"
-								placeholder="Describe what this agent does"
-								class="input-textarea w-full"
-								rows="4"
-							/>
-							<div class="flex justify-end gap-2 mt-2">
-								<button class="btn-outline flex-1" @click="descriptionPopoverOpen = false">
-									Cancel
-								</button>
-								<button
-									class="btn-primary flex-1"
-									:disabled="!currentDescription.trim() || updateDescriptionLoading"
-									@click="saveDescription"
-								>
-									<span v-if="!updateDescriptionLoading">Save</span>
-									<Spinner v-else size="14px" />
-								</button>
-							</div>
-						</div>
-					</template>
-				</Popover>
-			</div>
+			<Editor
+				v-model="descriptionModel"
+				:editable="isEditingDescription && isOwner(agentDetails)"
+				:class="{
+					'bg-white rounded-lg border': isEditingDescription && isOwner(agentDetails),
+					'view-only': !isEditingDescription || !isOwner(agentDetails),
+				}"
+			/>
 		</section>
 
 		<!-- Only show editable system info if user is the owner -->
@@ -341,7 +333,7 @@
 
 <script setup lang="ts">
 import { EyeClosed, MoveUpRight, Trash, Eye, PencilRuler, Search, XCircle, Copy, Edit2 } from 'lucide-vue-next'
-import { watch, ref, nextTick } from 'vue'
+import { ref } from 'vue'
 import Editor from '@/components/core/Editor.vue'
 import Popover from '@/components/core/Popover.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
@@ -351,16 +343,14 @@ import { useSelectAgent } from '@/composables/dashboard/assistant/agents/select'
 import { useDeleteAgent } from '@/composables/dashboard/assistant/agents/delete'
 import { useConnectIntegration } from '~/src/composables/dashboard/integrations/connect'
 import { isConfigSet } from '~/src/composables/dashboard/assistant/agents/tools/list'
-import { useEditToolConfig, agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
+import { useEditToolConfig } from '@/composables/dashboard/assistant/agents/tools/config'
 import { useCloneAgent } from '@/composables/dashboard/assistant/agents/clone'
 import { useUser } from '@/composables/auth/user'
 import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
-import { useAssistantModal } from '@/composables/core/modals'
 import { useCustomHead } from '@/composables/core/head'
-import { callFirebaseFunction } from '@/firebase/functions'
-import { useAlert } from '@/composables/core/notification'
+import { useAgentDetails } from '@/composables/dashboard/assistant/agents/details'
 
 const loading = ref(false)
 
@@ -392,94 +382,29 @@ useCustomHead({
       img: '/bot.png'
     })
 
-// Prefill agentToolConfigs from agentDetails.spec.tools on load
-watch(agentDetails, (newVal) => {
-	if (newVal && newVal.spec && newVal.spec.tools) {
-		agentToolConfigs.value = newVal.spec?.toolsConfig || {}
-	}
-}, { immediate: true })
+// Use the agent details composable
+const {
+  titleInputRef,
+  titlePopoverOpen,
+  currentTitle,
+  isEditingDescription,
+  descriptionModel,
+  setupWatchers,
+  removeTool,
+  openTitlePopover,
+  saveTitle,
+  editDescription,
+  cancelEditDescription,
+  saveDescription,
+  editSystemInfo,
+  editTools,
+  cancelEdit
+} = useAgentDetails()
 
-const removeTool = (toolToRemove: { id: string }) => {
-	toolsModel.value = toolsModel.value.filter((tool) => tool.id !== toolToRemove.id)
-}
+// Setup watchers for agent details
+setupWatchers(agentDetails)
 
-// Refs for title popover
-const titleInputRef = ref<HTMLInputElement | null>(null)
-const titlePopoverOpen = ref(false)
-const currentTitle = ref('')
-
-// Title popover functions
-const openTitlePopover = () => {
-	titlePopoverOpen.value = true
-	currentTitle.value = agentDetails.value?.name || ''
-	nextTick(() => {
-		titleInputRef.value?.focus()
-	})
-}
-
-const saveTitle = async () => {
-	if (currentTitle.value.trim()) {
-		await updateName(id as string, currentTitle.value)
-		titlePopoverOpen.value = false
-	}
-}
-
-// Refs for description popover
-const descriptionInputRef = ref<HTMLTextAreaElement | null>(null)
-const descriptionPopoverOpen = ref(false)
-const currentDescription = ref('')
-
-// Description popover functions
-const openDescriptionPopover = () => {
-	descriptionPopoverOpen.value = true
-	currentDescription.value = agentDetails.value?.description || ''
-	nextTick(() => {
-		descriptionInputRef.value?.focus()
-	})
-}
-
-const saveDescription = async () => {
-	if (currentDescription.value.trim()) {
-		await updateDescription(id as string, currentDescription.value)
-		descriptionPopoverOpen.value = false
-	}
-}
-
-const editSystemInfo = () => {
-	isEditingSystemInfo.value = true
-	systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
-}
-
-const editTools = () => {
-	isEditingTools.value = true
-	toolsModel.value = agentDetails.value?.spec?.tools || []
-}
-
-const cancelEdit = () => {
-	isEditingSystemInfo.value = false
-	// Reset the model to the original content
-	systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
-}
-
-// Watch for changes to agent details to update models
-watch(() => agentDetails.value, (newValue) => {
-	if (newValue) {
-		// Update title model
-		if (newValue.name !== undefined) {
-			currentTitle.value = newValue.name
-		}
-
-		// Update description model
-		if (newValue.description !== undefined) {
-			currentDescription.value = newValue.description
-		}
-
-		// Update system info model
-		if (newValue.spec?.systemInfo !== undefined) {
-			systemInfoModel.value = newValue.spec.systemInfo
-		}
-	}
-}, { immediate: true })
+// No need to reimplement these functions - use them directly from the composable
 
 definePageMeta({
 	layout: 'dashboard'
@@ -494,7 +419,7 @@ definePageMeta({
 		@apply text-headline text-2xl font-semibold;
 	}
 	.info {
-		@apply text-subText text-xs flex items-center gap-1;
+		@apply text-subText text-xs flex items-center gap-2 flex-wrap;
 		.dot {
 			@apply w-1 h-1 bg-primary rounded-full inline-block mx-2;
 		}
