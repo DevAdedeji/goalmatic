@@ -1,29 +1,19 @@
 import { Timestamp } from 'firebase/firestore'
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useEditToolConfig } from './tools/config'
+import {
+    isEditingSystemInfo,
+    isEditingTools,
+    toolsModel,
+    isEditingName,
+    isEditingDescription,
+    UserIntegrations,
+    systemInfoModel
+} from './details'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useAlert } from '@/composables/core/notification'
-import { formattedAvailableTools } from '~/src/composables/dashboard/assistant/agents/tools/list'
-import { useSelectAgent } from '@/composables/dashboard/assistant/agents/select'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
 import { useAssistantModal } from '@/composables/core/modals'
-
-const isEditingSystemInfo = ref(false)
-const systemInfoModel = ref('')
-const isEditingTools = ref(false)
-const toolsModel = ref([] as any[])
-const isEditingName = ref(false)
-const nameModel = ref('')
-const isEditingDescription = ref(false)
-const descriptionModel = ref('')
-const toolSearch = ref('')
-const UserIntegrations = ref<Record<string, any>[]>([])
-
-const filteredTools = computed(() => {
-    return formattedAvailableTools(UserIntegrations.value).filter((tool) => {
-        return tool.name.toLowerCase().includes(toolSearch.value.toLowerCase())
-    })
-})
 
 export const useEditAgent = () => {
     const updateNameLoading = ref(false)
@@ -31,7 +21,6 @@ export const useEditAgent = () => {
     const updateSystemInfoLoading = ref(false)
     const updateToolsLoading = ref(false)
     const toggleVisibilityLoading = ref(false)
-    const { selectedAgent } = useSelectAgent()
     const { getConfiguredTools } = useEditToolConfig()
 
     watch(isEditingTools, async () => {
@@ -46,6 +35,7 @@ export const useEditAgent = () => {
         try {
             updateSystemInfoLoading.value = true
 
+            // Use the shared systemInfoModel from details.ts
             await updateFirestoreDocument('agents', id, {
                 spec: {
                     ...spec,
@@ -167,10 +157,10 @@ export const useEditAgent = () => {
     }
 
     return {
-        systemInfoModel, nameModel, descriptionModel, openVisibilityConfirmation,
+        // Loading states
         updateSystemInfoLoading, updateToolsLoading, updateNameLoading, updateDescriptionLoading, toggleVisibilityLoading,
-        updateSystemInfo, updateTools, updateName, updateDescription, toggleAgentVisibility,
-        isEditingSystemInfo, isEditingTools, isEditingName, isEditingDescription,
-        toolsModel, filteredTools, toolSearch
+
+        // Functions
+        updateSystemInfo, updateTools, updateName, updateDescription, toggleAgentVisibility, openVisibilityConfirmation
     }
 }

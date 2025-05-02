@@ -1,6 +1,6 @@
 import { fileURLToPath, URL } from 'node:url'
 // import eslintPlugin from 'vite-plugin-eslint'
-import app from './app_config'
+// import app from './app_config'
 
 const GA_ID = import.meta.env.VITE_GA_ID as string
 
@@ -54,7 +54,7 @@ export default {
       }
     }
   },
-  app,
+  // app,
   runtimeConfig: {
     public: {
       posthogPublicKey: import.meta.env.VITE_POSTHOG_PUBLIC_KEY as string,

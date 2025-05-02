@@ -117,7 +117,7 @@
 					Edit
 				</button>
 				<div v-else-if="isEditingDescription" class="flex gap-2">
-					<button class="btn-text" @click="cancelEditDescription">
+					<button class="btn-text" @click="cancelEditDescription(agentDetails)">
 						Cancel
 					</button>
 					<button
@@ -130,6 +130,7 @@
 					</button>
 				</div>
 			</div>
+
 
 			<Editor
 				v-model="descriptionModel"
@@ -169,7 +170,6 @@
 				</div>
 			</div>
 
-
 			<Editor
 				v-model="systemInfoModel"
 				:editable="isEditingSystemInfo && isOwner(agentDetails)"
@@ -194,7 +194,7 @@
 					Edit
 				</button>
 				<div v-else-if="isEditingTools" class="flex gap-2">
-					<button class="btn-text" @click="isEditingTools = false">
+					<button class="btn-text" @click="cancelEdit">
 						Cancel
 					</button>
 					<button
@@ -350,7 +350,7 @@ import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useCustomHead } from '@/composables/core/head'
-import { useAgentDetails } from '@/composables/dashboard/assistant/agents/details'
+import { useAgentDetails, isEditingSystemInfo, isEditingTools, toolsModel, toolSearch, filteredTools } from '@/composables/dashboard/assistant/agents/details'
 
 const loading = ref(false)
 
@@ -362,10 +362,11 @@ const { isOwner } = useAgentOwner()
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
 const { fetchAgentsById, agentDetails } = useFetchAgentsById()
+// Import only the functions and loading states from edit.ts, not the state variables
 const {
- updateSystemInfoLoading, isEditingSystemInfo, systemInfoModel, updateSystemInfo,
-	isEditingTools, updateToolsLoading, toolsModel, updateTools, filteredTools, toolSearch,
-	openVisibilityConfirmation, updateName, updateNameLoading, updateDescription, updateDescriptionLoading
+  updateSystemInfoLoading, updateSystemInfo,
+  updateToolsLoading, updateTools,
+  openVisibilityConfirmation, updateName, updateNameLoading, updateDescription, updateDescriptionLoading
 } = useEditAgent()
 
 
@@ -389,22 +390,56 @@ const {
   currentTitle,
   isEditingDescription,
   descriptionModel,
-  setupWatchers,
-  removeTool,
-  openTitlePopover,
-  saveTitle,
-  editDescription,
+	setupWatchers,
+  systemInfoModel,
+  removeTool: removeToolFn,
+  openTitlePopover: openTitlePopoverFn,
+  saveTitle: saveTitleFn,
+  editDescription: editDescriptionFn,
   cancelEditDescription,
-  saveDescription,
-  editSystemInfo,
-  editTools,
-  cancelEdit
+  saveDescription: saveDescriptionFn,
+  editSystemInfo: editSystemInfoFn,
+  editTools: editToolsFn,
+  cancelEdit: cancelEditFn
 } = useAgentDetails()
 
 // Setup watchers for agent details
 setupWatchers(agentDetails)
 
-// No need to reimplement these functions - use them directly from the composable
+// Implement functions using the composable
+const removeTool = (toolToRemove: { id: string }) => {
+  toolsModel.value = removeToolFn(toolsModel, toolToRemove)
+}
+
+const openTitlePopover = () => {
+  openTitlePopoverFn()
+  currentTitle.value = agentDetails.value?.name || ''
+}
+
+const saveTitle = async () => {
+  await saveTitleFn(id as string, updateName)
+}
+
+const editDescription = () => {
+  editDescriptionFn(agentDetails)
+}
+
+
+const saveDescription = async () => {
+  await saveDescriptionFn(id as string, updateDescription)
+}
+
+const editSystemInfo = () => {
+  editSystemInfoFn(agentDetails)
+}
+
+const editTools = () => {
+  editToolsFn(agentDetails)
+}
+
+const cancelEdit = () => {
+  cancelEditFn(agentDetails)
+}
 
 definePageMeta({
 	layout: 'dashboard'
