@@ -43,7 +43,7 @@
     "marked": "^15.0.6",
     "moment": "^2.30.1",
     "motion-v": "^0.10.0",
-    "nuxt": "3.6.5",
+    "nuxt": "^3.17.1",
     "nuxt-gtag": "1.1.2",
     "nuxt-security": "^2.0.0-rc.6",
     "posthog-js": "^1.215.6",

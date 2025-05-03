@@ -16,9 +16,10 @@ const hasInitialFetch = ref(false)
 export const useFetchUserTables = () => {
   const { id: user_id } = useUser()
   const loading = ref(false)
+  const isClient = typeof window !== 'undefined'
 
   const fetchAllUserTables = async () => {
-    if (!user_id.value || process.server) return
+    if (!user_id.value || !isClient) return
     userTables.value = []
     loading.value = true
     try {
@@ -39,8 +40,7 @@ export const useFetchUserTables = () => {
   // Get a single table by ID
   const fetchTableById = async (table_id: string) => {
     loading.value = true
-    console.log(process.server)
-    if (!table_id || process.server) return null
+    if (!table_id || !isClient) return null
     try {
       await getSingleFirestoreDocument('tables', table_id, tableData)
       return tableData.value
@@ -76,46 +76,85 @@ export const useFetchUserTables = () => {
 export const useFetchTableRecords = () => {
   const loading = ref(false)
   const tableRecords = ref([] as any[])
+  const error = ref<string | null>(null)
+  const isClient = typeof window !== 'undefined'
 
   const fetchTableRecords = async (tableId: string) => {
-    if (!tableId || process.server) return []
+    if (!tableId || !isClient) return []
 
     loading.value = true
+    error.value = null
+
     try {
       // Fetch records from the subcollection
       await getFirestoreSubCollection('tables', tableId, 'records', tableRecords)
       return tableRecords.value
-    } catch (error: any) {
-      console.error('Error fetching table records:', error)
-      useAlert().openAlert({ type: 'ERROR', msg: `Error fetching table records: ${error.message}` })
+    } catch (err: any) {
+      console.error('Error fetching table records:', err)
+
+      // Handle permission errors specifically
+      if (err.code === 'permission-denied') {
+        error.value = "You don't have permission to access this table's records. It may be private or you may not be authorized."
+        useAlert().openAlert({
+          type: 'ERROR',
+          msg: error.value
+        })
+      } else {
+        error.value = `Error fetching table records: ${err.message}`
+        useAlert().openAlert({
+          type: 'ERROR',
+          msg: error.value
+        })
+      }
+
       return []
     } finally {
       loading.value = false
     }
   }
 
-  return { fetchTableRecords, loading, tableRecords }
+  return { fetchTableRecords, loading, tableRecords, error }
 }
 
 export const useFetchTableRecordsCount = () => {
   const loading = ref(false)
   const recordsCount = ref(0)
+  const error = ref<string | null>(null)
+  const isClient = typeof window !== 'undefined'
 
   const fetchTableRecordsCount = async (tableId: string) => {
-    if (!tableId || process.server) return 0
+    // Skip if no tableId or we're on the server
+    if (!tableId || !isClient) return 0
 
     loading.value = true
+    error.value = null
+
     try {
       recordsCount.value = await getFirestoreSubCollectionCount('tables', tableId, 'records')
       return recordsCount.value
-    } catch (error: any) {
-      console.error('Error fetching table records count:', error)
-      useAlert().openAlert({ type: 'ERROR', msg: `Error fetching table records count: ${error.message}` })
+    } catch (err: any) {
+      console.error('Error fetching table records count:', err)
+
+      // Handle permission errors specifically
+      if (err.code === 'permission-denied') {
+        error.value = "You don't have permission to access this table's records. It may be private or you may not be authorized."
+        useAlert().openAlert({
+          type: 'ERROR',
+          msg: error.value
+        })
+      } else {
+        error.value = `Error fetching table records count: ${err.message}`
+        useAlert().openAlert({
+          type: 'ERROR',
+          msg: error.value
+        })
+      }
+
       return 0
     } finally {
       loading.value = false
     }
   }
 
-  return { fetchTableRecordsCount, loading, recordsCount }
+  return { fetchTableRecordsCount, loading, recordsCount, error }
 }

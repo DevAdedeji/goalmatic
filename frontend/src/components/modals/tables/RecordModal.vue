@@ -147,7 +147,7 @@ import { Timestamp } from 'firebase/firestore'
 import Modal from '@/components/core/modal/Modal.vue'
 import { useTablesModal } from '@/composables/core/modals'
 import { formatTimeWithSeconds } from '@/composables/utils/formatter'
-import { Field } from '@/composables/dashboard/tables/types'
+import type { Field } from '@/composables/dashboard/tables/types'
 
 
 const props = defineProps({

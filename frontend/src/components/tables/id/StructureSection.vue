@@ -64,7 +64,7 @@
 <script setup lang="ts">
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
 import { useTableStructureSection } from '@/composables/dashboard/tables/structureSection'
-import { TableData } from '@/composables/dashboard/tables/types'
+import type{ TableData } from '@/composables/dashboard/tables/types'
 
 const props = defineProps({
 	tableData: {

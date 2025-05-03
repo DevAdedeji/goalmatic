@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import { Edit2, Trash2 } from 'lucide-vue-next'
 import { formatDate } from '@/composables/utils/formatter'
-import { Table } from '@/composables/dashboard/tables/types'
+import type { Table } from '@/composables/dashboard/tables/types'
 import { useFetchTableRecordsCount } from '@/composables/dashboard/tables/fetch'
 
 const props = defineProps<{

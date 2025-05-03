@@ -1,4 +1,4 @@
-import { User } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import { Timestamp } from 'firebase/firestore'
 import { useUser } from './user'
 import { setFirestoreDocument } from '@/firebase/firestore/create'

@@ -1,4 +1,4 @@
-import { FlowNode, FlowNodeProp } from '../types'
+import type { FlowNode, FlowNodeProp } from '../types'
 import { validateScheduleDate, validateScheduleTime, getDefaultDateValue, getDefaultTimeValue } from './validation'
 import { timezones, getDefaultTimezone } from '@/composables/helpers/timezone'
 

@@ -4,9 +4,9 @@ import {
 	onAuthStateChanged,
 	signOut,
 	setPersistence,
-	browserLocalPersistence,
-	User
+	browserLocalPersistence
 } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import { auth } from './init'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'

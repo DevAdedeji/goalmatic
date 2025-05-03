@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
 import { selectedAgent } from '../agents/select'

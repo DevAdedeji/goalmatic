@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
 import { useTablesModal } from '@/composables/core/modals'
 import { useConfirmationModal } from '@/composables/core/confirmation'
-import { Field, TableData } from '@/composables/dashboard/tables/types'
+import type { Field, TableData } from '@/composables/dashboard/tables/types'
 
 // Define field form interface
 interface FieldForm extends Omit<Field, 'options'> {

@@ -127,7 +127,7 @@
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
 import { computed, onMounted } from 'vue'
 import { formatDate } from '@/composables/utils/formatter'
-import { TableData } from '@/composables/dashboard/tables/types'
+import type { TableData } from '@/composables/dashboard/tables/types'
 import { useTableDataSection } from '@/composables/dashboard/tables/dataSection'
 import Table from '@/components/core/Table.vue'
 

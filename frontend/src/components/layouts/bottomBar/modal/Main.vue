@@ -25,7 +25,6 @@
 </template>
 
 <script setup lang="ts">
-import SideBarItem from './SideBarItem.vue'
 import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
 import { modal, closeModalType, closeAllExtremes } from '@/composables/core/modal'
 

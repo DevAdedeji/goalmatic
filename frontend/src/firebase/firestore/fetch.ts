@@ -1,5 +1,4 @@
 import { doc, onSnapshot, getDoc, limit, collection, query, FirestoreError, QuerySnapshot } from 'firebase/firestore'
-import { Ref } from 'vue'
 import { db } from '../init'
 
 

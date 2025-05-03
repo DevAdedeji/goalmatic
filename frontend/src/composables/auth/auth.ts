@@ -1,4 +1,4 @@
-import { User } from 'firebase/auth'
+import type { User } from 'firebase/auth'
 import { useAuthModal } from '../core/modals'
 import { afterAuthCheck } from './utils'
 import { useUser } from '@/composables/auth/user'

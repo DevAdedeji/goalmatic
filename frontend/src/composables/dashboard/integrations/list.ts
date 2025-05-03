@@ -1,4 +1,4 @@
-import { EditConfigField } from './editConfig'
+import type { EditConfigField } from './editConfig'
 import { fetchUserAgentsForIntegration } from '@/composables/dashboard/assistant/agents/fetch'
 
 export const availableIntegrations = () => {

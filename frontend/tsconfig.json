@@ -6,6 +6,13 @@
 			"DOM"
 		],
 		"noImplicitAny": false,
+		"verbatimModuleSyntax": false,
+		"paths": {
+			"@/*": [
+				"./src/*"
+			]
+		},
+		"baseUrl": "."
 	},
 	"extends": "./.nuxt/tsconfig.json"
 }

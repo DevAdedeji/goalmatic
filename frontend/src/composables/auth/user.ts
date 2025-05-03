@@ -1,5 +1,5 @@
-import { User } from '@firebase/auth'
-import { ProfileType } from './types/profile'
+import type { User } from '@firebase/auth'
+import type { ProfileType } from './types/profile'
 import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
 
 

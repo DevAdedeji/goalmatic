@@ -53,7 +53,8 @@
 
 <script lang="ts" setup>
 
-import { PropType, watch, computed } from 'vue'
+import { watch, computed } from 'vue'
+import type { PropType } from 'vue'
 import { X } from 'lucide-vue-next'
 import { modal, modalType, closeModalType, closeAllExtremes } from '@/composables/core/modal'
 
