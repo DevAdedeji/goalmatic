@@ -349,7 +349,7 @@ import { useUser } from '@/composables/auth/user'
 import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
-import { setCustomHead } from '@/composables/core/head'
+import { useCustomHead } from '@/composables/core/head'
 import { useAgentDetails, isEditingSystemInfo, isEditingTools, toolsModel, toolSearch, filteredTools } from '@/composables/dashboard/assistant/agents/details'
 
 const loading = ref(false)
@@ -377,10 +377,10 @@ const { id } = useRoute().params
 await fetchAgentsById(id as string)
 
 // Add null checks before using agentDetails in useCustomHead
-setCustomHead({
+await useCustomHead({
       title: `${agentDetails.value?.name || 'Agent'} | Agent Details`,
       desc: agentDetails.value?.description || 'View agent details and capabilities',
-      img: '/bot.png'
+      img: 'https://www.goalmatic.io/og2.png'
     })
 
 // Use the agent details composable
@@ -442,7 +442,7 @@ const cancelEdit = () => {
 }
 
 definePageMeta({
-	layout: 'dashboard'
+	// layout: 'dashboard'
 	// No authentication middleware - public agents can be viewed by anyone
 })
 </script>
