@@ -8,12 +8,10 @@ import { useAlert } from '@/composables/core/notification'
 
 // Form for creating a new table
 const createTableForm = reactive({
-  name: '',
-  description: '',
+  name: 'Untitled Table',
+  description: 'A new table for organizing your data',
   type: 'standard',
-  fields: [] as TableField[],
-
-  records: [] // Records will store the actual data entries
+  fields: [] as TableField[]
 })
 
 export const useCreateTable = () => {
@@ -21,12 +19,10 @@ export const useCreateTable = () => {
   const loading = ref(false)
 
   const resetForm = () => {
-    createTableForm.name = ''
-    createTableForm.description = ''
+    createTableForm.name = 'Untitled Table'
+    createTableForm.description = 'A new table for organizing your data'
     createTableForm.type = 'standard'
     createTableForm.fields = []
-
-    createTableForm.records = []
   }
 
   const createTable = async () => {
@@ -34,19 +30,28 @@ export const useCreateTable = () => {
 
     loading.value = true
     try {
-      const id = uuidv4()
+      const tableId = uuidv4()
       const table_data = {
         ...createTableForm,
-        id,
+        id: tableId,
         creator_id: user_id.value,
         created_at: Timestamp.fromDate(new Date()),
         updated_at: Timestamp.fromDate(new Date())
       }
 
-      await setFirestoreDocument('tables', id, table_data)
+      await setFirestoreDocument('tables', tableId, table_data)
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Table created successfully' })
       resetForm()
-      return id
+
+		if (tableId) {
+			useRouter().push(`/tables/${tableId}`)
+		} else {
+			useAlert().openAlert({
+				type: 'ERROR',
+				msg: 'Failed to create table. Please try again.'
+			})
+		}
+      return tableId
     } catch (error: any) {
       console.error('Error creating table:', error)
       useAlert().openAlert({ type: 'ERROR', msg: `Error creating table: ${error.message}` })
@@ -56,9 +61,7 @@ export const useCreateTable = () => {
     }
   }
 
-  // Helper function to add a field to the table
   const addField = (field: TableField) => {
-    // Create a new field with a unique ID if not provided
     const newField = {
       ...field,
       id: field.id || uuidv4()

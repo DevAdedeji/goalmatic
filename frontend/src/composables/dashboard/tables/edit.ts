@@ -8,16 +8,13 @@ import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 
 // Store the selected table for editing
-const selectedTable = ref()
+
 
 export const useEditTable = () => {
   const { id: user_id } = useUser()
   const loading = ref(false)
 
-  // Select a table for editing
-  const highlightTable = (table: Record<string, any>) => {
-    selectedTable.value = table
-  }
+
 
   // Update the table
   const updateTable = async (data: Record<string, any>) => {
@@ -224,9 +221,7 @@ export const useEditTable = () => {
   }
 
   return {
-    selectedTable,
     loading,
-    highlightTable,
     updateTable,
 
     addFieldToTable,

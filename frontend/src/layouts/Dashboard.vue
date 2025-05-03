@@ -2,9 +2,13 @@
 	<div class="flex w-full h-screen bg-light relative  md:py-0  px-0 overflow-y-hidden ">
 		<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" class="!w-[268px]" />
 
+
+
 		<div :class="['relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden ',
 			!isLoggedIn ? '!w-full' : 'md:!w-[calc(100vw-268px)]']">
 			<LayoutsDashboadHeader :is-business="false" />
+
+
 			<Alert />
 			<div class="w-full h-full relative  overflow-x-hidden bg-light   pb-40">
 				<section class="flex-col flex items-stretch">
@@ -22,7 +26,6 @@
 import { useBottombarModal } from '@/composables/core/modals'
 import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
 import { useUser } from '@/composables/auth/user'
-
 
 
 

@@ -47,7 +47,7 @@ export const useFetchUserFlows = () => {
       if (error.code === 'permission-denied') {
         useAlert().openAlert({
           type: 'ERROR',
-          msg: 'You don\'t have permission to access this flow. It may be private'
+          msg: "You don't have permission to access this flow. It may be private"
         })
       } else {
         useAlert().openAlert({ type: 'ERROR', msg: `Error fetching flow: ${error.message}` })

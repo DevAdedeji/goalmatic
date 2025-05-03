@@ -1,21 +1,23 @@
 <template>
-	<div class="p-4 sm:p-6">
-		<TablesIdLoader v-if="loading" />
+	<ClientOnly>
+		<div class="p-4 sm:p-6">
+			<TablesIdLoader v-if="loading" />
 
 
-		<div v-else-if="tableData">
-			<TablesIdHeader v-model:current-tab="currentTab" :table-data="tableData" />
+			<div v-else-if="tableData">
+				<TablesIdHeader v-model:current-tab="currentTab" :table-data="tableData" />
 
 
-			<TablesIdDetails
-				:current-tab="currentTab"
-				:table-data="tableData"
-				@switch-tab="currentTab = $event"
-			/>
+				<TablesIdDetails
+					:current-tab="currentTab"
+					:table-data="tableData"
+					@switch-tab="currentTab = $event"
+				/>
+			</div>
+
+			<TablesIdErrorState v-else @back-to-tables="router.push('/tables')" />
 		</div>
-
-		<TablesIdErrorState v-else @back-to-tables="router.push('/tables')" />
-	</div>
+	</ClientOnly>
 </template>
 
 <script setup lang="ts">

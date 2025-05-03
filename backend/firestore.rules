@@ -159,8 +159,7 @@ service cloud.firestore {
           validTimestamp(request.resource.data.updated_at);
 
         allow read: if isSignedIn() && (
-          get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid ||
-          get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "public" ||
+          get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid  ||
           (get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "private" &&
            get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users != null &&
            request.auth.uid in get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users)

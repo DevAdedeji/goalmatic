@@ -61,6 +61,7 @@ export const useUser = () => {
 
     const fetchUserProfile = async (uid:string): Promise<void> => {
         if (user.value && uid) {
+            if (process.server) return
             try {
                 await getSingleFirestoreDocument('users', uid, _userProfileCookie)
             } catch (error) {

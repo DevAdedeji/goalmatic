@@ -17,12 +17,11 @@ export const useFetchUserTables = () => {
   const { id: user_id } = useUser()
   const loading = ref(false)
 
-  const fetchAllTables = async () => {
-    if (!user_id.value) return
+  const fetchAllUserTables = async () => {
+    if (!user_id.value || process.server) return
     userTables.value = []
     loading.value = true
     try {
-      // Query tables collection where creator_id equals user_id
       await getFirestoreCollectionWithWhereQuery(
         'tables',
         userTables,
@@ -40,11 +39,10 @@ export const useFetchUserTables = () => {
   // Get a single table by ID
   const fetchTableById = async (table_id: string) => {
     loading.value = true
-
+    console.log(process.server)
+    if (!table_id || process.server) return null
     try {
-      // Use getSingleFirestoreDocument to fetch the table by its ID
       await getSingleFirestoreDocument('tables', table_id, tableData)
-      // Return the fetched data directly from the ref's value
       return tableData.value
     } catch (error: any) {
       console.error('Error fetching table by ID:', error)
@@ -52,7 +50,7 @@ export const useFetchUserTables = () => {
       if (error.code === 'permission-denied') {
         useAlert().openAlert({
           type: 'ERROR',
-          msg: 'You don\'t have permission to access this table. It may be private'
+          msg: "You don't have permission to access this table. It may be private"
         })
       } else {
         useAlert().openAlert({ type: 'ERROR', msg: `Error fetching table: ${error.message}` })
@@ -68,7 +66,7 @@ export const useFetchUserTables = () => {
   return {
     userTables,
     loading,
-    fetchAllTables,
+    fetchAllUserTables,
     fetchTableById,
     tableData,
     hasInitialFetch
@@ -80,7 +78,7 @@ export const useFetchTableRecords = () => {
   const tableRecords = ref([] as any[])
 
   const fetchTableRecords = async (tableId: string) => {
-    if (!tableId) return []
+    if (!tableId || process.server) return []
 
     loading.value = true
     try {
@@ -104,7 +102,7 @@ export const useFetchTableRecordsCount = () => {
   const recordsCount = ref(0)
 
   const fetchTableRecordsCount = async (tableId: string) => {
-    if (!tableId) return 0
+    if (!tableId || process.server) return 0
 
     loading.value = true
     try {

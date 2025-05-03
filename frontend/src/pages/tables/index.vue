@@ -1,90 +1,41 @@
 <template>
-	<main class="p-4 sm:p-6">
-		<TablesHeader :creating-table="loading" @createNewTable="createNewTable" />
-		<TablesLoader v-if="loading" />
-		<TablesEmptyState v-else-if="!userTables.length" @createNewTable="createNewTable" />
+	<ClientOnly>
+		<main class="p-4 sm:p-6">
+			<TablesHeader :creating-table="createLoading" @createNewTable="createTable" />
+			<TablesLoader v-if="loading" />
+			<TablesEmptyState v-else-if="!userTables.length" @createNewTable="createTable" />
 
-		<div v-else>
-			<TablesList
-				:tables="userTables"
-				@edit="editTable($event)"
-				@delete="setDeleteTableData($event)"
-				@createNewTable="createNewTable"
-			/>
-		</div>
-	</main>
+			<div v-else>
+				<TablesList
+					:tables="userTables"
+					@edit="$router.push(`/tables/${$event.id}`)"
+					@delete="setDeleteTableData($event)"
+					@createNewTable="createTable"
+				/>
+			</div>
+		</main>
+	</ClientOnly>
 </template>
 
 <script setup lang="ts">
 
 import { usePageHeader } from '@/composables/utils/header'
-import { useFetchUserTables, useFetchTableRecords } from '@/composables/dashboard/tables/fetch'
-import { useEditTable } from '@/composables/dashboard/tables/edit'
+import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 import { useDeleteTable } from '@/composables/dashboard/tables/delete'
 import { useCreateTable } from '@/composables/dashboard/tables/create'
-import { Table } from '@/composables/dashboard/tables/types'
-
-import { useAlert } from '@/composables/core/notification'
-
-// Import table components
 import TablesHeader from '@/components/tables/Header.vue'
 import TablesLoader from '@/components/tables/Loader.vue'
 import TablesEmptyState from '@/components/tables/EmptyState.vue'
 import TablesList from '@/components/tables/List.vue'
 
-const router = useRouter()
-const { userTables, loading, fetchAllTables } = useFetchUserTables()
-const { highlightTable } = useEditTable()
+
+const { userTables, loading, fetchAllUserTables } = useFetchUserTables()
 const { setDeleteTableData } = useDeleteTable()
-const { createTable, createTableForm, loading: createLoading } = useCreateTable()
-const { fetchTableRecords } = useFetchTableRecords()
-// Track loading states
-const creatingDemo = ref(false)
-
-
-// Fetch tables on component mount
-onMounted(async () => {
-	await fetchAllTables()
-})
-
-// Create a new table and navigate to its detail page
-const createNewTable = async () => {
-	try {
-		// Set default values for a new draft table
-		createTableForm.name = 'New Table'
-		createTableForm.description = 'A new table for organizing your data'
-		createTableForm.type = 'standard'
-		createTableForm.fields = []
-		createTableForm.records = []
-
-		// Create the table
-		const tableId = await createTable()
-
-		if (tableId) {
-			// Navigate to the table detail page with the new ID
-			router.push(`/tables/${tableId}`)
-		} else {
-			useAlert().openAlert({
-				type: 'ERROR',
-				msg: 'Failed to create table. Please try again.'
-			})
-		}
-	} catch (error: any) {
-		console.error('Error creating table:', error)
-		useAlert().openAlert({
-			type: 'ERROR',
-			msg: `Failed to create table: ${error.message || 'Unknown error'}`
-		})
-	}
-}
+const { createTable, loading: createLoading } = useCreateTable()
 
 
 
-// Edit table
-const editTable = (table: Table) => {
-	highlightTable(table)
-	router.push(`/tables/${table.id}`)
-}
+ fetchAllUserTables()
 
 definePageMeta({
 	layout: 'dashboard',

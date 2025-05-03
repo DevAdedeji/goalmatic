@@ -53,7 +53,6 @@ module.exports = {
 		indent: ['off', 'tab', { SwitchCase: 1 }],
 		'no-mixed-spaces-and-tabs': ['error', 'smart-tabs'],
 		semi: ['error', 'never'],
-		quotes: ['error', 'single'],
 		'prefer-const': ['error'],
 		'arrow-parens': ['error', 'always'],
 		'no-return-assign': 'off',

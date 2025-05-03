@@ -33,7 +33,7 @@ export const useTableDataSection = (tableData: TableData) => {
     if (index === -1) {
       selectedRecords.value = [...selectedRecords.value, recordId]
     } else {
-      selectedRecords.value = selectedRecords.value.filter(id => id !== recordId)
+      selectedRecords.value = selectedRecords.value.filter((id) => id !== recordId)
     }
   }
 
