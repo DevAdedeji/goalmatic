@@ -387,7 +387,7 @@ await fetchAgentsById(id as string)
 await useCustomHead({
       title: `${agentDetails.value?.name || 'Agent'} | Agent Details`,
       desc: agentDetails.value?.description || 'View agent details and capabilities',
-      img: 'https://www.goalmatic.io/og2.png'
+      img: 'https://www.goalmatic.io/bot.png'
     })
 
 // Use the agent details composable
