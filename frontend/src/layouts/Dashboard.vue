@@ -1,22 +1,20 @@
 <template>
-	<ClientOnly>
-		<div class="flex w-full h-screen bg-light relative  md:py-0  px-0 overflow-y-hidden ">
-			<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" class="!w-[268px]" />
+	<div class="flex w-full h-screen bg-light relative  md:py-0  px-0 overflow-y-hidden ">
+		<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" class="!w-[268px]" />
 
-			<div :class="['relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden ',
-				!isLoggedIn ? '!w-full' : 'md:!w-[calc(100vw-268px)]']">
-				<LayoutsDashboadHeader :is-business="false" />
-				<Alert />
-				<div class="w-full h-full relative  overflow-x-hidden bg-light   pb-40">
-					<section class="flex-col flex items-stretch">
-						<slot />
-					</section>
-				</div>
-				<ModalBase />
+		<div :class="['relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden ',
+			!isLoggedIn ? '!w-full' : 'md:!w-[calc(100vw-268px)]']">
+			<LayoutsDashboadHeader :is-business="false" />
+			<Alert />
+			<div class="w-full h-full relative  overflow-x-hidden bg-light   pb-40">
+				<section class="flex-col flex items-stretch">
+					<slot />
+				</section>
 			</div>
-			<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+			<ModalBase />
 		</div>
-	</ClientOnly>
+		<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+	</div>
 </template>
 
 
