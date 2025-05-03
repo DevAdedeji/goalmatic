@@ -1,6 +1,6 @@
 <template>
 	<main class="p-4 sm:p-6">
-		<TablesHeader :creating-table="creatingTable" @createNewTable="createNewTable" />
+		<TablesHeader :creating-table="loading" @createNewTable="createNewTable" />
 		<TablesLoader v-if="loading" />
 		<TablesEmptyState v-else-if="!userTables.length" @createNewTable="createNewTable" />
 
@@ -40,7 +40,7 @@ const { createTable, createTableForm, loading: createLoading } = useCreateTable(
 const { fetchTableRecords } = useFetchTableRecords()
 // Track loading states
 const creatingDemo = ref(false)
-const creatingTable = ref(false)
+
 
 // Fetch tables on component mount
 onMounted(async () => {
@@ -49,10 +49,6 @@ onMounted(async () => {
 
 // Create a new table and navigate to its detail page
 const createNewTable = async () => {
-	if (creatingTable.value) return
-
-	creatingTable.value = true
-
 	try {
 		// Set default values for a new draft table
 		createTableForm.name = 'New Table'
@@ -72,7 +68,6 @@ const createNewTable = async () => {
 				type: 'ERROR',
 				msg: 'Failed to create table. Please try again.'
 			})
-			creatingTable.value = false
 		}
 	} catch (error: any) {
 		console.error('Error creating table:', error)
@@ -80,7 +75,6 @@ const createNewTable = async () => {
 			type: 'ERROR',
 			msg: `Failed to create table: ${error.message || 'Unknown error'}`
 		})
-		creatingTable.value = false
 	}
 }
 

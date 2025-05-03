@@ -17,7 +17,7 @@ export const useFetchUserFlows = () => {
 
   const fetchAllFlows = async () => {
     if (!user_id.value) return
-
+    userFlows.value = []
     loading.value = true
     try {
       await getFirestoreCollectionWithWhereQuery(

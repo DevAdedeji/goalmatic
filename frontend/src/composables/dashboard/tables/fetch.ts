@@ -19,7 +19,7 @@ export const useFetchUserTables = () => {
 
   const fetchAllTables = async () => {
     if (!user_id.value) return
-
+    userTables.value = []
     loading.value = true
     try {
       // Query tables collection where creator_id equals user_id

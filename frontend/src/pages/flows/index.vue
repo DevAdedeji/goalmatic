@@ -1,6 +1,20 @@
 <template>
-	<main class="p-4 sm:p-6">
+	<!-- Coming Soon Section -->
+	<div v-if="showComingSoon" class="flex flex-col items-center justify-center min-h-[50vh] text-center">
+		<Construction class="text-primary mb-6 mt-40" :size="64" />
+		<h1 class="text-3xl mb-4 text-headline font-bold">
+			Coming Soon!
+		</h1>
+		<p class="text-text-secondary mb-8 text-lg max-w-md">
+			We're working hard to bring this feature to you. Stay tuned for updates!
+		</p>
+	</div>
+
+	<main v-else class="p-4 sm:p-6">
 		<FlowsHeader :creating-flow="createLoading" @createNewFlow="createNewFlow" />
+
+
+
 		<FlowsLoader v-if="loading" />
 		<FlowsEmptyState v-else-if="!userFlows.length" @createNewFlow="createNewFlow" />
 
@@ -19,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-import { Activity, FileEdit } from 'lucide-vue-next'
+import { Activity, FileEdit, Construction } from 'lucide-vue-next'
 import { usePageHeader } from '@/composables/utils/header'
 import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
 import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
@@ -28,6 +42,10 @@ import { useCreateFlow } from '@/composables/dashboard/flows/create'
 import TabComponents from '@/components/core/Tabs.vue'
 
 
+// --- Add this ref to toggle the Coming Soon section ---
+// Set to `true` to display the "Coming Soon" message, `false` to show the normal content.
+const showComingSoon = ref(true)
+// -------------------------------------------------------
 
 
 const { userFlows, loading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
