@@ -82,19 +82,19 @@ service cloud.firestore {
     // Agents collection: AI agents that can be personal or public
     match /agents/{agentId} {
       allow create: if isSignedIn() &&
-        isOwner(request.resource.data.user_id) &&
-        request.resource.data.keys().hasAll(['name', 'user_id', 'created_at', 'description', 'public']) &&
+        isOwner(request.resource.data.creator_id) &&
+        request.resource.data.keys().hasAll(['name', 'creator_id', 'created_at', 'description', 'public']) &&
         validTimestamp(request.resource.data.created_at);
 
 
-      allow read: if  (resource.data.public == true || resource.data.user_id == request.auth.uid);
-      
+      allow read: if  (resource.data.public == true || resource.data.creator_id == request.auth.uid);
+
 
       // Allow update and delete only to the owner
       allow update, delete: if isSignedIn() &&
-        resource.data.user_id == request.auth.uid &&
+        resource.data.creator_id == request.auth.uid &&
         (request.method != "update" ||
-          (request.resource.data.user_id == resource.data.user_id &&
+          (request.resource.data.creator_id == resource.data.creator_id &&
            validTimestamp(request.resource.data.updated_at)));
     }
 

@@ -45,7 +45,7 @@ export const useCreateAgent = () => {
             },
             created_at: Timestamp.fromDate(new Date()),
             updated_at: Timestamp.fromDate(new Date()),
-            user_id: user_id.value!,
+            creator_id: user_id.value!,
             id
         }
 

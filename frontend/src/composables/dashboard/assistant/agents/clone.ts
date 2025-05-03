@@ -16,7 +16,7 @@ export const useCloneAgent = () => {
     const router = useRouter()
 
     const canCloneAgent = (agent: Record<string, any>): boolean => {
-        if (!isLoggedIn.value || !user_id.value || agent.user_id === user_id.value) return false
+        if (!isLoggedIn.value || !user_id.value || agent.creator_id === user_id.value) return false
         return true
     }
 
@@ -36,14 +36,14 @@ export const useCloneAgent = () => {
                     id: user_id.value!,
                     name: userProfile.value?.name
                 },
-                user_id: user_id.value!,
+                creator_id: user_id.value!,
                 created_at: Timestamp.fromDate(new Date()),
                 updated_at: Timestamp.fromDate(new Date()),
                 public: false, // Set to private by default
                 cloned_from: {
                     id: agentToClone.id,
                     name: agentToClone.name,
-                    user_id: agentToClone.user_id
+                    creator_id: agentToClone.creator_id
                 },
                 spec: {
                     ...(agentToClone.spec || {}),
@@ -86,7 +86,7 @@ export const useCloneAgent = () => {
                 return
             }
 
-            if (agentToClone.user_id === user_id.value) {
+            if (agentToClone.creator_id === user_id.value) {
                 useAlert().openAlert({
                     type: 'ERROR',
                     msg: 'You cannot clone your own agent'

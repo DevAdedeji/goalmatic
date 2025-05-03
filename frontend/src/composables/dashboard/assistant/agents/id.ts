@@ -3,6 +3,7 @@ import { defaultGoalmaticAgent } from './fetch'
 import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
 import { useAlert } from '@/composables/core/notification'
 import { callFirebaseFunction } from '@/firebase/functions'
+import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
 
 const agentDetails = ref({} as Record<string, any>)
 const loading = ref(false)

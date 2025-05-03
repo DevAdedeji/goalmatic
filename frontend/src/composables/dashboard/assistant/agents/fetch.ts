@@ -53,7 +53,7 @@ export const useFetchUserAgents = () => {
 
     const fetchUserAgents = async () => {
         try {
-            await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'user_id', operator: '==', value: user_id.value! })
+            await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'creator_id', operator: '==', value: user_id.value! })
             loading.value = false
         } catch (e: any) {
             loading.value = false
@@ -68,7 +68,7 @@ export const useFetchUserAgents = () => {
 export const fetchUserAgentsForIntegration = async () => {
     try {
         fetchedUserAgents.value = []
-        await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'user_id', operator: '==', value: useUser().id.value! })
+        await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'creator_id', operator: '==', value: useUser().id.value! })
         return fetchedUserAgents.value
     } catch (e: any) {
         useAlert().openAlert({ type: 'ERROR', msg: `Error: ${e.message}` })

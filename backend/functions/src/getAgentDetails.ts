@@ -27,7 +27,7 @@ export const getAgentDetails = onCall({
         const agentData = snapshot.data()!
 
         // Set all toolConfig values to null only if the requester is not the creator
-        if (agentData.spec && agentData.spec.toolsConfig && request.auth && request.auth.uid !== agentData.user_id) {
+        if (agentData.spec && agentData.spec.toolsConfig && request.auth && request.auth.uid !== agentData.creator_id) {
             const toolsConfig = { ...agentData.spec.toolsConfig }
 
             // Iterate through all tools and set their config values to null
@@ -43,8 +43,6 @@ export const getAgentDetails = onCall({
             // Update the agent data with nullified toolsConfig
             agentData.spec.toolsConfig = toolsConfig
         }
-        console.log(agentData.created_at.toDate());
-        console.log(agentData.created_at);
         return {
             ...agentData,
             created_at: new Date(agentData.created_at._seconds * 1000).toISOString()

@@ -57,13 +57,14 @@ export function useAgentDetails() {
   }
 
   // Tool functions
-  const removeTool = (toolsModel: Ref<any[]>, toolToRemove: { id: string }) => {
-    return toolsModel.value.filter((tool) => tool.id !== toolToRemove.id)
+  const removeTool = (toolsModelParam: any[], toolToRemove: { id: string }) => {
+    toolsModel.value = toolsModelParam.filter((tool) => tool.id !== toolToRemove.id)
   }
 
   // Title popover functions
-  const openTitlePopover = () => {
+  const openTitlePopover = (agentDetails: any) => {
     titlePopoverOpen.value = true
+    currentTitle.value = agentDetails?.name || ''
     nextTick(() => {
       titleInputRef.value?.focus()
     })
@@ -77,9 +78,9 @@ export function useAgentDetails() {
   }
 
   // Description functions
-  const editDescription = (agentDetails: Ref<any>) => {
+  const editDescription = (agentDetails: any) => {
     isEditingDescription.value = true
-    descriptionModel.value = agentDetails.value?.description || ''
+    descriptionModel.value = agentDetails?.description || ''
   }
 
   const cancelEditDescription = (agentDetails: any) => {
@@ -96,27 +97,24 @@ export function useAgentDetails() {
   }
 
   // System info functions
-  const editSystemInfo = (agentDetails: Ref<any>) => {
+  const editSystemInfo = (agentDetails: any) => {
     isEditingSystemInfo.value = true
-    systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
+    systemInfoModel.value = agentDetails.spec?.systemInfo || ''
   }
 
-  const editTools = (agentDetails: Ref<any>) => {
+  const editTools = (agentDetails: any) => {
     isEditingTools.value = true
-    toolsModel.value = [...(agentDetails.value?.spec?.tools || [])]
+    toolsModel.value = [...(agentDetails.spec?.tools || [])]
   }
 
-  const cancelEdit = (agentDetails: Ref<any>) => {
-    // Determine which edit mode is active and reset accordingly
+  const cancelEdit = (agentDetails: any) => {
     if (isEditingSystemInfo.value) {
       isEditingSystemInfo.value = false
-      // Reset the model to the original content
       systemInfoModel.value = agentDetails.value?.spec?.systemInfo || ''
     }
 
     if (isEditingTools.value) {
       isEditingTools.value = false
-      // Reset the tools model to the original content
       toolsModel.value = [...(agentDetails.value?.spec?.tools || [])]
     }
   }
