@@ -26,7 +26,6 @@ import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
 import { useUser } from '@/composables/auth/user'
 
 
-// import { useCustomHead } from '@/composables/core/head'
 
 
 
@@ -34,11 +33,7 @@ const { isLoggedIn } = useUser()
 const mainShowRoutes = dashboardRoutes().filter((route) => true)
 const mainBottomNavRoutes = dashboardRoutes().filter((route) => route.main === true)
 
-// await useCustomHead({
-//       title: 'Test | Agent Details',
-//       desc: 'View agent details and capabilities',
-//       img: 'https://www.goalmatic.io/og2.png'
-//     })
+
 
 
 
