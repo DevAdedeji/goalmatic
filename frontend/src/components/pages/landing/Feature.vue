@@ -52,12 +52,12 @@ onMounted(() => watchUserStateChange())
 .bento{
 	@apply flex flex-col md:flex-row items-center justify-between w-full mb-24 gap-2.5;
     article{
-        @apply p-6 w-full md:w-[40%] flex flex-col items-start ;
+        @apply md:p-6 w-full md:w-[40%] flex flex-col items-start ;
         p{
             @apply self-stretch text-[rgba(0,_0,_0,_0.70)] text-base tracking-[0px]  not-italic leading-[26px] mb-11
         }
         img{
-            @apply w-full
+            @apply w-full hidden md:block
         }
     }
     img{

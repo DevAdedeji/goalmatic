@@ -1,10 +1,10 @@
 <template>
 	<main class="container md:px-9 px-4 relative overflow-hidden flex flex-col items-center">
 		<div class="flex flex-col items-center md:gap-4 gap-4 z-30  mt-[153px] relative">
-			<h1 class="textHero text-headline font-bold text-[49px] md:text-[72px] lg:max-w-[800px] text-center leading-[40px] md:leading-[80px] px-4">
+			<h1 class="textHero text-headline font-bold text-[49px] md:text-[72px] lg:max-w-[800px] text-center leading-[40px] md:leading-[80px] md:px-4">
 				Your AI, Your Rules: Automate Your Life
 			</h1>
-			<p class="text-sm md:text-[18px] text-dark text-center  md:max-w-[760px] leading-[30px] px-4">
+			<p class="text-sm md:text-[18px] text-dark text-center  md:max-w-[760px] leading-[30px] md:px-4">
 				Build AI agents that automate repetitive tasks. Connect to your apps, create workflows, and stay in control of your life with Goalmatic.
 			</p>
 			<nuxt-link to="/auth/login" class="btn-primary mt-6">
