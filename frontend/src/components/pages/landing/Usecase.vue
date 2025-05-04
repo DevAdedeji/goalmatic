@@ -123,7 +123,7 @@ const agents = [
 }
 
 .agent-card {
-	@apply flex mx-4 w-[400px] p-6 flex-col items-start gap-[46px] flex-shrink-0 rounded-[10px] border-[2px] border-light bg-[var(--Grey-1100,_#F2F2F2)] [box-shadow:0px]
+	@apply flex md:mx-4 mx-2 md:w-[352px] w-[280px] md:p-6 p-4 flex-col items-start gap-10 flex-shrink-0 rounded-[10px] border-[2px] border-line bg-[var(--Grey-1100,_#F2F2F2)] [box-shadow:0px]
 
 }
 
