@@ -1,6 +1,8 @@
 <template>
 	<PagesLandingHero />
 	<PagesLandingFeature />
+	<PagesLandingUsecase />
+	<PagesLandingFAQ />
 	<PagesLandingFooter />
 </template>
 

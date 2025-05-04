@@ -1,7 +1,7 @@
 <template>
 	<section class="container xl:min-w-[1500px] md:px-12 px-4">
 		<footer class="flex flex-col items-center text-center w-full md:mb-8 mb-4">
-			<div class="flex flex-col md:flex-row gap-4 items-center w-full justify-between px-4">
+			<div class="flex  flex-row gap-4 items-center w-full justify-between px-4">
 				<img src="/lt.svg" alt="logo" class=" md:w-48 w-32">
 				<div class="flex gap-x-4">
 					<a v-for="(item, itemIdx) in social" :key="itemIdx" :href="item.href" target="_blank" class="text-gray-400 hover:text-gray-500">
