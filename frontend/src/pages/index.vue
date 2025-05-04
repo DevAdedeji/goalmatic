@@ -1,5 +1,6 @@
 <template>
 	<PagesLandingHero />
+	<PagesLandingFeature />
 </template>
 
 <script setup lang="ts">
