@@ -1,6 +1,6 @@
 <template>
 	<div class="container mx-auto px-4 md:px-9 py-12 flex flex-col items-center">
-		<h2 class="text-3xl md:text-5xl font-semibold text-headline text-center mb-4 ">
+		<h2 class="text-4xl md:text-5xl font-semibold text-headline text-center mb-4 ">
 			Frequently asked questions.
 		</h2>
 		<p class="text-center text-dark mb-12 max-w-2xl mx-auto">
@@ -10,14 +10,14 @@
 		<div class="w-full max-w-6xl">
 			<div v-for="(faq, index) in faqs" :key="index">
 				<div
-					class="flex justify-between items-center p-5 bg-white border-b"
+					class="flex justify-between gap-1 items-center md:p-5 py-4 bg-white border-b"
 					:class="{ 'rounded-b-none border-b-0': activeIndex === index }"
 					@click="toggleFaq(index)"
 				>
-					<h3 class="text-lg font-medium text-headline">
+					<h3 class="text-lg font-medium text-headline ">
 						{{ faq.question }}
 					</h3>
-					<button class="text-light bg-dark rounded-full  focus:outline-none transition-transform duration-200">
+					<button class=" text-light bg-dark rounded-full  focus:outline-none transition-transform duration-200">
 						<span v-if="activeIndex === index">
 							<MinusCircle :size="25" />
 						</span>
@@ -37,7 +37,7 @@
 						v-show="activeIndex === index"
 						class="overflow-hidden bg-white  border-b"
 					>
-						<div class="p-5">
+						<div class="md:p-5 py-4">
 							<p class="text-dark">
 								{{ faq.answer }}
 							</p>
@@ -50,7 +50,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { PlusCircle, MinusCircle } from 'lucide-vue-next'
 import { gsap } from 'gsap'
 
@@ -64,36 +63,28 @@ const toggleFaq = (index: number) => {
     }
 }
 
-// Transition methods using GSAP
+
 const startTransition = (el: Element, done: () => void) => {
 	const element = el as HTMLElement
-	// Ensure overflow is hidden during transition
 	element.style.overflow = 'hidden'
-	// Set initial height to 0
 	element.style.height = '0px'
 
-	// Calculate the target height
-	// Temporarily set height to 'auto' to measure scrollHeight
 	const originalDisplay = element.style.display
-	element.style.display = '' // Ensure it's not 'none' if v-show initially set it
+	element.style.display = ''
 	element.style.height = 'auto'
 	const height = element.scrollHeight
-	// Reset height back to 0 before starting the animation
 	element.style.height = '0px'
-	element.style.display = originalDisplay // Restore original display
-
-	// Force reflow to apply the 0px height before animation
+	element.style.display = originalDisplay
 	element.offsetHeight
 
-	// Animate to the target height
+
 	gsap.to(element, {
 		height: `${height}px`,
 		duration: 0.3,
 		ease: 'power1.inOut',
 		onComplete: () => {
-			// Reset height to auto for responsiveness after animation
 			element.style.height = 'auto'
-			element.style.overflow = '' // Reset overflow
+			element.style.overflow = ''
 			done()
 		}
 	})
@@ -101,15 +92,14 @@ const startTransition = (el: Element, done: () => void) => {
 
 const endTransition = (el: Element, done: () => void) => {
 	const element = el as HTMLElement
-	// Ensure overflow is hidden during transition
 	element.style.overflow = 'hidden'
-	// Animate height from its current height down to 0
+
 	gsap.to(element, {
 		height: '0px',
 		duration: 0.3,
-		ease: 'power1.inOut', // Use consistent easing
+		ease: 'power1.inOut',
 		onComplete: () => {
-			element.style.overflow = '' // Reset overflow
+			element.style.overflow = ''
 			done()
 		}
 	})

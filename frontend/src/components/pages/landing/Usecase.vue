@@ -1,5 +1,5 @@
 <template>
-	<div class="container mx-auto px-4 md:px-9 py-16 md:py-24">
+	<div class="container mx-auto px-4 md:px-9 py-16">
 		<div class="text-center mb-12">
 			<h2 class="text-3xl md:text-5xl font-bold text-headline mb-4">
 				Build the AI agents that<br>fit your use case
@@ -25,9 +25,7 @@
 						:key="`first-${index}`"
 						class="bg-gray-50 rounded-lg p-6 flex flex-col hover:shadow-md transition-all duration-300 hover:translate-y-[-4px] agent-card min-w-[280px] md:min-w-[320px] mx-3"
 					>
-						<div class="mb-4 agent-image-container" :style="`--agent-color: ${agent.color}`">
-							<div class="w-24 h-24 agent-ring" v-html="getColoredRing(agent.color)" />
-						</div>
+						<img :src="agent.image" alt="Agent Image" class=" mb-4">
 						<h3 class="text-xl font-semibold text-headline mb-2">
 							{{ agent.title }}
 						</h3>
@@ -42,9 +40,7 @@
 						:key="`second-${index}`"
 						class="bg-gray-50 rounded-lg p-6 flex flex-col hover:shadow-md transition-all duration-300 hover:translate-y-[-4px] agent-card min-w-[280px] md:min-w-[320px] mx-3"
 					>
-						<div class="mb-4 agent-image-container" :style="`--agent-color: ${agent.color}`">
-							<div class="w-24 h-24 agent-ring" v-html="getColoredRing(agent.color)" />
-						</div>
+						<img :src="agent.image" alt="Agent Image" class=" mb-4">
 						<h3 class="text-xl font-semibold text-headline mb-2">
 							{{ agent.title }}
 						</h3>
@@ -63,110 +59,100 @@ const agents = [
 	{
 		title: 'Study Assistant Agent',
 		description: 'Breaks study goals into manageable schedules, focus blocks, and tracks progress over time.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#4F1DED' // Primary purple
 	},
 	{
 		title: 'Content Scheduler Agent',
 		description: 'Helps you draft, schedule, and publish social content by pulling from your notes, trends, and brand guidelines.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#00A3FF' // Blue
 	},
 	{
 		title: 'Daily Planning Agent',
 		description: 'Pulls tasks from your calendar, notes, and reminders to generate a daily agenda tailored to your goals and energy levels.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#FF6B00' // Orange
 	},
 	{
 		title: 'Habit Tracker Agent',
 		description: 'Tracks your habits, sends reminders, and gives you weekly reports on consistency and progress.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#00C48C' // Green
 	},
 	{
 		title: 'Email Assistant Agent',
 		description: 'Helps you draft, organize, and respond to emails based on your communication style and priorities.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#FF3D71' // Red
 	},
 	{
 		title: 'Research Agent',
 		description: 'Gathers information from various sources, summarizes findings, and helps you organize research materials.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#FFAA00' // Yellow
 	},
 	{
 		title: 'Project Manager Agent',
 		description: 'Tracks project milestones, assigns tasks, and sends reminders to keep your team on schedule.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#7B61FF' // Light purple
 	},
 	{
 		title: 'Learning Coach Agent',
 		description: 'Creates personalized learning paths, quizzes you on material, and adapts to your learning style.',
-		image: '/usecase/agent-ring.svg',
+		image: '/hero/ring.png',
 		color: '#0095FF' // Light blue
 	}
 ]
 
-// Function to create a colored SVG ring dynamically
-const getColoredRing = (color: string): string => {
-	return `<svg width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-		<circle cx="50" cy="50" r="40" stroke="${color}" stroke-width="8" fill="none"/>
-	</svg>`
-}
+
 </script>
 
 <style scoped>
 .btn-primary {
-	background-color: var(--primary);
-	color: white;
-	font-weight: 500;
+	@apply bg-primary text-white font-medium;
+	/* Using var(--primary) directly as Tailwind config uses it */
 }
 
 .btn-primary:hover {
-	background-color: var(--primary-dark, #4018c2);
+	background-color: var(--primary-dark, #4018c2); /* Keep as is if --primary-dark isn't in Tailwind config */
+	/* Or potentially use a darker shade if defined: @apply bg-primary-dark; */
 }
 
 .agent-card {
-	border: 1px solid transparent;
-	transition: all 0.3s ease;
+	@apply border border-transparent transition-all duration-300 ease-in-out;
+	/* Added ease-in-out based on common transition patterns */
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Keep custom shadow or replace with Tailwind shadow if suitable e.g. shadow-sm */
 }
 
 .agent-card:hover {
-	border-color: var(--primary, #4F1DED);
+	@apply border-primary; /* Assumes --primary is mapped to 'primary' in Tailwind config */
+	box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); /* Keep custom shadow or replace e.g. shadow-lg */
 }
 
 .agent-image-container {
-	transition: transform 0.3s ease;
+	@apply transition-transform duration-300 ease-in-out;
 }
 
-.agent-card:hover .agent-image-container {
-	transform: rotate(10deg);
-}
+
 
 .marquee-wrapper {
-	width: 100%;
-	padding: 20px 0;
-	overflow: hidden;
+	@apply w-full py-5 overflow-hidden;
 }
 
 .marquee-container {
-	width: 100%;
-	padding: 10px 0;
-	overflow: hidden;
+	@apply w-full py-2.5 overflow-hidden;
 }
 
 .marquee-track {
-	animation: marquee 40s linear infinite;
-	will-change: transform;
-	width: fit-content;
+	@apply w-fit will-change-transform;
+	animation: marquee 40s linear infinite; /* Keep animation definition */
 }
 
 /* Pause animation on hover */
 .marquee-container:hover .marquee-track {
-	animation-play-state: paused;
+	animation-play-state: paused; /* Keep animation-play-state or use paused:animate-none if animation is utility-based */
 }
 
 @keyframes marquee {
@@ -178,23 +164,14 @@ const getColoredRing = (color: string): string => {
 	}
 }
 
-/* Add some depth to the cards with subtle shadow */
-.agent-card {
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.agent-card:hover {
-	box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
 	.marquee-track {
-		animation-duration: 25s; /* Faster on mobile */
+		animation-duration: 25s; /* Keep animation-duration */
 	}
 
 	.agent-card {
-		min-width: 260px;
+		@apply min-w-[260px];
 	}
 }
 </style>
