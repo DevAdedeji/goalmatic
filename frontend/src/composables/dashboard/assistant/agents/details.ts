@@ -1,7 +1,7 @@
 import { ref, watch, nextTick, Ref, computed } from 'vue'
 import { formattedAvailableTools } from './tools/list'
+import { agentDetails as agentDetailsRef } from './id'
 import { agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
-
 // Centralized state management for agent details
 // These are exported so edit.ts can use them directly
 export const titleInputRef = ref<HTMLInputElement | null>(null)
@@ -74,6 +74,7 @@ export function useAgentDetails() {
     if (currentTitle.value.trim()) {
       await updateName(id, currentTitle.value)
       titlePopoverOpen.value = false
+      agentDetailsRef.value.name = currentTitle.value
     }
   }
 
@@ -93,6 +94,7 @@ export function useAgentDetails() {
     if (descriptionModel.value.trim()) {
       await updateDescription(id, descriptionModel.value)
       isEditingDescription.value = false
+      agentDetailsRef.value.description = descriptionModel.value
     }
   }
 

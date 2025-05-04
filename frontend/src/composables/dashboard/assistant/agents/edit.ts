@@ -10,6 +10,7 @@ import {
     UserIntegrations,
     systemInfoModel
 } from './details'
+import { agentDetails as agentDetailsRef } from './id'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useAlert } from '@/composables/core/notification'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
@@ -34,18 +35,16 @@ export const useEditAgent = () => {
     const updateSystemInfo = async (id: string, spec: any) => {
         try {
             updateSystemInfoLoading.value = true
-
-            // Use the shared systemInfoModel from details.ts
             await updateFirestoreDocument('agents', id, {
                 spec: {
                     ...spec,
-                    // Strip any potentially dangerous HTML tags while preserving basic formatting
                     systemInfo: systemInfoModel.value.replace(/<(?!\/?(p|br|strong|em|u|s|ul|ol|li|h[1-6]|blockquote)(?=>|\s.*>))\/?.*?>/g, '')
                 }
             })
 
             isEditingSystemInfo.value = false
             updateSystemInfoLoading.value = false
+            agentDetailsRef.value.spec.systemInfo = systemInfoModel.value
             useAlert().openAlert({ type: 'SUCCESS', msg: 'System information updated successfully' })
         } catch (error) {
             updateSystemInfoLoading.value = false
@@ -70,6 +69,7 @@ export const useEditAgent = () => {
 
             isEditingTools.value = false
             updateToolsLoading.value = false
+            agentDetailsRef.value.spec.tools = toolsModel.value
             useAlert().openAlert({ type: 'SUCCESS', msg: 'Tools updated successfully' })
         } catch (error) {
             updateToolsLoading.value = false
