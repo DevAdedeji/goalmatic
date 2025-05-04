@@ -37,7 +37,7 @@
 						v-show="activeIndex === index"
 						class="overflow-hidden bg-white  border-b"
 					>
-						<div class="md:p-5 py-4">
+						<div class="md:p-5 py-4 pt-0">
 							<p class="text-dark">
 								{{ faq.answer }}
 							</p>

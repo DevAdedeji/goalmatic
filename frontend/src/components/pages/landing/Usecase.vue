@@ -19,34 +19,36 @@
 
 			<div class="marquee-container overflow-hidden relative">
 				<div class="marquee-track flex">
-					<!-- First set of cards -->
 					<div
 						v-for="(agent, index) in agents"
 						:key="`first-${index}`"
-						class="bg-gray-50 rounded-lg p-6 flex flex-col hover:shadow-md transition-all duration-300 hover:translate-y-[-4px] agent-card min-w-[280px] md:min-w-[320px] mx-3"
+						class=" agent-card "
 					>
 						<img :src="agent.image" alt="Agent Image" class=" mb-4">
-						<h3 class="text-xl font-semibold text-headline mb-2">
-							{{ agent.title }}
-						</h3>
-						<p class="text-dark text-sm flex-grow">
-							{{ agent.description }}
-						</p>
+						<article class="flex flex-col gap-2.5">
+							<h3 class="text-xl font-semibold text-headline mb-2">
+								{{ agent.title }}
+							</h3>
+							<p class="text-dark text-sm flex-grow">
+								{{ agent.description }}
+							</p>
+						</article>
 					</div>
 
-					<!-- Duplicate set of cards for continuous scrolling -->
 					<div
 						v-for="(agent, index) in agents"
 						:key="`second-${index}`"
-						class="bg-gray-50 rounded-lg p-6 flex flex-col hover:shadow-md transition-all duration-300 hover:translate-y-[-4px] agent-card min-w-[280px] md:min-w-[320px] mx-3"
+						class=" agent-card"
 					>
 						<img :src="agent.image" alt="Agent Image" class=" mb-4">
-						<h3 class="text-xl font-semibold text-headline mb-2">
-							{{ agent.title }}
-						</h3>
-						<p class="text-dark text-sm flex-grow">
-							{{ agent.description }}
-						</p>
+						<article class="flex flex-col gap-2.5">
+							<h3 class="text-xl font-semibold text-headline mb-2">
+								{{ agent.title }}
+							</h3>
+							<p class="text-dark text-sm flex-grow">
+								{{ agent.description }}
+							</p>
+						</article>
 					</div>
 				</div>
 			</div>
@@ -121,9 +123,8 @@ const agents = [
 }
 
 .agent-card {
-	@apply border border-transparent transition-all duration-300 ease-in-out;
-	/* Added ease-in-out based on common transition patterns */
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Keep custom shadow or replace with Tailwind shadow if suitable e.g. shadow-sm */
+	@apply flex mx-4 w-[400px] p-6 flex-col items-start gap-[46px] flex-shrink-0 rounded-[10px] border-[2px] border-light bg-[var(--Grey-1100,_#F2F2F2)] [box-shadow:0px]
+
 }
 
 .agent-card:hover {
