@@ -2,14 +2,13 @@
 <template>
 	<div class="relative overflow-hidden  w-full  shadow-xl  p-4 py-5 rounded-md box border-[1.5px]  bg-light" :style="`border-color:${COLOR}`">
 		<div :style="`width:${BORDER_WIDTH}%`" :class="[`h-1  absolute  bottom-0 left-0 transite transition-all !duration-[80ms]`]" />
-		<span @click="$emit('closeAlert', id)">
+		<button class="absolute -top-1 right-0" @click="$emit('closeAlert', id)">
 			<CircleX
 				name="close"
 				class="text-dark w-5 absolute  right-2 top-2 cursor-pointer rounded-md"
 				:color="COLOR"
 			/>
-
-		</span>
+		</button>
 
 		<div class="flex items-center pr-12 gap-3">
 			<Component :is="ICON" :color="COLOR" />
@@ -57,8 +56,7 @@ const props = defineProps({
     },
     duration: {
         type: Number,
-        required: false,
-        default: 5000
+        required: true
     }
 })
 

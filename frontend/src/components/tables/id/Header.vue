@@ -80,7 +80,7 @@
 		<!-- Table info -->
 		<div class="mb-6">
 			<span class="text-text-secondary text-sm">
-				{{ tableData.fields?.length || 0 }} fields · {{ recordsCount || 0 }} records
+				{{ tableData.fields?.length || 0 }} fields · {{ tableRecords.length || 0 }} records
 			</span>
 		</div>
 
@@ -89,7 +89,7 @@
 			:tabs="['structure', 'data']"
 			:selected="currentTab"
 			:icons="[Columns, Database]"
-			:counts="[tableData.fields?.length, recordsCount]"
+			:counts="[tableData.fields?.length, tableRecords.length]"
 			class="mb-6"
 			@changed="$emit('update:currentTab', $event)"
 		/>
@@ -102,7 +102,7 @@ import { Edit2, Columns, Database } from 'lucide-vue-next'
 import Tabs from '@/components/core/Tabs.vue'
 import Popover from '@/components/core/Popover.vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
-import { useFetchTableRecordsCount } from '@/composables/dashboard/tables/fetch'
+import { useFetchTableRecords } from '@/composables/dashboard/tables/fetch'
 
 const props = defineProps({
 	tableData: {
@@ -117,12 +117,12 @@ const props = defineProps({
 
 const emit = defineEmits(['update:currentTab'])
 const { updateTable } = useEditTable()
-const { fetchTableRecordsCount, recordsCount } = useFetchTableRecordsCount()
+const { fetchTableRecords, tableRecords } = useFetchTableRecords()
 
-// Fetch records count when component is mounted
+// Fetch records when component is mounted
 onMounted(async () => {
 	if (props.tableData.id) {
-		await fetchTableRecordsCount(props.tableData.id)
+		await fetchTableRecords(props.tableData.id)
 	}
 })
 

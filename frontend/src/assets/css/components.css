@@ -63,9 +63,7 @@
     .auth-title {
         @apply font-light text-2xl text-center flex w-full items-center justify-center relative text-dark;
     }
-    .btn {
-        @apply center px-4 py-2.5 rounded-lg text-sm border  font-semibold button_shadow disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
-    }
+
 .btn-text {
 	@apply border rounded gap-2 bg-light !py-1 !px-3 text-xs font-semibold;
 }
@@ -88,9 +86,11 @@
     .btn-sm {
         @apply rounded-lg px-4 py-1.5 flex justify-center items-center font-medium disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed  box-border  border border-secondary hover:shadow-[4px_3.5px_0px_0px_#000] transite;
     }
-
+    .btn {
+        @apply center px-6 py-[11px]  rounded-[10px] text-sm border  font-semibold button_shadow disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
+    }
     .btn-primary {
-        @apply btn bg-primary text-light hover:bg-[#5f1dede1] hover:border-[#5f1dede1] border-white;
+        @apply btn bg-primary text-light hover:scale-95 border-white;
     }
 
     .btn-primary-inverse {

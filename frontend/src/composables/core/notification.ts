@@ -57,7 +57,7 @@ export const useAlert = () => {
 	 *
 	 * @param {string} id - ID of the alert to close
 	 */
-	const closeAlert = (id:string) => {
+	const closeAlert = (id: string) => {
 		openAlertArray.value = openAlertArray.value.filter((alert: any) => alert.id !== id)
 	}
 

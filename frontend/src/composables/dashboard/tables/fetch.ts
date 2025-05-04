@@ -3,7 +3,6 @@ import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
-import { getFirestoreSubCollectionCount } from '@/firebase/firestore/count'
 // Store for tables data
 const userTables = ref([] as any[])
 const tableData = ref<any>(null)
@@ -116,45 +115,4 @@ export const useFetchTableRecords = () => {
   return { fetchTableRecords, loading, tableRecords, error }
 }
 
-export const useFetchTableRecordsCount = () => {
-  const loading = ref(false)
-  const recordsCount = ref(0)
-  const error = ref<string | null>(null)
-  const isClient = typeof window !== 'undefined'
 
-  const fetchTableRecordsCount = async (tableId: string) => {
-    // Skip if no tableId or we're on the server
-    if (!tableId || !isClient) return 0
-
-    loading.value = true
-    error.value = null
-
-    try {
-      recordsCount.value = await getFirestoreSubCollectionCount('tables', tableId, 'records')
-      return recordsCount.value
-    } catch (err: any) {
-      console.error('Error fetching table records count:', err)
-
-      // Handle permission errors specifically
-      if (err.code === 'permission-denied') {
-        error.value = "You don't have permission to access this table's records. It may be private or you may not be authorized."
-        useAlert().openAlert({
-          type: 'ERROR',
-          msg: error.value
-        })
-      } else {
-        error.value = `Error fetching table records count: ${err.message}`
-        useAlert().openAlert({
-          type: 'ERROR',
-          msg: error.value
-        })
-      }
-
-      return 0
-    } finally {
-      loading.value = false
-    }
-  }
-
-  return { fetchTableRecordsCount, loading, recordsCount, error }
-}

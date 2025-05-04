@@ -16,6 +16,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -35,6 +36,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -54,6 +56,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -73,6 +76,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -92,6 +96,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -111,6 +116,7 @@
 					:message="alert.msg"
 					:addrs="alert.addrs"
 					:type="alert.type"
+					:duration="ALERT_DURATION"
 					@closeAlert="closeAlert($event)"
 				/>
 			</transition-group>
@@ -122,7 +128,7 @@
 import { computed } from 'vue'
 import { useAlert } from '@/composables/core/notification'
 
-const { openAlertArray, closeAlert } = useAlert()
+const { openAlertArray, closeAlert, ALERT_DURATION } = useAlert()
 
 // Filter alerts by position
 const topRightAlerts = computed(() =>

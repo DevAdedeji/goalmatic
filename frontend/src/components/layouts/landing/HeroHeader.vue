@@ -1,7 +1,7 @@
 <template>
-	<header class="container flex items-center justify-between py-8 md:px-5 px-4 bg-transparent flex-wrap absolute mx-auto inset-x-0 z-50">
+	<header class="container flex items-center justify-between py-3.5  md:px-9 px-4 bg-transparent flex-wrap h-[70px] mx-auto inset-x-0 z-50">
 		<nuxt-link to="/">
-			<img src="/lt.svg" alt="logo" class=" md:w-64 w-32">
+			<img src="/lt.svg" alt="logo" class=" md:w-48 w-32">
 		</nuxt-link>
 
 
@@ -22,8 +22,4 @@ import { useUser } from '@/composables/auth/user'
 const { isLoggedIn } = useUser()
 </script>
 
-<style scoped>
-.btn-primary{
-@apply text-sm px-5 py-3 md:text-base md:px-10 order-1 md:order-3 ml-12 md:ml-0
-}
-</style>
+

@@ -5,9 +5,8 @@
 
 		<div class="flex items-center gap-4">
 			<div class="relative" @click.stop>
-				<!-- <ClientOnly> -->
 				<DropdownMenuRoot>
-					<DropdownMenuTrigger class="bg-tertiary text-[#2D00BA] rounded-lg p-2 px-4 border border-line center gap-2 pc">
+					<DropdownMenuTrigger class="bg-tertiary text-[#2D00BA] rounded-lg p-2 px-4 border border-line center gap-2 ">
 						<IconsHeadset />
 						<span class="text-sm">Support</span>
 					</DropdownMenuTrigger>
@@ -36,7 +35,6 @@
 						</DropdownMenuContent>
 					</DropdownMenuPortal>
 				</DropdownMenuRoot>
-				<!-- </ClientOnly> -->
 			</div>
 			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn" @click="saveCurrentUrl">
 				Login

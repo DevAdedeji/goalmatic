@@ -24,7 +24,7 @@
 		<div class="flex justify-between items-center mt-auto">
 			<div class="flex items-center gap-2">
 				<span class="text-xs text-text-secondary">{{ table.fields?.length || 0 }} fields</span>
-				<span class="text-xs text-text-secondary">{{ recordsCount || 0 }} records</span>
+				<span class="text-xs text-text-secondary">{{ tableRecords.length || 0 }} records</span>
 			</div>
 			<span class="text-xs text-text-secondary">{{ formatDate(table.updated_at.toDate()) }}</span>
 		</div>
@@ -35,7 +35,7 @@
 import { Edit2, Trash2 } from 'lucide-vue-next'
 import { formatDate } from '@/composables/utils/formatter'
 import type { Table } from '@/composables/dashboard/tables/types'
-import { useFetchTableRecordsCount } from '@/composables/dashboard/tables/fetch'
+import { useFetchTableRecords } from '@/composables/dashboard/tables/fetch'
 
 const props = defineProps<{
     table: Table
@@ -46,10 +46,10 @@ const emit = defineEmits<{
     (e: 'delete', table: Table): void
 }>()
 
-const { fetchTableRecordsCount, recordsCount } = useFetchTableRecordsCount()
+const { fetchTableRecords, tableRecords } = useFetchTableRecords()
 
 onMounted(async () => {
-    await fetchTableRecordsCount(props.table.id)
+    await fetchTableRecords(props.table.id)
 })
 </script>
 
