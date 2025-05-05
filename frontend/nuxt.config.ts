@@ -60,6 +60,13 @@ export default {
       posthogPublicKey: import.meta.env.VITE_POSTHOG_PUBLIC_KEY as string,
       posthogHost: 'https://us.i.posthog.com'
     }
+  },
+  nitro: {
+    vercel: {
+      functions: {
+        maxDuration: 60
+      }
+    }
   }
 }
 
