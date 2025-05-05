@@ -43,13 +43,13 @@ export const dashboardRoutes = () => [
 		type: 'all',
 		main: true
 	},
-	{
-		icon: Trophy,
-		name: 'Leaderboard',
-		route: '/leaderboard',
-		type: 'all',
-		main: true
-	},
+	// {
+	// 	icon: Trophy,
+	// 	name: 'Leaderboard',
+	// 	route: '/leaderboard',
+	// 	type: 'all',
+	// 	main: true
+	// },
 	{
 		icon: Settings,
 		name: 'Settings',
