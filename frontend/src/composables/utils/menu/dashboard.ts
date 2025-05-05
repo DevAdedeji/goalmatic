@@ -1,4 +1,4 @@
-import { Settings, Grid3X3, FileSpreadsheetIcon, Workflow } from 'lucide-vue-next'
+import { Settings, Grid3X3, FileSpreadsheetIcon, Workflow, Trophy } from 'lucide-vue-next'
 
 import Bot from '@/assets/icons/Bot.vue'
 
@@ -40,6 +40,13 @@ export const dashboardRoutes = () => [
 		icon: Grid3X3,
 		name: 'Integrations',
 		route: '/integrations',
+		type: 'all',
+		main: true
+	},
+	{
+		icon: Trophy,
+		name: 'Leaderboard',
+		route: '/leaderboard',
 		type: 'all',
 		main: true
 	},
