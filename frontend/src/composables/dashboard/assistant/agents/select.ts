@@ -33,6 +33,7 @@ export const useOnAssistantLoad = () => {
     const selectedUser = ref()
     const selectedAgentRef = ref()
     const fetchSelectedAgent = async () => {
+        if (import.meta.server) return
         await getSingleFirestoreDocument('users', user_id.value!, selectedUser)
 
         try {

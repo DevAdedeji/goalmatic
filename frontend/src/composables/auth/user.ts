@@ -53,7 +53,7 @@ export const useUser = () => {
     const clearUser = () => {
         _userCookie.value = null
         _userProfileCookie.value = null
-        if (process.client) {
+        if (import.meta.client) {
             localStorage.clear()
         }
     }
@@ -61,7 +61,7 @@ export const useUser = () => {
 
     const fetchUserProfile = async (uid:string): Promise<void> => {
         if (user.value && uid) {
-            if (process.server) return
+            if (import.meta.server) return
             try {
                 await getSingleFirestoreDocument('users', uid, _userProfileCookie)
             } catch (error) {

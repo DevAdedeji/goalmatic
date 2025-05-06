@@ -1,10 +1,13 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
-import { goals_db } from './init'
+import { goals_db, is_dev } from './init'
 import { defaultGoalmaticAgent } from './whatsapp/utils/WhatsappAgent'
+
+
 
 export const getAgentDetails = onCall({
     cors: true,
-    region: 'us-central1'
+    region: 'us-central1',
+    minInstances: is_dev ? 0 : 1 // Set minimum instances to 5 in production only
 }, async (request) => {
     const { id } = request.data
 

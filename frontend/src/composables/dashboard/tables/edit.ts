@@ -85,7 +85,6 @@ export const useEditTable = () => {
   const updateFieldInTable = async (table: Record<string, any>, fieldId: string, updatedField: Record<string, any>) => {
     const fields = [...(table.fields || [])]
     const index = fields.findIndex((field) => field.id === fieldId)
-
     if (index === -1) {
       return false
     }
@@ -105,7 +104,7 @@ export const useEditTable = () => {
   // Add a record to the table
   const addRecordToTable = async (table: Record<string, any>, record: Record<string, any>) => {
     if (!user_id.value) return
-
+    console.log(table)
     loading.value = true
     try {
       // Add a unique ID and timestamps

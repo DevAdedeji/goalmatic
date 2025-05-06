@@ -1,8 +1,7 @@
 <template>
-	<TablesIdStructureSection v-if="currentTab === 'structure'" :table-data="tableData" />
+	<TablesIdStructureSection v-if="currentTab === 'structure'" />
 	<TablesIdDataSection
 		v-if="currentTab === 'data'"
-		:table-data="tableData"
 		@switch-tab="$emit('switchTab', $event)"
 	/>
 </template>
@@ -17,10 +16,6 @@ const emit = defineEmits(['switchTab'])
 
 // Define Props
 defineProps({
-	tableData: {
-		type: Object,
-		required: true
-	},
 	currentTab: {
 		type: String,
 		required: true

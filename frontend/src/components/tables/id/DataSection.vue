@@ -87,7 +87,7 @@
 						{{ item.data.id.substring(0, 8) }}...
 					</span>
 					<span v-else-if="item[getValueType('date')]" class="text-text-secondary">
-						{{ formatDate(item.data[getValueType('date')].toDate()) }}
+						{{ formatDateValue(item.data[getValueType('date')]) }}
 					</span>
 					<span v-else-if="item[getValueType('time')]" class="text-text-secondary">
 						{{ item.data[getValueType('time')] }}
@@ -127,16 +127,9 @@
 import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
 import { computed, onMounted } from 'vue'
 import { formatDate } from '@/composables/utils/formatter'
-import type { TableData } from '@/composables/dashboard/tables/types'
 import { useTableDataSection } from '@/composables/dashboard/tables/dataSection'
 import Table from '@/components/core/Table.vue'
 
-const props = defineProps({
-	tableData: {
-		type: Object as () => TableData,
-		required: true
-	}
-})
 
 const emit = defineEmits(['switchTab'])
 
@@ -151,8 +144,9 @@ const {
 	addNewRecord,
 	editRecord,
 	deleteRecord,
-	initializeRecords
-} = useTableDataSection(props.tableData)
+	initializeRecords,
+	tableData
+} = useTableDataSection()
 
 // Generate headers dynamically based on table fields
 const tableHeaders = computed(() => {
@@ -161,8 +155,8 @@ const tableHeaders = computed(() => {
 	] as { text: string, value: string }[]
 
 	// Add headers for each field
-	if (props.tableData.fields) {
-		props.tableData.fields.forEach((field) => {
+	if (tableData.value.fields) {
+		tableData.value.fields.forEach((field) => {
 			headers.push({
 				text: field.name,
 				value: field.id
@@ -178,16 +172,20 @@ const tableHeaders = computed(() => {
 
 
 
-const getFieldType = (fieldId: string): string => {
-	const field = props.tableData.fields?.find((f) => f.id === fieldId)
-	return field?.type || 'text'
-}
+
 
 
 const getValueType = (key: string) => {
-	const res = props.tableData.fields?.find((f) => f.type === key)
+	const res = tableData.value.fields?.find((f) => f.type === key)
 	return res?.id || ''
 }
+
+const formatDateValue = (dateValue: any) => {
+	if (!dateValue) return ''
+	if (dateValue.toDate && typeof dateValue.toDate === 'function') return formatDate(dateValue.toDate())
+	return formatDate(dateValue)
+}
+
 // Initialize records when component is mounted
 onMounted(async () => {
 	await initializeRecords()

@@ -10,7 +10,6 @@
 
 				<TablesIdDetails
 					:current-tab="currentTab"
-					:table-data="tableData"
 					@switch-tab="currentTab = $event"
 				/>
 			</div>

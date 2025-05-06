@@ -1,11 +1,13 @@
 import { ref, computed } from 'vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
-import { useFetchTableRecords } from '@/composables/dashboard/tables/fetch'
+import { useFetchTableRecords, useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 import { useTablesModal } from '@/composables/core/modals'
 import { useConfirmationModal } from '@/composables/core/confirmation'
-import { Record, TableData } from '@/composables/dashboard/tables/types'
+import { Record } from '@/composables/dashboard/tables/types'
 
-export const useTableDataSection = (tableData: TableData) => {
+
+export const useTableDataSection = () => {
+  const { tableData } = useFetchUserTables()
   const { addRecordToTable, updateRecordInTable, removeRecordFromTable, removeMultipleRecordsFromTable, loading: editLoading } = useEditTable()
   const { fetchTableRecords, tableRecords, loading: fetchLoading } = useFetchTableRecords()
 
@@ -61,7 +63,7 @@ export const useTableDataSection = (tableData: TableData) => {
       call_function: async () => {
         localLoading.value = true
         try {
-          const success = await removeMultipleRecordsFromTable(tableData, selectedRecords.value)
+          const success = await removeMultipleRecordsFromTable(tableData.value, selectedRecords.value)
           if (success) {
             selectedRecords.value = []
           }
@@ -80,8 +82,8 @@ export const useTableDataSection = (tableData: TableData) => {
     resetForm()
 
     const newRecord: Record = { id: crypto.randomUUID() }
-    if (tableData.fields) {
-      tableData.fields.forEach((field) => {
+    if (tableData.value.fields) {
+      tableData.value.fields.forEach((field) => {
         newRecord[field.id] = getDefaultValueForType(field.type)
       })
     }
@@ -91,7 +93,7 @@ export const useTableDataSection = (tableData: TableData) => {
 
     useTablesModal().openRecordModal({
       recordForm: recordForm.value,
-      fields: tableData.fields || [],
+      fields: tableData.value.fields || [],
       editingRecordIndex: editingRecordIndex.value,
       onSave: saveRecord
     })
@@ -107,7 +109,7 @@ export const useTableDataSection = (tableData: TableData) => {
 
       useTablesModal().openRecordModal({
         recordForm: recordForm.value,
-        fields: tableData.fields || [],
+        fields: tableData.value.fields || [],
         editingRecordIndex: editingRecordIndex.value,
         onSave: saveRecord
       })
@@ -118,16 +120,16 @@ export const useTableDataSection = (tableData: TableData) => {
     localLoading.value = true
     try {
       if (editingRecordIndex.value === -1) {
-        await addRecordToTable(tableData, recordForm.value)
+        await addRecordToTable(tableData.value, recordForm.value)
       } else {
         await updateRecordInTable(
-          tableData,
+          tableData.value,
           recordForm.value?.id,
           recordForm.value
         )
       }
 
-      await fetchTableRecords(tableData.id)
+      await fetchTableRecords(tableData.value.id)
 
       resetForm()
 
@@ -147,7 +149,7 @@ export const useTableDataSection = (tableData: TableData) => {
       call_function: async () => {
         localLoading.value = true
         try {
-          await removeRecordFromTable(tableData, recordId)
+          await removeRecordFromTable(tableData.value, recordId)
         } catch (error) {
           console.error('Error deleting record:', error)
         } finally {
@@ -178,8 +180,8 @@ export const useTableDataSection = (tableData: TableData) => {
   }
 
   const initializeRecords = async () => {
-    if (tableData.id) {
-      await fetchTableRecords(tableData.id)
+    if (tableData.value.id) {
+      await fetchTableRecords(tableData.value.id)
     }
   }
 
@@ -195,6 +197,7 @@ export const useTableDataSection = (tableData: TableData) => {
     addNewRecord,
     editRecord,
     deleteRecord,
-    initializeRecords
+    initializeRecords,
+    tableData
   }
 }
