@@ -8,6 +8,7 @@ import { getSingleFirestoreSubDocument } from '@/firebase/firestore/fetch'
  * @returns boolean indicating if the session was found and loaded successfully
  */
 export const loadConversationHistory = async (sid: string): Promise<boolean> => {
+    if (import.meta.server) return false
   try {
     // Set both loading states to true
     history_loading.value = true

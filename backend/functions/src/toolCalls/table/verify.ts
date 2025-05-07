@@ -1,4 +1,4 @@
-import { goals_db } from '../../../init'
+import { goals_db } from '../../init'
 
 export const verifyTableAccess = async (uid: string, tableId?: string): Promise<{ exists: boolean, tableData?: any }> => {
     // If a specific table ID is provided, check if it exists and belongs to the user

@@ -15,7 +15,7 @@ const createRecord = async (context: WorkflowContext, step: FlowNode, previousSt
             throw new Error('User ID not found in flow data');
         }
 
-        // Extract parameters from props
+
         const {
             tableId,
             recordData
