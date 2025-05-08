@@ -3,6 +3,7 @@ import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
+import { getFirestoreSubCollectionWithSort } from '@/firebase/firestore/sort'
 // Store for tables data
 const userTables = ref([] as any[])
 const tableData = ref<any>(null)
@@ -85,8 +86,8 @@ export const useFetchTableRecords = () => {
     error.value = null
 
     try {
-      // Fetch records from the subcollection
-      await getFirestoreSubCollection('tables', tableId, 'records', tableRecords)
+      // Fetch records from the subcollection, ordered by created_at descending
+      await getFirestoreSubCollectionWithSort('tables', tableId, 'records', tableRecords, { name: 'created_at', order: 'desc' })
       return tableRecords.value
     } catch (err: any) {
       console.error('Error fetching table records:', err)

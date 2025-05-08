@@ -1,3 +1,4 @@
+import { Timestamp } from 'firebase/firestore'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
@@ -38,11 +39,11 @@ export const useUpdateUserProfile = () => {
             bio: userProfileForm.bio.value ?? null,
             photo_url: userProfileForm.photo_url.value ?? null,
             showLogs: userProfileForm.showLogs.value,
-            updated_at: new Date().toISOString()
+            updated_at: Timestamp.fromDate(new Date())
         } as any
 
 
-        if (!validate_data(sentData, ['photo_url', 'bio'])) return
+        if (!validate_data(sentData, ['photo_url', 'bio', 'showLogs'])) return
         try {
             loading.value = true
             await updateFirestoreDocument('users', user_id.value!, sentData)
