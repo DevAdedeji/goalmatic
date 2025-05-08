@@ -123,6 +123,23 @@ service cloud.firestore {
           ((!("creator_id" in request.resource.data) && !("creator_id" in resource.data)) ||
            request.resource.data.creator_id == resource.data.creator_id) &&
           (!("updated_at" in request.resource.data) || validTimestamp(request.resource.data.updated_at)));
+
+      // Runs subcollection: stores individual flow runs
+      match /runs/{runId} {
+        allow create: if isSignedIn() && (
+          (!('creator_id' in request.resource.data) || request.resource.data.creator_id == request.auth.uid)
+        );
+        allow read: if isSignedIn() && (
+          (!('creator_id' in resource.data) || resource.data.creator_id == request.auth.uid) ||
+          (!('visibility' in resource.data) || resource.data.visibility == 'public') ||
+          (resource.data.visibility == 'private' &&
+            resource.data.allowed_users != null &&
+            request.auth.uid in resource.data.allowed_users)
+        );
+        allow update, delete: if isSignedIn() && (
+          (!('creator_id' in resource.data) || resource.data.creator_id == request.auth.uid)
+        );
+      }
     }
 
     // Tables collection: user-defined database tables with fields and records

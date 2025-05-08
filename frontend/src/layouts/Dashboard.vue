@@ -17,7 +17,9 @@
 			</div>
 			<ModalBase />
 		</div>
-		<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+		<ClientOnly>
+			<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+		</ClientOnly>
 	</div>
 </template>
 
@@ -26,7 +28,6 @@
 import { useBottombarModal } from '@/composables/core/modals'
 import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
 import { useUser } from '@/composables/auth/user'
-
 
 
 

@@ -37,7 +37,7 @@ export const useFetchUserFlows = () => {
   // Get a single flow by ID
   const fetchFlowById = async (flow_id: string) => {
     loading.value = true
-
+    if (import.meta.server) return
 
     try {
       await getSingleFirestoreDocument('flows', flow_id, flowData)

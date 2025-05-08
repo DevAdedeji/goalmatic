@@ -26,6 +26,13 @@ export const welcomeNewGoalmaticUser = onDocumentCreated({
     name: userData.name || 'New User'
   })
   
+  // Ensure showLogs is set to false by default if not present
+  if (userData.showLogs === undefined) {
+    const userRef = event.data?.ref;
+    if (userRef) {
+      await userRef.update({ showLogs: false });
+    }
+  }
 
   try {
     // Send the welcome email

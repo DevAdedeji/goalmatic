@@ -42,7 +42,7 @@ export const useFlowRuns = () => {
   // Fetch flow runs from the runs subcollection
   const fetchFlowRuns = async (flowId: string) => {
     if (!flowId || !user_id.value) return
-
+    if (import.meta.server) return
     flowRunsLoading.value = true
     try {
       // Fetch runs using direct Firestore methods
@@ -55,7 +55,7 @@ export const useFlowRuns = () => {
         runsData.push({
           id: doc.id,
           ...doc.data() as Omit<FlowRun, 'id'>
-        })
+        } as any)
       })
 
       // Map the data to the format expected by the RunSection component

@@ -22,6 +22,7 @@
 </template>
 
 <script setup lang="ts">
+import { watch } from 'vue'
 import FlowsIdHeader from '@/components/flows/id/Header.vue'
 import FlowsIdDetails from '@/components/flows/id/Details.vue'
 import FlowsIdLoader from '@/components/flows/id/Loader.vue'
@@ -34,12 +35,26 @@ const flowId = route.params.id as string
 const { fetchFlowById, loading, flowData } = useFetchUserFlows()
 const { fetchFlowRuns, flowRuns, flowRunsLoading } = useEditFlow()
 
-await fetchFlowById(flowId)
-
-
-
+onMounted(async () => {
+	await fetchFlowById(flowId)
+	await fetchFlowRuns(flowId)
+})
 
 const currentTab = ref('editor')
+
+// Function to refresh flow runs
+const refreshFlowRuns = async () => {
+  await fetchFlowRuns(flowId)
+}
+
+// Watch for tab changes to refresh runs when switching to the runs tab
+watch(() => currentTab.value, (newTab) => {
+  if (newTab === 'runs') {
+    refreshFlowRuns()
+  }
+})
+
+
 
 definePageMeta({
 	layout: 'dashboard',

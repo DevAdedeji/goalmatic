@@ -12,3 +12,8 @@
 		</button>
 	</div>
 </template>
+
+<script setup lang="ts">
+import { AlertCircle } from 'lucide-vue-next'
+</script>
+

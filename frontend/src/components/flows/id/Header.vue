@@ -70,7 +70,7 @@
 					</Popover>
 				</div>
 			</div>
-			<div class="flex gap-3 w-full md:w-auto md:min-w-[300px] ">
+			<div class="flex gap-3 w-full md:w-auto md:min-w-[300px] flex-wrap">
 				<Tooltip v-if="!allNodesValid && flowData.status !== 1" placement="top">
 					<template #trigger>
 						<button
@@ -102,6 +102,38 @@
 				<button class="btn-primary flex-1" @click="saveFlow">
 					Save Flow
 				</button>
+
+				<!-- Test Flow Button -->
+				<Tooltip v-if="!allNodesValid" placement="top">
+					<template #trigger>
+						<button
+							class="btn-outline w-full mt-2 cursor-not-allowed opacity-60"
+							disabled
+						>
+							<PlayCircle :size="16" class="mr-1" />
+							Test Flow
+						</button>
+					</template>
+					<template #content>
+						<div class="p-2 max-w-xs">
+							<p>Cannot test flow with invalid nodes. Please configure all required properties first.</p>
+						</div>
+					</template>
+				</Tooltip>
+				<button
+					v-else
+					class="btn-outline w-full mt-2 flex items-center justify-center"
+					:disabled="testLoading"
+					@click="handleTestFlow"
+				>
+					<span v-if="!testLoading" class="flex items-center">
+						<PlayCircle :size="16" class="mr-1" />
+						Test Flow
+					</span>
+					<span v-else>
+						<Spinner size="16" class="animate-spin" />
+					</span>
+				</button>
 			</div>
 		</div>
 
@@ -118,15 +150,17 @@
 </template>
 
 <script setup lang="ts">
-import { Edit2, Settings, Play } from 'lucide-vue-next'
+import { Edit2, Settings, Play, PlayCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
+import { useTestFlow } from '@/composables/dashboard/flows/test'
 import { isNodeValid } from '@/composables/dashboard/flows/nodes/nodeOperations'
 import Tooltip from '@/components/core/Tooltip.vue'
 
 const { updateFlow, saveFlow } = useEditFlow()
 const { toggleFlowStatus, loading: toggleLoading } = useToggleFlow()
+const { testFlow, loading: testLoading } = useTestFlow()
 
 const props = defineProps({
 	flowData: {
@@ -201,4 +235,15 @@ const saveDescription = () => {
     })
     descriptionPopoverOpen.value = false
 }
+
+// Handle test flow button click
+const handleTestFlow = () => {
+    testFlow(props.flowData, () => {
+        // Switch to the runs tab after successful test
+        emit('update:currentTab', 'runs')
+    })
+}
+
+// Define emits
+const emit = defineEmits(['update:currentTab'])
 </script>

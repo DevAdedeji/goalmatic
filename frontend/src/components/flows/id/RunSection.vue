@@ -67,7 +67,10 @@
 
 				<!-- Trigger -->
 				<span v-else-if="item.trigger" class="text-text-secondary capitalize">
-					{{ item.data.trigger }}
+					<span v-if="item.data.trigger === 'test'" class="flex items-center">
+						<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Test Run</span>
+					</span>
+					<span v-else>{{ item.data.trigger }}</span>
 				</span>
 
 				<!-- Steps -->

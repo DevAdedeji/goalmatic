@@ -70,6 +70,15 @@ export const logToolCall = async (sessionId: string, toolId: string, parameters:
       return;
     }
 
+    // Enforce showLogs setting
+    const userRef = goals_db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+    if (!userData || userData.showLogs !== true) {
+      // Logging is disabled for this user
+      return;
+    }
+
     const chatSessionRef = goals_db.collection('users').doc(uid).collection('chatSessions').doc(sessionId);
     const chatSessionDoc = await chatSessionRef.get();
 

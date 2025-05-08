@@ -1,12 +1,8 @@
-
-
 <template>
 	<main class="flex flex-col gap-4 px-5 mt-8">
 		<div class="flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
 			<ProfilePhoto v-if="userProfile" :photo-url="userProfile.photo_url" :folder-name="`bookings/users/profile/${user_id}`" @update="updatePhoto" />
 		</div>
-
-
 
 		<span class="flex items-center justify-between my-4 mt-12">
 			<h1 class="page-title">
@@ -55,6 +51,12 @@
 				</label>
 				<textarea v-model="userProfileForm.bio.value" placeholder="A short introduction about yourself" rows="4" class="input-textarea" required :disabled="isDisabled" />
 			</div>
+			<div class="field">
+				<label for="showLogs">
+					Show Logs (enable viewing logs in your account)
+				</label>
+				<input id="showLogs" v-model="userProfileForm.showLogs.value" type="checkbox" :disabled="isDisabled">
+			</div>
 		</section>
 	</main>
 </template>
@@ -64,7 +66,6 @@ import { usePageHeader } from '@/composables/utils/header'
 import { useUser } from '@/composables/auth/user'
 import { useUpdateUserProfile } from '@/composables/auth/profile/edit'
 
-
 const { user, id: user_id, userProfile } = useUser()
 const { isDisabled, loading: profileLoading, populateData, update, updatePhoto, userProfileForm } = useUpdateUserProfile()
 
@@ -73,14 +74,10 @@ populateData()
 definePageMeta({
 	layout: 'dashboard',
 	middleware: ['is-authenticated', () => {
-usePageHeader().setPageHeader({
-	title: 'Settings',
-	description: 'Manage your bookings account settings here',
-	btnText: 'Add Booking Type',
-	shouldShowFab: false,
-	shouldShowTab: false
-
-})
+		usePageHeader().setPageHeader({
+			title: 'Settings',
+			description: 'Manage your account settings here'
+		})
 	}]
 })
 </script>
