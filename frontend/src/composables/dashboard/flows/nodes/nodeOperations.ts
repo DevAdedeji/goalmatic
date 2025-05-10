@@ -202,26 +202,24 @@ export const useEditNodeLogic = (props: any) => {
 
   // Get the properties for the node
   const nodeProps = computed(() => {
-    // If this is a child node and has a parent_node_id, find the original props
+    let nodeDef: any
     if (props.payload?.parent_node_id && props.payload?.node_id) {
-      // Find parent node
       const parentNodes = props.payload.type === 'trigger' ? flowTriggerNodes : flowActionNodes
       const parentNode = parentNodes.find((n) => n.node_id === props.payload.parent_node_id)
-
       if (parentNode && parentNode.children) {
-        // Find child node
         const childNode = parentNode.children.find((c) => c.node_id === props.payload.node_id)
         if (childNode && 'props' in childNode) {
-          return childNode.props || []
+          nodeDef = childNode
         }
       }
+    } else if (props.payload?.node_id) {
+      const nodes = props.payload.type === 'trigger' ? flowTriggerNodes : flowActionNodes
+      nodeDef = nodes.find((n) => n.node_id === props.payload.node_id)
     }
 
-    // For standalone nodes or if parent/child lookup fails
-    return props.payload?.props || []
+    return (nodeDef && Array.isArray(nodeDef.props)) ? nodeDef.props : []
   })
 
-  // Check if the node has any configurable properties
   const hasProps = computed(() => nodeProps.value.length > 0)
 
   // Initialize the form values with existing values or defaults
@@ -241,13 +239,14 @@ export const useEditNodeLogic = (props: any) => {
   })
 
   // Save the changes to the node
-  const saveChanges = async () => {
+  const saveChanges = async (payload?: any) => {
     if (!props.payload) return
 
     loading.value = true
     try {
-      // Update the node with the new values
-      await updateNode(props.payload, formValues.value)
+      // Use payload if provided (from custom node), otherwise use formValues
+      const dataToSave = payload || formValues.value
+      await updateNode(props.payload, dataToSave)
       closeModal()
     } catch (error: any) {
       console.error('Error saving node changes:', error)

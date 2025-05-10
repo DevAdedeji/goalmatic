@@ -15,7 +15,7 @@ export const sendWhatsappOTP = onCall(
                 throw new HttpsError('unauthenticated', 'Unauthorized');
 
             const { phoneNumber } = request.data;
-            const cleanedPhoneNumber = phoneNumber.replace('+', '').trim();
+            const cleanedPhoneNumber = phoneNumber.toString().replace('+', '').trim();
 
             if (!phoneNumber)
                 throw new Error('Missing required parameter: phoneNumber');

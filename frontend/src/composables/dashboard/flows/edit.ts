@@ -31,10 +31,23 @@ export const useEditFlow = () => {
         updated_at: Timestamp.fromDate(new Date())
       } as Record<string, any>
 
-      sent_data.steps.forEach((step: Record<string, any>) => {
-        delete step.props
+      // Only keep node_id, parent_node_id, and propsData for each step
+      sent_data.steps = (sent_data.steps || []).map((step: Record<string, any>) => {
+        const { props, ...rest } = step
+        return { ...rest }
       })
-      delete sent_data.trigger.props
+
+
+      // Same for trigger
+      if (sent_data.trigger) {
+        const { props, ...rest } = sent_data.trigger
+        sent_data.trigger = { ...rest }
+      }
+
+      console.log(sent_data)
+
+
+
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow updated successfully' })
     } catch (error: any) {

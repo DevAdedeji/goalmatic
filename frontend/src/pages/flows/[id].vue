@@ -1,24 +1,26 @@
 <template>
-	<div class="p-4 sm:p-6">
-		<FlowsIdLoader v-if="loading" />
+	<ClientOnly>
+		<div class="p-4 sm:p-6">
+			<FlowsIdLoader v-if="loading" />
 
-		<!-- Flow details -->
-		<div v-else-if="flowData">
-			<!-- Use the new Header component -->
-			<FlowsIdHeader v-model:current-tab="currentTab" :flow-data="flowData" :flow-runs="flowRuns" />
+			<!-- Flow details -->
+			<div v-else-if="flowData">
+				<!-- Use the new Header component -->
+				<FlowsIdHeader v-model:current-tab="currentTab" :flow-data="flowData" :flow-runs="flowRuns" />
 
-			<!-- Use the Details component -->
-			<FlowsIdDetails
-				:current-tab="currentTab"
-				:flow-data="flowData"
-				:flow-runs="flowRuns"
-				:flow-runs-loading="flowRunsLoading"
-				@refresh-runs="fetchFlowRuns"
-			/>
+				<!-- Use the Details component -->
+				<FlowsIdDetails
+					:current-tab="currentTab"
+					:flow-data="flowData"
+					:flow-runs="flowRuns"
+					:flow-runs-loading="flowRunsLoading"
+					@refresh-runs="fetchFlowRuns"
+				/>
+			</div>
+
+			<FlowsIdErrorState v-else />
 		</div>
-
-		<FlowsIdErrorState v-else />
-	</div>
+	</ClientOnly>
 </template>
 
 <script setup lang="ts">

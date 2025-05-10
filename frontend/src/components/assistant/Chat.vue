@@ -1,21 +1,24 @@
 <template>
 	<section id="main1" class="flex flex-col items-center gap-4 relative h-[calc(100vh-0px)] w-full  px-4 md:pt-8 pt-4 overflow-auto pb-20">
 		<section id="main2" class=" w-full md:max-w-[var(--mw)]  flex flex-col gap-6 items-start ">
-			<div class="message-container">
-				<div class="header-container">
-					<div class="assistant-avatar">
-						<img class="size-5" src="/og.png" alt="goalmatic logo">
+			<ClientOnly>
+				<div class="message-container">
+					<div class="header-container">
+						<div class="assistant-avatar">
+							<img class="size-5" src="/og.png" alt="goalmatic logo">
+						</div>
+
+						<p class="name-label">
+							Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
+						</p>
 					</div>
-					<p class="name-label">
-						Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
-					</p>
+					<article class="message-bubble">
+						<p class="message-text">
+							How can I help you today?
+						</p>
+					</article>
 				</div>
-				<article class="message-bubble">
-					<p class="message-text">
-						How can I help you today?
-					</p>
-				</article>
-			</div>
+			</ClientOnly>
 			<div v-for="(message, index) in conversationHistory" :key="index"
 				class="message-container"
 				:class="{'!items-end': message.role === 'user'}">
@@ -83,7 +86,7 @@
 import { MoveRight } from 'lucide-vue-next'
 import { useChatAssistant } from '@/composables/dashboard/assistant/messaging'
 import { useOnAssistantLoad } from '@/composables/dashboard/assistant/agents/select'
-import { markdownProcessor } from '~/src/composables/utils/markdown'
+import { markdownProcessor } from '@/composables/utils/markdown'
 
 // Add Material Icons for tool call icons
 useHead({

@@ -1,9 +1,5 @@
 <template>
-	<transition
-		name="fade"
-		appear
-		@after-enter="modalType = type"
-	>
+	<transition name="fade" appear>
 		<div
 			:close="closeModal"
 			:class="[
@@ -12,15 +8,15 @@
 			]"
 			@click.self="autoClose ? close($el) : null"
 		>
-			<transition name="modal" appear @after-leave="closeModal">
-				<div v-if="modalType == 'popup'" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']">
+			<transition name="modal" appear @after-leave="handleAfterLeave">
+				<div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']">
 					<header class="modal-title flex justify-between w-full items-center">
 						<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
 						<X
 							v-if="!noClose"
 							name="close"
 							class="text-dark w-5 cursor-pointer  rounded-md"
-							@click="closeModalType()"
+							@click="closeModal"
 						/>
 					</header>
 					<div class="w-full relative">
@@ -28,22 +24,22 @@
 					</div>
 				</div>
 			</transition>
-			<transition name="slide" appear @after-leave="closeModal">
-				<div v-if="modalType == 'sidebar'" class="sidebar">
+			<transition name="slide" appear @after-leave="handleAfterLeave">
+				<div v-if="type == 'sidebar' && show" class="sidebar">
 					<header class="modal-title flex justify-between w-full items-center">
 						<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
 						<X
 							v-if="!noClose"
 							name="close"
 							class="text-dark w-5 cursor-pointer  rounded-md"
-							@click="closeModalType()"
+							@click="closeModal"
 						/>
 					</header>
 					<slot />
 				</div>
 			</transition>
-			<transition name="glide_up" appear @after-leave="closeModal">
-				<div v-if="modalType == 'bottom_bar'" class="bottombar">
+			<transition name="glide_up" appear @after-leave="handleAfterLeave">
+				<div v-if="type == 'bottom_bar' && show" class="bottombar">
 					<slot />
 				</div>
 			</transition>
@@ -53,7 +49,7 @@
 
 <script lang="ts" setup>
 
-import { watch, computed } from 'vue'
+import { watch, computed, ref } from 'vue'
 import type { PropType } from 'vue'
 import { X } from 'lucide-vue-next'
 import { modal, modalType, closeModalType, closeAllExtremes } from '@/composables/core/modal'
@@ -126,17 +122,22 @@ const props = defineProps({
 
 })
 
+const show = ref(true)
+
 const close = (e) => {
 	if (
 		typeof e.className === 'string' &&
 		e.className.includes('modal-background')
 	) {
-		closeModalType()
-		emit('close')
+		show.value = false
 	}
 }
 
 const closeModal = () => {
+	show.value = false
+}
+
+const handleAfterLeave = () => {
 	emit('close')
 	if (props?.propsModal) {
 		modal.close(props.propsModal)

@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
-import { modal, closeModalType, closeAllExtremes } from '@/composables/core/modal'
+import { modal, closeModalType } from '@/composables/core/modal'
 
 const { stack, close } = modal
 
