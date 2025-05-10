@@ -16,7 +16,7 @@
 			<div class="grid grid-cols-1 gap-4 mt-6 w-full ">
 				<button class="btn-primary text-light" :disabled="loading">
 					<span v-if="!loading">{{ step === 1 ? 'Send OTP to WhatsApp' : 'Verify OTP' }}</span>
-					<span v-else>Loading...</span>
+					<Spinner v-else />
 				</button>
 			</div>
 		</form>

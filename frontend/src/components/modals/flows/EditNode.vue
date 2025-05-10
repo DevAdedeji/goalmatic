@@ -21,7 +21,6 @@
 
 			<div class="border-t border-border my-4" />
 
-			<!-- Dynamic component for node configuration -->
 			<component
 				:is="nodeConfigComponent"
 				:payload="payload"
@@ -70,7 +69,6 @@ const nodeConfigComponent = computed(() => {
 		return configComponents[props.payload.node_id]
 	}
 
-	// Otherwise fall back to the generic component
 	return configComponents.generic
 })
 

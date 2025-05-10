@@ -2,7 +2,7 @@
 	<div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Message</label>
-			<textarea v-model="form.message" class="input-field w-full" rows="3" placeholder="Enter WhatsApp message" />
+			<textarea v-model="form.message" class="input-textarea w-full" placeholder="Enter WhatsApp message" resize="vertical" />
 		</div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Recipient Type</label>
@@ -17,10 +17,10 @@
 		</div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Phone Number</label>
-			<PhoneInput v-model="form.phoneNumber" :disabled="form.recipientType === 'user'" placeholder="e.g. +1234567890" @input="resetVerification" />
+			<PhoneInput v-model="form.phoneNumber" :disabled="form.recipientType === 'user'" placeholder="e.g. +1234567890" />
 
 			<div v-if="form.recipientType === 'custom'">
-				<button v-if="!verified" type="button" class="btn-primary mt-2" :disabled="loading || verified || form.phoneNumber.length < 10" @click="openOtpModal">
+				<button v-if="!verified" type="button" class="btn-primary mt-2" :disabled="loading || verified || form.phoneNumber.length < 13" @click="openOtpModal">
 					Verify Phone
 				</button>
 				<span v-if="verified" class="text-green-600 ml-2">Verified &#10003;</span>
@@ -53,19 +53,31 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['save', 'cancel'])
-
+const isVerified = ref(false)
+const verifiedPhoneNumber = ref('')
 const form = ref({
 	message: '',
 	recipientType: 'user',
-	phoneNumber: '8146923944'
+	phoneNumber: ''
 })
-const verified = ref(false)
+const verified = computed({
+  get: () => {
+    return isVerified.value && verifiedPhoneNumber.value && form.value.phoneNumber === verifiedPhoneNumber.value
+  },
+  set: (val:boolean) => {
+    isVerified.value = val
+  }
+})
 const user = useUser()
 
 // Prepopulate from formValues if editing
 onMounted(async () => {
 	if (props.formValues) {
     form.value = { ...form.value, ...props.formValues }
+    if (form.value.phoneNumber) {
+      isVerified.value = true
+      verifiedPhoneNumber.value = form.value.phoneNumber
+    }
 	}
 	if (form.value.recipientType === 'user') {
 		await prepopulateUserPhone()
@@ -76,8 +88,6 @@ watch(() => form.value.recipientType, async (val) => {
 	if (val === 'user') {
 		await prepopulateUserPhone()
 		verified.value = true
-	} else {
-		verified.value = false
 	}
 })
 
@@ -96,28 +106,22 @@ async function prepopulateUserPhone() {
 	form.value.phoneNumber = phone || ''
 }
 
-function resetVerification() {
-	if (form.value.recipientType === 'custom') {
-		verified.value = false
-	}
-}
+
 
 function openOtpModal() {
 	useCoreModal().openOtpVerificationModal({
 		phoneNumber: form.value.phoneNumber,
 		onVerified: () => {
       verified.value = true
+      verifiedPhoneNumber.value = form.value.phoneNumber
       useCoreModal().closeOtpVerificationModal()
 		}
 	})
 }
 
-function handleOtpVerified() {
-	verified.value = true
-}
 
 const canSave = computed(() => {
-	if (!form.value.message) return false
+  if (!form.value.message) return false
 	if (form.value.recipientType === 'custom') {
 		return !!form.value.phoneNumber && verified.value
 	}
@@ -128,11 +132,12 @@ const canSave = computed(() => {
 })
 
 function save() {
-	emit('save', {
+  const payload = {
 		message: form.value.message,
 		recipientType: form.value.recipientType,
 		phoneNumber: form.value.phoneNumber
-	})
+	}
+	emit('save', payload)
 }
 </script>
 

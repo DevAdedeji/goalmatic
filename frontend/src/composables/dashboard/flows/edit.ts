@@ -1,4 +1,5 @@
 import { Timestamp, collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { v4 as uuidv4 } from 'uuid'
 import { useFetchUserFlows } from './fetch'
 import { useFlowRuns } from './runs'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
@@ -104,11 +105,11 @@ export const useEditFlow = () => {
     }
 
     if (!position) {
-      flowData.value.steps.push({ position: flowData.value.steps.length + 1, ...node })
+      flowData.value.steps.push({ position: flowData.value.steps.length + 1, ...node, id: uuidv4() })
       return
     }
 
-    flowData.value.steps.splice(position, 0, { position, ...node })
+    flowData.value.steps.splice(position, 0, { position, ...node, id: uuidv4() })
   }
 
   const removeNode = (node: Record<string, any>, position?: number | null) => {
@@ -132,6 +133,7 @@ export const useEditFlow = () => {
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
     const updatedNode = { ...node, propsData: updatedValues }
 
+    console.log(updatedNode)
     // If it's a trigger node
     if (node.type === 'trigger') {
       flowData.value.trigger = updatedNode
@@ -142,18 +144,17 @@ export const useEditFlow = () => {
     // If it's an action node, find it in the steps and update it
     const stepIndex = flowData.value.steps.findIndex((step: Record<string, any>) => {
       // Compare by ID if available, otherwise fallback to a deeper comparison
+      console.log(step)
+      console.log(node)
+      console.log(flowData.value.steps)
       if (step.id && node.id) {
         return step.id === node.id
       }
 
-      // Fall back to node_id if no id is present
-      if (step.node_id && node.node_id) {
-        return step.node_id === node.node_id
-      }
 
       return false
     })
-
+console.log(stepIndex)
     if (stepIndex !== -1) {
       flowData.value.steps[stepIndex] = updatedNode
       await updateFlow(flowData.value)

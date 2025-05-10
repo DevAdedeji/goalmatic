@@ -46,7 +46,7 @@
     }
 
     .input-textarea {
-        @apply input py-4 !h-auto;
+        @apply input py-4 min-h-[200px];
     }
 
     .main-layout {

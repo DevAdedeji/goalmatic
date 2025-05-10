@@ -38,9 +38,9 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
         }
 
         // Check if the flow has a trigger
-        if (!flowData?.trigger) {
-            throw new HttpsError('failed-precondition', 'Flow must have a trigger to be tested');
-        }
+        // if (!flowData?.trigger) {
+        //     throw new HttpsError('failed-precondition', 'Flow must have a trigger to be tested');
+        // }
         
         // Check if the flow has steps
         if (!flowData?.steps || flowData.steps.length === 0) {
