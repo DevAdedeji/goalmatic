@@ -104,7 +104,7 @@ export const useEditTable = () => {
   // Add a record to the table
   const addRecordToTable = async (table: Record<string, any>, record: Record<string, any>) => {
     if (!user_id.value) return
-    console.log(table)
+
     loading.value = true
     try {
       // Add a unique ID and timestamps

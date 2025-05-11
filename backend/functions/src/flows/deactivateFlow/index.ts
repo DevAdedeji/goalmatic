@@ -11,7 +11,6 @@ export const deactivateFlow = onCall({cors: true, region: 'us-central1'}, async 
         return await handleFlowTrigger(flowData, request.auth?.uid);
 
     } catch (error) {
-      console.error('Error in deactivateFlow:', error);
       throw new HttpsError('internal', `${error}`);
     }
   }

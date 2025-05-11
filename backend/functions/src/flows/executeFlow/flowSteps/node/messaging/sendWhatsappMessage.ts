@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
     // Access all previous node results
     const allPreviousResults = context.getAllPreviousResults();
+        console.log('allPreviousResults - sendWhatsappMessage', allPreviousResults);
+    console.log('context', context);
     try {
 
         const { message, recipientType, phoneNumber } = step.propsData;
@@ -42,7 +44,6 @@ const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowN
 
         const isCSWOpen = await isCustomerServiceWindowOpen(recipientNumber);
 
-        console.log(isCSWOpen);
         if (isCSWOpen) {
             const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
             await send_WA_Message(waMsg);
@@ -61,7 +62,6 @@ const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowN
 
         return { success: true, sentAt: new Date().toISOString(), usedFormattedMessage: !isCSWOpen, message: message, context: { previousResults: allPreviousResults } };
     } catch (error: any) {
-        console.error(error.response?.data);
         return { success: false, error: error?.message || error, context: { previousResults: allPreviousResults } };
     }
 };
@@ -78,8 +78,7 @@ const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
     const lastReceivedMessage = cswData?.lastReceivedMessage;
     const now = new Date();
     const timeSinceLastMessage = now.getTime() - new Date(lastReceivedMessage).getTime();
-    console.log(lastReceivedMessage);
-    console.log(timeSinceLastMessage);
+
     return timeSinceLastMessage < 1000 * 60 * 60 * 24;
 }
 

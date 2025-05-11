@@ -32,7 +32,7 @@ export const useEditFlow = () => {
         updated_at: Timestamp.fromDate(new Date())
       } as Record<string, any>
 
-      // Only keep node_id, parent_node_id, and propsData for each step
+
       sent_data.steps = (sent_data.steps || []).map((step: Record<string, any>) => {
         const { props, ...rest } = step
         return { ...rest }
@@ -45,7 +45,7 @@ export const useEditFlow = () => {
         sent_data.trigger = { ...rest }
       }
 
-      console.log(sent_data)
+
 
 
 
@@ -133,7 +133,6 @@ export const useEditFlow = () => {
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
     const updatedNode = { ...node, propsData: updatedValues }
 
-    console.log(updatedNode)
     // If it's a trigger node
     if (node.type === 'trigger') {
       flowData.value.trigger = updatedNode
@@ -144,9 +143,6 @@ export const useEditFlow = () => {
     // If it's an action node, find it in the steps and update it
     const stepIndex = flowData.value.steps.findIndex((step: Record<string, any>) => {
       // Compare by ID if available, otherwise fallback to a deeper comparison
-      console.log(step)
-      console.log(node)
-      console.log(flowData.value.steps)
       if (step.id && node.id) {
         return step.id === node.id
       }
@@ -154,7 +150,7 @@ export const useEditFlow = () => {
 
       return false
     })
-console.log(stepIndex)
+
     if (stepIndex !== -1) {
       flowData.value.steps[stepIndex] = updatedNode
       await updateFlow(flowData.value)

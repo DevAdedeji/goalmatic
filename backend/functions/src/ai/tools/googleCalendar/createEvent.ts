@@ -34,7 +34,6 @@ const createGoogleCalendarEvent = async (params: {
             credentials.access_token = newCredentials.access_token;
             credentials.expiry_date = newCredentials.expiry_date;
         } catch (error) {
-            console.error('Error refreshing access token:', error);
             throw new Error('Failed to refresh Google Calendar access');
         }
     }
@@ -64,7 +63,6 @@ const createGoogleCalendarEvent = async (params: {
 
         return response.data;
     } catch (error) {
-        console.error('Error creating Google Calendar event:', error);
         throw new Error('Failed to create calendar event');
     }
 };
@@ -82,7 +80,6 @@ const createGoogleCalendarEventTool = tool({
             const event = await createGoogleCalendarEvent(input);
             return event;
         } catch (error) {
-            console.error('Error in createGoogleCalendarEventTool:', error);
             throw new Error('Failed to create calendar event');
         }
     }

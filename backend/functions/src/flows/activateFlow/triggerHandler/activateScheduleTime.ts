@@ -118,7 +118,6 @@ export const handleActivateScheduleTimeTrigger = async (flowData: any, userId: s
       executionId
     };
   } catch (error: any) {
-    console.error('Error in handleScheduleTimeTrigger during QStash/DB update:', error);
     throw new HttpsError('internal', `${error.message || error}`);
   }
 }

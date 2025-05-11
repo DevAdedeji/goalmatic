@@ -244,10 +244,9 @@ export const useEditNodeLogic = (props: any) => {
 
     loading.value = true
     try {
-      console.log(payload)
       // Use payload if provided (from custom node), otherwise use formValues
       const dataToSave = payload || formValues.value
-      console.log(props)
+
       await updateNode(props.payload, dataToSave)
       closeModal()
     } catch (error: any) {

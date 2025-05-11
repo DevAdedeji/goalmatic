@@ -59,7 +59,6 @@ export const readTableRecord = async (params: {
     }[];
     limit?: number;
 }) => {
-    console.log('params', params);
     
     // Initialize and validate
     const { tableId, tableData } = await initializeAndValidate(params);
@@ -73,9 +72,7 @@ export const readTableRecord = async (params: {
         // Build query with server-side filters where possible
         const { query, serverFilters, clientFilters } = buildFilteredQuery(tableId, tableData, params);
 
-        console.log('query', query);
-        console.log('serverFilters', serverFilters);
-        console.log('clientFilters', clientFilters);
+
         // Execute the query
         const recordsSnapshot = await query.get();
         let records = recordsSnapshot.docs.map(doc => doc.data());
@@ -95,7 +92,6 @@ export const readTableRecord = async (params: {
             records: records
         };
 
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Error reading table records:', error);

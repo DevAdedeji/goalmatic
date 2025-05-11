@@ -41,7 +41,6 @@ export const goals_WA_message_webhook = onRequest({
                     const message = req.body.entry[0].changes[0].value.messages[0]
 
 
-                    console.log(JSON.stringify(req.body.entry));
                     setWhatsAppPhone(from);
                     logCustomerServiceWindow(from);
 

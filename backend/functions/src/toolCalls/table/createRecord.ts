@@ -191,7 +191,7 @@ export const createTableRecord = async (params: {
     tableId?: string;
     record: Record<string, any>;
 }) => {
-    console.log('params', params);
+
     const uid = getUserUid();
     const toolConfig = getUserToolConfig() || {};
 

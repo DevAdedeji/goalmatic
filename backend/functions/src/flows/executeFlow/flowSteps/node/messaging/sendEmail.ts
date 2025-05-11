@@ -6,6 +6,8 @@ const sendEmail = async (context: EnhancedWorkflowContext, step: FlowNode, previ
     // Access all previous node results
     const allPreviousResults = context.getAllPreviousResults();
 
+    console.log('allPreviousResults- sendEmail', allPreviousResults);
+    console.log('context', context);
     // Extract email data from the step's props
     const { subject, body, emailType, recipientEmail } = step.propsData;
 

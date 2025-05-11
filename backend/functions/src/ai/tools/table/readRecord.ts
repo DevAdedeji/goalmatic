@@ -20,7 +20,6 @@ const readTableRecordTool = tool({
             const result = await readTableRecord(input);
             return result;
         } catch (error) {
-            console.error('Error in readTableRecordTool:', error);
             throw new Error(`Failed to read records: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }

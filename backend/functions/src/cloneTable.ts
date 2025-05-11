@@ -91,7 +91,6 @@ export const cloneTable = onCall({
       message: 'Table cloned successfully'
     }
   } catch (error) {
-    console.error('Error cloning table:', error)
     throw new HttpsError(
       'internal',
       `Error cloning table: ${error instanceof Error ? error.message : 'Unknown error'}`

@@ -39,7 +39,6 @@ export const sendWhatsappOTP = onCall(
             }
 
         } catch (error) {
-            console.error('Error in Calendar Assistant:', error);
             throw new HttpsError('internal', `${error}`);
         }
     }

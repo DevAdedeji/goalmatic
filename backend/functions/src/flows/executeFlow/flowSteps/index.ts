@@ -15,7 +15,7 @@ export const runStepsInContext = async (context: WorkflowContext, flowData: any)
     const contextManager = new FlowContextManager(context);
     const enhancedContext = contextManager.createEnhancedContext();
     
-    console.log('steps', steps)
+
         // Initialize a variable to hold the result of the previous step.
         // Upstash Workflow manages the state, so this variable will hold the correct
         // previous result during re-executions.

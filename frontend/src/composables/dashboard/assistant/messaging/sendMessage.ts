@@ -76,7 +76,7 @@ export const sendMessage = async (currentRoute?: RouteLocationNormalizedLoaded) 
       await getSingleFirestoreSubDocument('users', userId.value!, 'chatSessions', sessionId.value!, chatSessionRef)
     } catch (error) {
       // Chat session doesn't exist yet, that's okay
-      console.log('Creating new chat session')
+      console.error('Error getting chat session:', error)
     }
 
     // Initialize or update the messages array

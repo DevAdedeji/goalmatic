@@ -35,7 +35,6 @@ const getGoogleCalendarEvents = async (queryParams?: {
             
             // Note: You may want to update the credentials in your database here
         } catch (error) {
-            console.error('Error refreshing access token:', error);
             throw new Error('Failed to refresh Google Calendar access');
         }
     }
@@ -61,7 +60,6 @@ const getGoogleCalendarEvents = async (queryParams?: {
 
         return response.data.items;
     } catch (error) {
-        console.error('Error fetching Google Calendar events:', error);
         throw new Error('Failed to fetch calendar events');
     }
 }
@@ -80,7 +78,6 @@ const getGoogleCalendarEventsTool = tool(
             });
             return events;
         } catch (error) {
-            console.error('Error in getGoogleCalendarEventsTool:', error);
             throw new Error('Failed to fetch calendar events');
         }
     }

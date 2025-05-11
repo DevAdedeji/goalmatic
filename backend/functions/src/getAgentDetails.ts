@@ -52,7 +52,6 @@ export const getAgentDetails = onCall({
         }
 
     } catch (error: any) {
-        console.error('Error in getAgentDetails:', error);
         throw new HttpsError('internal', `${error.message || 'An error occurred'}`)
     }
 })

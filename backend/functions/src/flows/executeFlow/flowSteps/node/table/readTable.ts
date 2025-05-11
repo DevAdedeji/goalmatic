@@ -52,7 +52,7 @@ const readTable = async (context: EnhancedWorkflowContext, step: FlowNode, previ
         // Query records
         let query = goals_db.collection('tables').doc(tableId).collection('records');
         if (recordId) {
-            query = query.where('id', '==', recordId);
+            query = query.where('id', '==', recordId) as any;
         }
         const recordsSnap = await query.limit(limit).get();
         const records = recordsSnap.docs.map(doc => doc.data());

@@ -66,7 +66,6 @@ function close() {
 }
 
 function validatePhoneNumber(phone: string | number): boolean {
-  console.log(phone)
   return phone.toString().replace(/\D/g, '').length >= 10
 }
 

@@ -14,7 +14,6 @@ const createTableRecordTool = tool({
             const result = await createTableRecord(input);
             return result;
         } catch (error) {
-            console.error('Error in createTableRecordTool:', error);
             throw new Error(`Failed to create record: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
