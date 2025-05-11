@@ -1,14 +1,19 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { availableNodes } from "./list";
+import { FlowContextManager, EnhancedWorkflowContext } from "../context";
 
 // Define an interface for the expected structure of a step node's run method
 // It now accepts an optional third argument for the previous step's result.
 interface StepRunner {
-    run: (context: WorkflowContext, stepData: any, previousStepResult?: any) => Promise<any>;
+    run: (context: EnhancedWorkflowContext, stepData: any, previousStepResult?: any) => Promise<any>;
 }
 
 export const runStepsInContext = async (context: WorkflowContext, flowData: any) => {
     const { steps } = flowData;
+    
+    // Create our context manager
+    const contextManager = new FlowContextManager(context);
+    const enhancedContext = contextManager.createEnhancedContext();
     
     console.log('steps', steps)
         // Initialize a variable to hold the result of the previous step.
@@ -24,12 +29,15 @@ export const runStepsInContext = async (context: WorkflowContext, flowData: any)
                 throw new Error(`Node with id ${step.node_id} not found.`);
             }
 
-            // Wrap the execution of each step in context.run
-            // Use a unique name for each step, e.g., combining index and node_id.
-            // The result of the previous step ('previousStepResult') is passed to the current step's run method.
-            previousStepResult = await context.run(`step-${index}-${step.node_id}`, () => {
-                // Pass context, step data, and the result from the previous step
-                return node.run(context, step, previousStepResult);
+            // Execute the node within context.run
+            previousStepResult = await context.run(`step-${index}-${step.node_id}`, async () => {
+                // Execute the node with our enhanced context
+                const result = await node.run(enhancedContext, step, previousStepResult);
+                
+                // Store the result in our context manager
+                contextManager.setNodeResult(step.node_id, result);
+                
+                return result;
             });
         }
 

@@ -1,10 +1,10 @@
-import { WorkflowContext } from "@upstash/workflow";
+import { EnhancedWorkflowContext } from "../../../context";
 import { FlowNode } from "../../../type";
 import { notifyUser } from "../../../../../helpers/emailNotifier";
 
-const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('previousStepResult', previousStepResult);
-    console.log(step.name, step.propsData);
+const sendEmail = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
+    // Access all previous node results
+    const allPreviousResults = context.getAllPreviousResults();
 
     // Extract email data from the step's props
     const { subject, body, emailType, recipientEmail } = step.propsData;
@@ -29,11 +29,9 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
     try {
         // Send the email
         const result = await notifyUser(emailMessage);
-        console.log('Email sending result:', result);
-        return { success: result, sentAt: new Date().toISOString() };
+        return { success: result, sentAt: new Date().toISOString(), context: { previousResults: allPreviousResults } };
     } catch (error: any) {
-        console.error('Error sending email:', error);
-        return { success: false, error: error?.message || error };
+        return { success: false, error: error?.message || error, context: { previousResults: allPreviousResults } };
     }
 }
 

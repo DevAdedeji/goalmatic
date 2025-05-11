@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Timestamp } from 'firebase-admin/firestore';
 import { runStepsInContext } from '../executeFlow/flowSteps';
 import { WorkflowContext } from '@upstash/workflow';
+import { FlowContextManager } from '../executeFlow/context';
 
 /**
  * Test a flow without activating it
@@ -66,7 +67,7 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
 
         try {
             // Create a mock WorkflowContext for running the steps
-            const context = {
+            const baseContext = {
                 requestPayload: {
                     flowId,
                     userId: request.auth.uid,
@@ -76,8 +77,12 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
                 cancel: () => {}
             } as unknown as WorkflowContext;
 
+            // Create enhanced context
+            const contextManager = new FlowContextManager(baseContext);
+            const enhancedContext = contextManager.createEnhancedContext();
+
             // Execute the flow steps
-            await runStepsInContext(context, flowData);
+            await runStepsInContext(enhancedContext, flowData);
             
             // Update the run record with success status
             const endTime = new Date();
@@ -96,20 +101,13 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
                 executionId,
                 message: 'Flow test completed successfully'
             };
-        } catch (error) {
-            // Update the run record with error status
-            const endTime = new Date();
-            const durationMs = endTime.getTime() - startTime.getTime();
-            const durationStr = `${Math.round(durationMs / 1000)}s`;
-            
+        } catch (err) {
             await runRef.update({
                 status: 'failed',
-                end_time: Timestamp.fromDate(endTime),
-                duration: durationStr,
-                error: error instanceof Error ? error.message : String(error)
+                error: err instanceof Error ? err.message : 'Unknown error',
+                end_time: Timestamp.fromDate(new Date())
             });
-
-            throw new HttpsError('internal', `Error executing flow: ${error}`);
+            throw err;
         }
     } catch (error) {
         console.error('Error in testFlow:', error);

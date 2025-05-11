@@ -1,25 +1,22 @@
-import { WorkflowContext } from '@upstash/workflow';
+import { EnhancedWorkflowContext } from '../../../context';
 import { FlowNode } from "../../../type";
 
-const createGoogleCalendarEvent = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('previousStepResult', previousStepResult);
-    console.log(step.name, step.propsData);
-    
-    // Extract calendar event data from props
+const createGoogleCalendarEvent = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
+    // Access all previous node results
+    const allPreviousResults = context.getAllPreviousResults();
 
-    
     // This is a placeholder for the actual Google Calendar API integration
     // In a complete implementation, you would:
     // 1. Get the user's Google OAuth token
     // 2. Use the Google Calendar API to create the event
     // 3. Return the event details
-    
 
     return {
         success: true,
         eventId: `mock-event-${Date.now()}`,
         createdAt: new Date().toISOString(),
-        eventDetails: step.propsData
+        eventDetails: step.propsData,
+        context: { previousResults: allPreviousResults }
     };
 };
 

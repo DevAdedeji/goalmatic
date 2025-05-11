@@ -1,12 +1,14 @@
-import { WorkflowContext } from "@upstash/workflow";
+import { EnhancedWorkflowContext } from "../../../context";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
-import {  send_WA_Message } from "../../../../../whatsapp/utils/sendMessage";
+import { send_WA_Message, send_WA_ImageMessageInput } from "../../../../../whatsapp/utils/sendMessage";
 import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/templates/workflow";
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
+import { v4 as uuidv4 } from 'uuid';
 
-
-const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
+    // Access all previous node results
+    const allPreviousResults = context.getAllPreviousResults();
     try {
 
         const { message, recipientType, phoneNumber } = step.propsData;
@@ -38,21 +40,52 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         if (!recipientNumber) throw new Error('Recipient phone number not found');
 
-        
-        const waMsg = goalmatic_whatsapp_workflow_template({
-            message: formatTemplateMessage(message),
-            recipientNumber: recipientNumber
-        });
+        const isCSWOpen = await isCustomerServiceWindowOpen(recipientNumber);
 
-        await send_WA_Message(waMsg);
-        return { success: true, sentAt: new Date().toISOString() };
+        console.log(isCSWOpen);
+        if (isCSWOpen) {
+            const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
+            await send_WA_Message(waMsg);
+        } else {
+            const uniqueTemplateMessageId = uuidv4();
+            const waMsg = goalmatic_whatsapp_workflow_template({
+                message: formatTemplateMessage(message),
+                recipientNumber: recipientNumber,
+                uniqueTemplateMessageId: uniqueTemplateMessageId
+            });
+            await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, message);
+            await send_WA_Message(waMsg);
+
+        }
+
+
+        return { success: true, sentAt: new Date().toISOString(), usedFormattedMessage: !isCSWOpen, message: message, context: { previousResults: allPreviousResults } };
     } catch (error: any) {
         console.error(error.response?.data);
-        return { success: false, error: error?.message || error };
+        return { success: false, error: error?.message || error, context: { previousResults: allPreviousResults } };
     }
 };
 
 export const sendWhatsappMessageNode = {
     nodeId: 'SEND_WHATSAPP_MESSAGE',
     run: sendWhatsappMessage
-}; 
+};
+
+const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
+    const cswSnap = await goals_db.collection('CSW').doc(phoneNumber).get();
+    if (!cswSnap.exists) return false;
+    const cswData = cswSnap.data();
+    const lastReceivedMessage = cswData?.lastReceivedMessage;
+    const now = new Date();
+    const timeSinceLastMessage = now.getTime() - new Date(lastReceivedMessage).getTime();
+    console.log(lastReceivedMessage);
+    console.log(timeSinceLastMessage);
+    return timeSinceLastMessage < 1000 * 60 * 60 * 24;
+}
+
+const saveNonFormattedMessage = async (uniqueTemplateMessageId: string, phoneNumber: string, message: string) => {
+    await goals_db.collection('CSW').doc(phoneNumber).collection('nonFormattedMessages').doc(uniqueTemplateMessageId).set({
+        message: message,
+        createdAt: new Date().toISOString()
+    });
+}

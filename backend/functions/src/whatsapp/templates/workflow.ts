@@ -1,6 +1,7 @@
 type dataType = {
-    message: string;
-    recipientNumber: string;
+  message: string;
+  recipientNumber: string;
+  uniqueTemplateMessageId: string;
 }
 
 export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
@@ -15,7 +16,7 @@ export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
         'code': 'en',
       },
       'components': [
-          {
+        {
           'type': 'header',
           'parameters': [
             {
@@ -33,9 +34,20 @@ export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
               'type': 'text',
               'text': data.message,
             },
-        
+
           ],
-          },
+        },
+        {
+          'type': 'button',
+          "index": "0",
+          "sub_type": "quick_reply",
+          'parameters': [
+            {
+              "type": "payload",
+              "payload": data.uniqueTemplateMessageId
+            }
+          ],
+        },
       ],
     },
   })

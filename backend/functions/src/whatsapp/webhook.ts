@@ -1,7 +1,7 @@
 import { onRequest } from 'firebase-functions/v2/https'
 
 import { getDetailsByPhone } from './utils/getDetailsByPhone'
-import { get_WA_TextMessageInput, send_WA_Message } from './utils/sendMessage'
+import { get_WA_TextMessageInput, send_WA_ImageMessageInput, send_WA_Message, sendWAReadAndTypingIndicator } from './utils/sendMessage'
 import { WhatsappAgent, defaultGoalmaticAgent } from './utils/WhatsappAgent'
 import { is_dev, goals_db } from '../init'
 import { transcribeWhatsAppAudio } from './utils/transcribeAudio'
@@ -41,8 +41,9 @@ export const goals_WA_message_webhook = onRequest({
                     const message = req.body.entry[0].changes[0].value.messages[0]
 
 
+                    console.log(JSON.stringify(req.body.entry));
                     setWhatsAppPhone(from);
-
+                    logCustomerServiceWindow(from);
 
                     // In development, only respond to the dev test number
                     if (is_dev && from !== '2348106814815') {
@@ -59,6 +60,24 @@ export const goals_WA_message_webhook = onRequest({
                         await send_WA_Message(data, phone_number_id)
                         res.sendStatus(200)
                         return
+                    }
+
+                    // Handle button type messages with specific text
+                    if (message.type === 'button' && message.button && message.button.text === 'Get Formatted Message') {
+                        const payloadId = message.button.payload;
+                        const cswSnap = await goals_db.collection('CSW').doc(from).collection('nonFormattedMessages').doc(payloadId).get();
+                        const payloadMsg = cswSnap.data()?.message || 'No message found';
+                        const data = send_WA_ImageMessageInput(from, payloadMsg);
+                        await send_WA_Message(data, phone_number_id);
+                        res.sendStatus(200);
+                        return;
+                    }
+
+                    // Mark as read and show typing indicator for supported message types
+                    try {
+                        await sendWAReadAndTypingIndicator(phone_number_id, message.id);
+                    } catch (err) {
+                        console.error('Failed to send mark as read/typing indicator:', err);
                     }
 
                     // 2348106814815
@@ -132,3 +151,11 @@ export const goals_WA_message_webhook = onRequest({
         }
     }
 })
+
+
+const logCustomerServiceWindow = (phoneNumber: string) => {
+    goals_db.collection('CSW').doc(phoneNumber).set({
+        phoneNumber,
+        lastReceivedMessage: new Date().toISOString()
+    }, { merge: true })
+}
