@@ -1,12 +1,12 @@
 import { sendEmailNode } from "./node/messaging/sendEmail";
-import { EnhancedWorkflowContext } from "../context";
+import { WorkflowContext } from "@upstash/workflow";
 import { createGoogleCalendarEventNode } from "./node/googleCalendar/createEvent";
 import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } from "./node/table";
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
 
 type NodeSignature = {
     nodeId: string;
-    run: (context: EnhancedWorkflowContext, props: any, previousStepResult?: any) => Promise<any>;
+    run: (context: WorkflowContext, props: any, previousStepResult?: any) => Promise<any>;
 }
 
 export const availableNodes: Record<string, NodeSignature> = {

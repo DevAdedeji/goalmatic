@@ -1,4 +1,4 @@
-import { EnhancedWorkflowContext } from "../../../context";
+import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 import { send_WA_Message, send_WA_ImageMessageInput } from "../../../../../whatsapp/utils/sendMessage";
@@ -6,13 +6,9 @@ import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/te
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
 import { v4 as uuidv4 } from 'uuid';
 
-const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // Access all previous node results
-    const allPreviousResults = context.getAllPreviousResults();
-        console.log('allPreviousResults - sendWhatsappMessage', allPreviousResults);
-    console.log('context', context);
+const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
-
+        console.log('sendWhatsappMessage', previousStepResult);
         const { message, recipientType, phoneNumber } = step.propsData;
 
         let recipientNumber = null;
@@ -60,9 +56,10 @@ const sendWhatsappMessage = async (context: EnhancedWorkflowContext, step: FlowN
         }
 
 
-        return { success: true, sentAt: new Date().toISOString(), usedFormattedMessage: !isCSWOpen, message: message, context: { previousResults: allPreviousResults } };
+        return { success: true, sentAt: new Date().toISOString(), payload:step.propsData};
     } catch (error: any) {
-        return { success: false, error: error?.message || error, context: { previousResults: allPreviousResults } };
+        console.error(error.response?.data);
+        return { success: false, error: error?.message || error };
     }
 };
 
@@ -78,7 +75,6 @@ const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
     const lastReceivedMessage = cswData?.lastReceivedMessage;
     const now = new Date();
     const timeSinceLastMessage = now.getTime() - new Date(lastReceivedMessage).getTime();
-
     return timeSinceLastMessage < 1000 * 60 * 60 * 24;
 }
 

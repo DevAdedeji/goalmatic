@@ -64,7 +64,7 @@
 				</div>
 
 				<div class="flex md:ml-auto gap-2">
-					<button v-if="isOwner(agentDetails)" class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
+					<button v-if="isOwner(agentDetails) || agentDetails?.id === 0" class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
 						Use agent
 						<MoveUpRight :size="16" />
 					</button>

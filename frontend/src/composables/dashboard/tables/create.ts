@@ -36,7 +36,9 @@ export const useCreateTable = () => {
         id: tableId,
         creator_id: user_id.value,
         created_at: Timestamp.fromDate(new Date()),
-        updated_at: Timestamp.fromDate(new Date())
+        updated_at: Timestamp.fromDate(new Date()),
+        visibility: 'private',
+        allowed_users: [user_id.value]
       }
 
       await setFirestoreDocument('tables', tableId, table_data)

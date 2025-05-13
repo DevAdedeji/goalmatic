@@ -152,13 +152,14 @@ service cloud.firestore {
         request.resource.data.fields is list &&
         validTimestamp(request.resource.data.created_at);
 
-      allow read: if isSignedIn() && (
+      allow read: if isSignedIn() && resource.data != null && (
         (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) ||
         (!("visibility" in resource.data) || resource.data.visibility == "public") ||
         (resource.data.visibility == "private" &&
          resource.data.allowed_users != null &&
          request.auth.uid in resource.data.allowed_users)
       );
+
 
       allow update, delete: if isSignedIn() &&
         (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) &&
@@ -170,19 +171,26 @@ service cloud.firestore {
       // Records subcollection: individual records for each table
       match /records/{recordId} {
         allow create: if isSignedIn() &&
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
           get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid &&
           request.resource.data.keys().hasAll(['id', 'created_at', 'updated_at']) &&
           validTimestamp(request.resource.data.created_at) &&
           validTimestamp(request.resource.data.updated_at);
 
         allow read: if isSignedIn() && (
-          get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid  ||
-          (get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "private" &&
-           get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users != null &&
-           request.auth.uid in get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users)
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
+          (
+            get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid  ||
+            (
+              get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "private" &&
+              get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users != null &&
+              request.auth.uid in get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users
+            )
+          )
         );
 
         allow update, delete: if isSignedIn() &&
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
           get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid &&
           (request.method != "update" ||
             validTimestamp(request.resource.data.updated_at));

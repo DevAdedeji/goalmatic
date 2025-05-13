@@ -1,10 +1,9 @@
-import { EnhancedWorkflowContext } from "../../../context";
+import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 
-const updateRecord = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // Access all previous node results
-    const allPreviousResults = context.getAllPreviousResults();
+const updateRecord = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+
 
     try {
         // Extract user ID from the flow data
@@ -115,14 +114,12 @@ const updateRecord = async (context: EnhancedWorkflowContext, step: FlowNode, pr
             success: true,
             message: 'Record updated successfully',
             record: updatedRecord,
-            context: { previousResults: allPreviousResults }
         };
     } catch (error: any) {
         console.error('Error in updateRecord node:', error);
         return {
             success: false,
             error: error?.message || error,
-            context: { previousResults: allPreviousResults }
         };
     }
 };

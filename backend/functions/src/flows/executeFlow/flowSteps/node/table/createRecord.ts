@@ -1,12 +1,11 @@
-import { EnhancedWorkflowContext } from "../../../context";
+import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 import { v4 as uuidv4 } from 'uuid';
 import { Timestamp } from 'firebase-admin/firestore';
 
-const createRecord = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // Access all previous node results
-    const allPreviousResults = context.getAllPreviousResults();
+const createRecord = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+
 
     try {
         // Extract user ID from the flow data
@@ -82,13 +81,11 @@ const createRecord = async (context: EnhancedWorkflowContext, step: FlowNode, pr
             recordId,
             created_at: now.toISOString(),
             record,
-            context: { previousResults: allPreviousResults }
         };
     } catch (error: any) {
         return {
             success: false,
             error: error?.message || error,
-            context: { previousResults: allPreviousResults }
         };
     }
 };

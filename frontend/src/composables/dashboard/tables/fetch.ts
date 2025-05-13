@@ -2,7 +2,7 @@ import { ref } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
-import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
+import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
 import { getFirestoreSubCollectionWithSort } from '@/firebase/firestore/sort'
 // Store for tables data
 const userTables = ref([] as any[])
@@ -81,7 +81,7 @@ export const useFetchTableRecords = () => {
 
   const fetchTableRecords = async (tableId: string) => {
     if (!tableId || !isClient) return []
-
+    tableRecords.value = []
     loading.value = true
     error.value = null
 

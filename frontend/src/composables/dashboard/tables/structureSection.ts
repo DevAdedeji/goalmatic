@@ -1,8 +1,7 @@
-import { ref } from 'vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
 import { useTablesModal } from '@/composables/core/modals'
 import { useConfirmationModal } from '@/composables/core/confirmation'
-import type { Field, TableData } from '@/composables/dashboard/tables/types'
+import type { Field } from '@/composables/dashboard/tables/types'
 import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 
 
@@ -43,10 +42,8 @@ export const useTableStructureSection = () => {
   }
 
   const addNewField = () => {
-    // Reset form
     resetFieldForm()
 
-    // Open the field modal with the current form data and editing index
     useTablesModal().openFieldModal({
       fieldForm: fieldForm.value,
       editingFieldIndex: editingFieldIndex.value,
@@ -87,7 +84,7 @@ export const useTableStructureSection = () => {
     // Check if we're adding a new field or updating an existing one
     if (editingFieldIndex.value === -1) {
       // Add new field
-      await addFieldToTable(tableData, fieldForm.value)
+      await addFieldToTable(tableData.value, fieldForm.value)
     } else if (tableData.value.fields && tableData.value.fields[editingFieldIndex.value]) {
       // Update existing field
       await updateFieldInTable(
@@ -115,7 +112,8 @@ export const useTableStructureSection = () => {
         }
         localLoading.value = true
         try {
-          await removeFieldFromTable(tableData, tableData.value.fields[index].id)
+          await removeFieldFromTable(tableData.value, tableData.value.fields[index].id)
+          useConfirmationModal().closeAlert()
         } catch (error) {
           console.error('Error deleting field:', error)
         } finally {

@@ -42,6 +42,7 @@ export const useDeleteTable = () => {
       useAlert().openAlert({ type: 'ERROR', msg: `Error deleting table: ${error.message}` })
     } finally {
       loading.value = false
+      deleteTableData.value = null
     }
   }
 

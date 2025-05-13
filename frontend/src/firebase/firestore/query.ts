@@ -1,4 +1,4 @@
-import { onSnapshot, limit, collection, query, where, QueryConstraint, CollectionReference } from 'firebase/firestore'
+import { onSnapshot, getDocs, limit, collection, query, where, QueryConstraint, CollectionReference } from 'firebase/firestore'
 import { db } from '../init'
 
 const FETCHLIMIT = 200
@@ -39,6 +39,7 @@ export const getFirestoreCollectionWithWhereQuery = async (
         })
     })
 }
+
 export const getFirestoreSubCollectionWithWhereQuery = async (
     collectionName: string,
     documentName: string,
@@ -76,4 +77,23 @@ export const getFirestoreSubCollectionWithWhereQuery = async (
             resolve(ArrayRef.value)
         })
     })
+}
+
+export const getFirestoreCollectionWithWhereQueryOnce = async (
+    collectionName: string,
+    ...queries: { name: string, operator: any, value: any }[]
+) => {
+    const collectionRef: CollectionReference = collection(db, collectionName)
+    const queryConstraints: QueryConstraint[] = [
+        limit(FETCHLIMIT)
+    ]
+
+    queries.forEach((queryParam) => {
+        queryConstraints.push(where(queryParam.name, queryParam.operator, queryParam.value))
+    })
+
+    const q = query(collectionRef, ...queryConstraints)
+
+    const snapshot = await getDocs(q)
+    return snapshot.docs.map((doc) => doc.data())
 }

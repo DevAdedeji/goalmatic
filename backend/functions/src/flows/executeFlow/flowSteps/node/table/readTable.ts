@@ -1,10 +1,9 @@
-import { EnhancedWorkflowContext } from "../../../context";
+import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 
-const readTable = async (context: EnhancedWorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // Access all previous node results
-    const allPreviousResults = context.getAllPreviousResults();
+const readTable = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+
 
     try {
         // Extract user ID from the flow data
@@ -60,14 +59,12 @@ const readTable = async (context: EnhancedWorkflowContext, step: FlowNode, previ
         return {
             success: true,
             records,
-            context: { previousResults: allPreviousResults }
         };
     } catch (error: any) {
         return {
             success: false,
             error: error?.message || error,
             records: [],
-            context: { previousResults: allPreviousResults }
         };
     }
 };

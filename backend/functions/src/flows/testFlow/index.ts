@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { Timestamp } from 'firebase-admin/firestore';
 import { runStepsInContext } from '../executeFlow/flowSteps';
 import { WorkflowContext } from '@upstash/workflow';
-import { FlowContextManager } from '../executeFlow/context';
 
 /**
  * Test a flow without activating it
@@ -77,12 +76,8 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
                 cancel: () => {}
             } as unknown as WorkflowContext;
 
-            // Create enhanced context
-            const contextManager = new FlowContextManager(baseContext);
-            const enhancedContext = contextManager.createEnhancedContext();
-
             // Execute the flow steps
-            await runStepsInContext(enhancedContext, flowData);
+            await runStepsInContext(baseContext, flowData);
             
             // Update the run record with success status
             const endTime = new Date();
