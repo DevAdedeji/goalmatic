@@ -191,17 +191,17 @@
 				</p>
 			</div>
 
-			<div class="flex justify-end gap-3 mt-4">
+			<div class="flex justify-end gap-2 mt-4">
 				<button
 					type="button"
-					class="px-4 py-2 border border-border rounded-md hover:bg-gray-50"
+					class="btn-outline flex-1"
 					@click="closeModal"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
-					class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark"
+					class="btn-primary flex-1"
 					:disabled="loading"
 				>
 					<span v-if="loading">Saving...</span>

@@ -26,12 +26,13 @@
 				<span v-if="verified" class="text-green-600 ml-2">Verified &#10003;</span>
 			</div>
 		</div>
-		<div class="flex gap-2 mt-6">
+
+		<div class="flex justify-end gap-2 mt-4">
+			<button class="btn-outline flex-1" @click="$emit('cancel')">
+				Cancel
+			</button>
 			<button class="btn-primary flex-1" :disabled="!canSave" @click="save">
 				Save
-			</button>
-			<button class="btn-secondary flex-1" @click="$emit('cancel')">
-				Cancel
 			</button>
 		</div>
 	</div>

@@ -43,7 +43,8 @@ import { useEditNodeLogic } from '@/composables/dashboard/flows/nodes/nodeOperat
 // Default to GenericConfig
 const configComponents = {
 	generic: GenericConfig,
-	SEND_WHATSAPP_MESSAGE: defineAsyncComponent(() => import('./nodeConfig/WhatsAppMessage.vue'))
+	SEND_WHATSAPP_MESSAGE: defineAsyncComponent(() => import('./nodeConfig/WhatsAppMessage.vue')),
+	SCHEDULE_INTERVAL: defineAsyncComponent(() => import('./nodeConfig/ScheduleInterval.vue'))
 	// Add node-specific components here as needed
 	// For example:
 	// 'GOOGLECALENDAR_CREATE_EVENT': defineAsyncComponent(() => import('./nodeConfig/GoogleCalendarCreateEvent.vue')),
