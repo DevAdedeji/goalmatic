@@ -46,7 +46,7 @@ import { is_dev } from '@/composables/utils/system'
 
 // --- Add this ref to toggle the Coming Soon section ---
 // Set to `true` to display the "Coming Soon" message, `false` to show the normal content.
-const showComingSoon = ref(!is_dev)
+const showComingSoon = ref(false)
 // -------------------------------------------------------
 
 

@@ -54,6 +54,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { callFirebaseFunction } from '@/firebase/functions'
 
 const props = defineProps({
   payload: Object,
@@ -73,14 +74,12 @@ const loading = ref(false)
 async function generateCron() {
   loading.value = true
   try {
-    // TODO: Replace with actual backend call
-    // Simulate backend response
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    // Example: "12pm every week days" => "0 12 * * 1-5", "At 12:00 PM, Monday through Friday"
-    cronResult.value = {
-      cron: '0 12 * * 1-5',
-      PlainText: 'At 12:00 PM, Monday through Friday'
-    }
+    // Call the backend Firebase function to generate the cron expression
+    const result = await callFirebaseFunction('generateCron', { input: scheduleInput.value }) as { cron: string; PlainText: string }
+    cronResult.value = result
+  } catch (error) {
+    // Optionally handle error (e.g., show notification)
+    cronResult.value = null
   } finally {
     loading.value = false
   }

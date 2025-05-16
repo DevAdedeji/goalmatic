@@ -3,11 +3,11 @@ import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 
 // Function to fetch user tables for the dropdown
 export const fetchUserTablesForConfig = async () => {
-	const { userTables, fetchAllTables } = useFetchUserTables()
+	const { userTables, fetchAllUserTables } = useFetchUserTables()
 
 	// Fetch tables if not already fetched
 	if (!userTables.value.length) {
-		await fetchAllTables()
+		await fetchAllUserTables()
 	}
 
 	// Format tables for dropdown
