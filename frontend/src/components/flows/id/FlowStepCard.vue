@@ -23,15 +23,33 @@
 			</h3>
 			<div class="flex gap-2">
 				<!-- Change Button -->
-				<button class="icon-btn text-text-secondary hover:text-blue-500" @click="$emit('changeNode', step)">
+				<span v-if="props.isFlowActive" class="tooltip-wrapper">
+					<button class="icon-btn disabled-btn" disabled>
+						<RefreshCw :size="18" />
+					</button>
+					<span class="tooltip-text">Cannot change node while flow is active</span>
+				</span>
+				<button v-else class="icon-btn text-text-secondary hover:text-blue-500" @click="$emit('changeNode', step)">
 					<RefreshCw :size="18" />
 				</button>
 				<!-- Edit Button -->
-				<button class="icon-btn text-text-secondary hover:text-primary" @click="$emit('editStep', step)">
+				<span v-if="props.isFlowActive" class="tooltip-wrapper">
+					<button class="icon-btn disabled-btn" disabled>
+						<Edit2 :size="18" />
+					</button>
+					<span class="tooltip-text">Cannot edit node while flow is active</span>
+				</span>
+				<button v-else class="icon-btn text-text-secondary hover:text-primary" @click="$emit('editStep', step)">
 					<Edit2 :size="18" />
 				</button>
 				<!-- Remove Button -->
-				<button class="icon-btn text-text-secondary hover:text-danger" @click="$emit('removeStep')">
+				<span v-if="props.isFlowActive" class="tooltip-wrapper">
+					<button class="icon-btn disabled-btn" disabled>
+						<Trash2 :size="18" />
+					</button>
+					<span class="tooltip-text">Cannot delete node while flow is active</span>
+				</span>
+				<button v-else class="icon-btn text-text-secondary hover:text-danger" @click="$emit('removeStep')">
 					<Trash2 :size="18" />
 				</button>
 			</div>
@@ -87,6 +105,10 @@ const props = defineProps({
 		required: true
 	},
 	isTrigger: {
+		type: Boolean,
+		default: false
+	},
+	isFlowActive: {
 		type: Boolean,
 		default: false
 	}
@@ -151,5 +173,36 @@ defineEmits([
 }
 .icon-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
+}
+.disabled-btn {
+  opacity: 0.4;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: max-content;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 8px;
+  position: absolute;
+  z-index: 10;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+.tooltip-wrapper:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
 </style>

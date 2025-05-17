@@ -53,8 +53,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { callFirebaseFunction } from '@/firebase/functions'
+import { parseCronExpression } from '@/composables/utils/cronParser'
+
 
 const props = defineProps({
   payload: Object,
@@ -67,7 +68,7 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel'])
 
 const scheduleInput = ref('')
-const cronResult = ref<null | { cron: string; PlainText: string }>(null)
+const cronResult = ref<null | { cron: string, PlainText: string }>(null)
 const loading = ref(false)
 
 // Placeholder for backend call
@@ -75,10 +76,12 @@ async function generateCron() {
   loading.value = true
   try {
     // Call the backend Firebase function to generate the cron expression
-    const result = await callFirebaseFunction('generateCron', { input: scheduleInput.value }) as { cron: string; PlainText: string }
+      const result = await callFirebaseFunction('generateCron', { input: scheduleInput.value }) as { cron: string; PlainText: string }
+
     cronResult.value = result
+      const PlainText = parseCronExpression(result.cron)
+    cronResult.value.PlainText = PlainText.toString()
   } catch (error) {
-    // Optionally handle error (e.g., show notification)
     cronResult.value = null
   } finally {
     loading.value = false
@@ -95,6 +98,19 @@ function onSave() {
   }
 }
 
+onMounted(() => {
+  if (props.formValues) {
+    if (props.formValues.Input) {
+      scheduleInput.value = props.formValues.Input
+    }
+    if (props.formValues.cron && props.formValues.PlainText) {
+      cronResult.value = {
+        cron: props.formValues.cron,
+        PlainText: props.formValues.PlainText
+      }
+    }
+  }
+})
 
 </script>
 

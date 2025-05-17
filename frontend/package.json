@@ -35,6 +35,8 @@
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^9.3.1",
     "ai": "^4.3.9",
+    "cron-parser": "^5.2.0",
+    "cronstrue": "^2.61.0",
     "firebase": "^9.12.1",
     "firebase-admin": "^11.2.1",
     "firebase-functions": "^4.1.0",

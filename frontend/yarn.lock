@@ -5279,10 +5279,22 @@ cron-parser@^4.9.0:
   dependencies:
     luxon "^3.2.1"
 
+cron-parser@^5.2.0:
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/cron-parser/-/cron-parser-5.2.0.tgz#909a070287d2140f799f68e7ab31c958da46ff64"
+  integrity sha512-ED2qJtcjelmUEuoV3btwxiOm3NI8H4/eCZNX3adUkrm+/b3Xq05+YoDXyjIN57VGhskuHx/KzC367GAklo1lRg==
+  dependencies:
+    luxon "^3.6.1"
+
 croner@^9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/croner/-/croner-9.0.0.tgz#1db62160142cf32eb22622e9ae27ba29156883f7"
   integrity sha512-onMB0OkDjkXunhdW9htFjEhqrD54+M94i6ackoUkjHKbRnXdyEyKRelp4nJ1kAz32+s27jP1FsebpJCVl0BsvA==
+
+cronstrue@^2.61.0:
+  version "2.61.0"
+  resolved "https://registry.yarnpkg.com/cronstrue/-/cronstrue-2.61.0.tgz#97c79c77045c052afb44cb9f5f8eaf54398094f2"
+  integrity sha512-ootN5bvXbIQI9rW94+QsXN5eROtXWwew6NkdGxIRpS/UFWRggL0G5Al7a9GTBFEsuvVhJ2K3CntIIVt7L2ILhA==
 
 cross-spawn@^7.0.2, cross-spawn@^7.0.3, cross-spawn@^7.0.6:
   version "7.0.6"
@@ -9042,7 +9054,7 @@ lucide-vue-next@^0.448.0:
   resolved "https://registry.yarnpkg.com/lucide-vue-next/-/lucide-vue-next-0.448.0.tgz#1411b778680e398d5fd1bd9e8563ffb0d6962ffc"
   integrity sha512-9Xx1+K+WKyF/HUcUhIceRJApr0Fc/qQdd6vx++rKKjAV5GXbVWci9gHuGN1ZQL+MOA6UsTt3HcqfReIwgXzs4g==
 
-luxon@^3.2.1:
+luxon@^3.2.1, luxon@^3.6.1:
   version "3.6.1"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.6.1.tgz#d283ffc4c0076cb0db7885ec6da1c49ba97e47b0"
   integrity sha512-tJLxrKJhO2ukZ5z0gyjY1zPh3Rh88Ej9P7jNrZiHMUXHae1yvI2imgOZtL1TO8TW6biMMKfTtAOoEJANgtWBMQ==

@@ -18,6 +18,7 @@
 				:step="flowData.trigger"
 				:step-index="0"
 				:is-trigger="true"
+				:is-flow-active="flowData.status === 1"
 				@edit-step="editNode(flowData.trigger)"
 				@remove-step="removeNode(flowData.trigger)"
 				@change-node="handleChangeNode(flowData.trigger, null, 'trigger')"
@@ -49,6 +50,7 @@
 					<FlowStepCard
 						:step="step"
 						:step-index="index + 1"
+						:is-flow-active="flowData.status === 1"
 						@edit-step="editNode(step)"
 						@remove-step="removeNode(step, index)"
 						@change-node="handleChangeNode(step, index, 'action')"
