@@ -31,7 +31,14 @@
 						</Tooltip>
 					</label>
 
-					<!-- Text Input -->
+					<!-- Custom Input -->
+					<MentionEditor
+						v-if="prop.type === 'text' || prop.type === 'textarea'"
+						v-model="formValues[prop.key]"
+						:mention-items="props.previousNodeOutputs"
+						:class-node="prop.type === 'textarea' ? 'input-textarea' : 'input-field'"
+					/>
+					<!--
 					<input
 						v-if="prop.type === 'text'"
 						v-model="formValues[prop.key]"
@@ -48,6 +55,21 @@
 						:placeholder="`Enter ${prop.name.toLowerCase()}`"
 					>
 
+					<textarea
+						v-else-if="prop.type === 'textarea'"
+						v-model="formValues[prop.key]"
+						:required="prop.required"
+						:disabled="prop.disabled"
+						rows="4"
+						:class="[
+							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
+							showValidation && !isValidField(prop.key)
+								? 'border-danger-300 bg-danger-50 focus:border-danger'
+								: 'border-border focus:border-primary',
+							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
+						]"
+						:placeholder="`Enter ${prop.name.toLowerCase()}`"
+					/> -->
 					<!-- Number Input -->
 					<input
 						v-else-if="prop.type === 'number'"
@@ -122,23 +144,6 @@
 							{{ typeof option === 'object' ? option.name : option }}
 						</option>
 					</select>
-
-					<!-- Textarea Input -->
-					<textarea
-						v-else-if="prop.type === 'textarea'"
-						v-model="formValues[prop.key]"
-						:required="prop.required"
-						:disabled="prop.disabled"
-						rows="4"
-						:class="[
-							'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none',
-							showValidation && !isValidField(prop.key)
-								? 'border-danger-300 bg-danger-50 focus:border-danger'
-								: 'border-border focus:border-primary',
-							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
-						]"
-						:placeholder="`Enter ${prop.name.toLowerCase()}`"
-					/>
 
 					<!-- Email Input -->
 					<input
@@ -217,6 +222,7 @@ import { ref, onMounted, computed } from 'vue'
 import { Info as InfoIcon } from 'lucide-vue-next'
 import { useUser } from '@/composables/auth/user'
 import Tooltip from '@/components/core/Tooltip.vue'
+import MentionEditor from '@/components/core/MentionEditor/index.vue'
 
 interface NodeProp {
 	name: string
@@ -250,16 +256,26 @@ const props = defineProps({
 	loading: {
 		type: Boolean,
 		required: true
+	},
+	previousNodeOutputs: {
+		type: Object,
+		required: false,
+		default: () => ({})
 	}
 })
 
 const emit = defineEmits(['save', 'cancel'])
 
 
+
 // Validation state
 const showValidation = ref(false)
 const hasValidationErrors = ref(false)
 const validationMessages = ref<Record<string, string>>({})
+
+
+
+
 
 // Check if a field has a valid value
 const isValidField = (fieldKey: string) => {
@@ -319,9 +335,14 @@ const validateAndSave = () => {
 		return
 	}
 
-	// All required fields have valid values
+	const resolvedValues: Record<string, any> = {}
+	for (const key in props.formValues) {
+		const val = props.formValues[key]
+			resolvedValues[key] = val
+	}
+
 	hasValidationErrors.value = false
-	emit('save')
+	emit('save', resolvedValues)
 }
 
 const closeModal = () => {

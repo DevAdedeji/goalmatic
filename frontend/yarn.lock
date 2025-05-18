@@ -3193,6 +3193,11 @@
     "@tiptap/extension-text-style" "^2.11.5"
     "@tiptap/pm" "^2.11.5"
 
+"@tiptap/suggestion@^2.0.0-beta.75":
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/@tiptap/suggestion/-/suggestion-2.12.0.tgz#58f066b31cfed0b02fb312d467542fff10faab7b"
+  integrity sha512-bsXLoZbjUo1oOF1Z+XSfoGzbcnrTcYtJdfylM/FerMLU9T12dhsM/Ri2SKLX4IR5D0HJ07FcsEHCrGEy8Y5y0A==
+
 "@tiptap/vue-3@^2.7.4":
   version "2.11.5"
   resolved "https://registry.yarnpkg.com/@tiptap/vue-3/-/vue-3-2.11.5.tgz#3615562edd952a2937e3a9b3d83c27df9a52e3d5"

@@ -83,7 +83,7 @@
 			<div class="grid grid-cols-1 gap-2">
 				<div v-for="(value, key) in step.propsData" :key="key" class="flex gap-2 text-sm">
 					<span class="font-medium text-gray-700">{{ key }}:</span>
-					<span class="text-gray-600 truncate">{{ value }}</span>
+					<span class="text-gray-600 truncate">{{ parseMentionsFromHtml(value) }}</span>
 				</div>
 			</div>
 		</div>
@@ -134,6 +134,14 @@ const isNodeValid = computed(() => {
 
 	return true
 })
+
+// Utility: Parse mentions in Tiptap HTML to @NodeName.key
+const parseMentionsFromHtml = (html: string): string => {
+	// Replace <span class="mention" data-id="NodeName.key">...</span> with @NodeName.key
+	return html.replace(/<span[^>]*class=["']mention["'][^>]*data-id=["']([\w\-. ]+)["'][^>]*>[^<]*<\/span>/g, (match, id) => `@${id}`)
+		.replace(/<[^>]+>/g, '') // Remove other HTML tags
+		.replace(/&nbsp;/g, ' ')
+}
 
 // Get missing required props
 const missingRequiredProps = computed(() => {

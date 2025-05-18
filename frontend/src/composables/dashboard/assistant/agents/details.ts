@@ -109,6 +109,11 @@ export function useAgentDetails() {
     toolsModel.value = [...(agentDetails.spec?.tools || [])]
   }
 
+  const cancelSystemInfoEdit = (agentDetails: any) => {
+    isEditingSystemInfo.value = false
+    systemInfoModel.value = agentDetails.spec?.systemInfo || ''
+  }
+
   const cancelEdit = (agentDetails: any) => {
     if (isEditingSystemInfo.value) {
       isEditingSystemInfo.value = false
@@ -157,6 +162,7 @@ export function useAgentDetails() {
     editSystemInfo,
     editTools,
     cancelEdit,
+    cancelSystemInfoEdit,
     resetEditingStates
   }
 }

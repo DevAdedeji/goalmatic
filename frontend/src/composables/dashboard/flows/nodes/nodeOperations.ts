@@ -1,4 +1,3 @@
-import { ref, computed, onMounted } from 'vue'
 import { useEditFlow } from '../edit'
 import { useFetchUserFlows } from '../fetch'
 import { flowTriggerNodes, flowActionNodes } from './list'
@@ -67,21 +66,21 @@ export const useSelectNodeLogic = (props: any) => {
   })
 
   // Track expanded state of each parent node (open by default)
-  const expandedNodes = ref({})
-
-  // Initialize all nodes as expanded by default
-  onMounted(() => {
-    nodes.value.forEach((node) => {
-      if (hasChildren(node)) {
-        expandedNodes.value[node.node_id] = true
-      }
-    })
-  })
+  const expandedNodes = ref<Record<string, boolean>>({})
 
   // Check if a node has children
   const hasChildren = (node: any) => {
     return node.children && node.children.length > 0
   }
+
+  // Initialize all nodes as expanded by default
+  onMounted(() => {
+    nodes.value.forEach((node) => {
+      if (hasChildren(node) && node.node_id !== undefined) {
+        expandedNodes.value[node.node_id] = true
+      }
+    })
+  })
 
   // Toggle node expansion
   const toggleNodeExpansion = (nodeId: string) => {
@@ -222,6 +221,53 @@ export const useEditNodeLogic = (props: any) => {
 
   const hasProps = computed(() => nodeProps.value.length > 0)
 
+  // --- Gather previous node outputs for @ referencing ---
+  const previousNodeOutputs = computed(() => {
+    // Only for action nodes (not trigger)
+    if (!props.payload || props.payload.type === 'trigger') return {}
+    const { flowData } = useFetchUserFlows()
+    const flow = flowData.value
+    // fallback: try to get from parent if not passed
+    let steps: any[] = []
+    if (flow && flow.steps) {
+      steps = flow.steps as any[]
+    } else if (props.steps) {
+      steps = props.steps as any[]
+    } else {
+      steps = []
+    }
+
+    const currentIndex = steps.findIndex((step: any) => step.id === props.payload.id)
+    if (currentIndex === -1) return {}
+    const outputs: Record<string, any> = {}
+
+    for (let i = 0; i < currentIndex; i++) {
+      const step: any = steps[i]
+      if (step && step.node_id !== undefined) {
+        // Find the node definition in flowActionNodes
+        let nodeDef: any = null
+        if (step.parent_node_id) {
+          // Find parent node
+          const parentNode = flowActionNodes.find((n) => n.node_id === step.parent_node_id)
+          if (parentNode && parentNode.children) {
+            nodeDef = parentNode.children.find((c) => c.node_id === step.node_id)
+          }
+        } else {
+          nodeDef = flowActionNodes.find((n) => n.node_id === step.node_id)
+        }
+        // Get prop keys from node definition
+        const InputProps = nodeDef && Array.isArray(nodeDef.props) ? nodeDef.props.map((p: any) => p.key) : []
+        const OutputProps = nodeDef && Array.isArray(nodeDef.expectedOutput) ? nodeDef.expectedOutput.map((p: any) => p.key) : []
+        outputs[`step-${i}-${step.node_id}`] = [
+          ...InputProps,
+          ...OutputProps
+        ]
+      }
+    }
+    return outputs
+  })
+
+
   // Initialize the form values with existing values or defaults
   onMounted(() => {
     if (!props.payload) return
@@ -268,7 +314,8 @@ export const useEditNodeLogic = (props: any) => {
     nodeProps,
     hasProps,
     saveChanges,
-    closeModal
+    closeModal,
+    previousNodeOutputs
   }
 }
 

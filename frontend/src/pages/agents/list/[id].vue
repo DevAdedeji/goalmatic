@@ -116,7 +116,7 @@
 					Edit
 				</button>
 				<div v-else-if="isEditingSystemInfo" class="flex gap-2">
-					<button class="btn-text" @click="cancelEdit(agentDetails)">
+					<button class="btn-text" @click="cancelSystemInfoEdit(agentDetails)">
 						Cancel
 					</button>
 					<button class="btn-text btn !bg-primary disabled:!bg-gray-500 text-light" :disabled="updateSystemInfoLoading || !agentDetails?.spec" @click="updateSystemInfo(id as string, agentDetails?.spec || {})">
@@ -295,7 +295,7 @@ await useCustomHead({
 const {
  titleInputRef, titlePopoverOpen, currentTitle, isEditingDescription, descriptionModel, setupWatchers,
 	systemInfoModel, removeTool, openTitlePopover, saveTitle, editDescription, cancelEditDescription,
-	saveDescription, editSystemInfo, editTools, cancelEdit
+	saveDescription, editSystemInfo, editTools, cancelEdit, cancelSystemInfoEdit
 } = useAgentDetails()
 
 // Setup watchers for agent details

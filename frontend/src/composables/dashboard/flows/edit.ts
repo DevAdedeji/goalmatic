@@ -46,7 +46,7 @@ export const useEditFlow = () => {
       }
 
 
-
+      console.log(sent_data)
 
 
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
@@ -126,6 +126,12 @@ export const useEditFlow = () => {
   }
 
   const editNode = (node: Record<string, any>) => {
+    // Always pass steps and flowData for context
+    // const nodeWithContext = {
+    //   ...node,
+    //   steps: flowData.value.steps,
+    //   flowData: flowData.value
+    // }
     useFlowsModal().openEditNode(node)
   }
 

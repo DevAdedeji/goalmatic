@@ -33,7 +33,7 @@
 
     .input {
         border-width: var(--border);
-        @apply w-full text-dark  px-2.5 h-11 rounded-md outline-none  border border-[#0000001A] focus:border-[#7F4AF1] 
+        @apply w-full text-dark  px-2.5 py-[9px] rounded-md outline-none  border border-[#0000001A] focus:border-[#7F4AF1] 
         bg-light transition-all duration-200 ease-in disabled:bg-[#f1f2f5b4] disabled:text-gray-500;
     }
 

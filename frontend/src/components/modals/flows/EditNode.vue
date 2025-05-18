@@ -28,6 +28,7 @@
 				:form-values="formValues"
 				:has-props="hasProps"
 				:loading="loading"
+				:previous-node-outputs="previousNodeOutputs"
 				@save="saveChanges"
 				@cancel="closeModal"
 			/>
@@ -80,7 +81,8 @@ const {
 	nodeProps,
 	hasProps,
 	saveChanges,
-	closeModal
+	closeModal,
+	previousNodeOutputs
 } = useEditNodeLogic(props)
 </script>
 

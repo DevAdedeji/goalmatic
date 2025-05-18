@@ -62,7 +62,9 @@
     "vue-datepicker-next": "^1.0.3",
     "vue-draggable-next": "^2.2.1",
     "vue-gtag-next": "^1.14.0",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "@tiptap/suggestion": "^2.0.0-beta.75",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@inspira-ui/plugins": "^0.0.1",
