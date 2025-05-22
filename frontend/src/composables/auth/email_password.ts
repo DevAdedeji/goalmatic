@@ -6,8 +6,19 @@ import { authRef } from '@/firebase/auth'
 import { useAlert } from '@/composables/core/notification'
 import { firebaseErrorMessage } from '@/firebase/utils'
 
-
-
+declare global {
+  interface Window {
+    ahaTracker?: {
+      track: (events: Array<{ name: string }>) => void
+      ready?: boolean
+      payload?: {
+        orderId?: string
+        campaignId?: string
+        clientId?: string
+      }
+    }
+  }
+}
 
 export const useEmailAndPassword = () => {
     const router = useRouter()
@@ -39,6 +50,14 @@ export const useEmailAndPassword = () => {
       authCredentienalsForm.loading.value = false
 
         useAlert().openAlert({ type: 'ERROR', msg: firebaseErrorMessage(err) })
+    } finally {
+        try {
+            if (typeof window !== 'undefined' && window.ahaTracker) {
+                window.ahaTracker.track([{ name: 'signUp' }])
+            }
+        } catch (error) {
+            console.error(error)
+        }
     }
  }
 

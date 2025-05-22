@@ -5,10 +5,19 @@ import { useUser } from '@/composables/auth/user'
 import { googleAuth, signOutUser } from '@/firebase/auth'
 import { useAlert } from '@/composables/core/notification'
 
-
-
-
-
+declare global {
+  interface Window {
+    ahaTracker?: {
+      track: (events: Array<{ name: string }>) => void
+      ready?: boolean
+      payload?: {
+        orderId?: string
+        campaignId?: string
+        clientId?: string
+      }
+    }
+  }
+}
 
 export const authCredentienalsForm = {
 		email: ref(''),
@@ -16,9 +25,6 @@ export const authCredentienalsForm = {
     phone: ref(''),
     loading: ref(false)
 	}
-
-
-
 
 export const useSignin = () => {
   const loading = ref(false)
@@ -31,6 +37,17 @@ export const useSignin = () => {
     try {
       const user = await googleAuth() as User
       await useUser().setUser(user)
+
+      // Only track signUp if this is a new user
+      if (user.metadata && user.metadata.creationTime === user.metadata.lastSignInTime) {
+        try {
+          if (typeof window !== 'undefined' && window.ahaTracker) {
+            window.ahaTracker.track([{ name: 'signUp' }])
+          }
+        } catch (error) {
+          console.error(error)
+        }
+      }
 
       await afterAuthCheck(user)
 
