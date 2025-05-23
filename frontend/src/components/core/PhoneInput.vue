@@ -105,7 +105,7 @@ const splitE164Number = (phoneNumber: string) => {
 
 watch(() => props.modelValue, (newValue) => {
   if (isE164Compliant(newValue)) {
-	  const splitNumber = splitE164Number(newValue)
+	const splitNumber = splitE164Number(newValue)
     if (splitNumber) {
       const country = countries.find((country) => country.dial_code === `+${splitNumber.countryCode}`)
       if (country) {

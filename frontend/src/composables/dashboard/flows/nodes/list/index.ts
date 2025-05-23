@@ -1,4 +1,4 @@
-export { flowTriggerNodes } from './triggerNodes'
-export { flowActionNodes } from './actionNodes'
+export { flowTriggerNodes } from './triggerNodes/index'
+export { flowActionNodes } from './actionNodes/index'
 
 

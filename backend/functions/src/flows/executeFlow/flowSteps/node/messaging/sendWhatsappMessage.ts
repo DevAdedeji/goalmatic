@@ -5,11 +5,13 @@ import { send_WA_Message, send_WA_ImageMessageInput } from "../../../../../whats
 import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/templates/workflow";
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
 import { v4 as uuidv4 } from 'uuid';
+import { processMentionsProps } from "../../../../../utils/processMentions";
 
 const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
         console.log('sendWhatsappMessage', previousStepResult);
-        const { message, recipientType, phoneNumber } = step.propsData;
+        const processedProps = processMentionsProps(step.propsData, previousStepResult);
+        let { message, recipientType, phoneNumber } = processedProps;
 
         let recipientNumber = null;
 
@@ -34,8 +36,6 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
             throw new Error('Invalid recipient type');
         }
 
-
-
         if (!recipientNumber) throw new Error('Recipient phone number not found');
 
         const isCSWOpen = await isCustomerServiceWindowOpen(recipientNumber);
@@ -55,8 +55,11 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         }
 
-
-        return { success: true, sentAt: new Date().toISOString(), payload:step.propsData};
+        return { 
+            success: true, 
+            sentAt: new Date().toISOString(), 
+            payload: processedProps // Return processed props so subsequent nodes get processed values
+        };
     } catch (error: any) {
         console.error(error.response?.data);
         return { success: false, error: error?.message || error };

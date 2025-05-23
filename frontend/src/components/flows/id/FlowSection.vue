@@ -20,7 +20,7 @@
 				:is-trigger="true"
 				:is-flow-active="flowData.status === 1"
 				@edit-step="editNode(flowData.trigger)"
-				@remove-step="removeNode(flowData.trigger)"
+				@remove-step="confirmRemoveNode(flowData.trigger)"
 				@change-node="handleChangeNode(flowData.trigger, null, 'trigger')"
 			/>
 		</div>
@@ -52,7 +52,7 @@
 						:step-index="index + 1"
 						:is-flow-active="flowData.status === 1"
 						@edit-step="editNode(step)"
-						@remove-step="removeNode(step, index)"
+						@remove-step="confirmRemoveNode(step, index)"
 						@change-node="handleChangeNode(step, index, 'action')"
 					/>
 				</div>
@@ -96,7 +96,9 @@ import FlowStepCard from './FlowStepCard.vue'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useFlowsModal } from '@/composables/core/modals'
 
-const { isFlowValid, removeNode, editNode, handleChangeNode } = useEditFlow()
+
+const { isFlowValid, confirmRemoveNode, editNode, handleChangeNode } = useEditFlow()
+
 
 const props = defineProps({
 	flowData: {
@@ -105,12 +107,16 @@ const props = defineProps({
 	}
 })
 
-
+console.log(props.flowData)
 
 defineEmits([
 	'openStepPanel',
 	'removeStep'
 ])
+
+const loading = ref(false)
+
+
 </script>
 
 <style scoped>

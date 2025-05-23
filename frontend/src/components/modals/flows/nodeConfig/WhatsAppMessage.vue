@@ -2,7 +2,11 @@
 	<div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Message</label>
-			<textarea v-model="form.message" class="input-textarea w-full" placeholder="Enter WhatsApp message" resize="vertical" />
+			<MentionEditor
+				v-model="form.message"
+				:mention-items="props.previousNodeOutputs"
+				class-node="input-textarea"
+			/>
 		</div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Recipient Type</label>
@@ -42,7 +46,8 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { useCoreModal } from '@/composables/core/modals'
-import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
+import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
+import { getFirestoreSubCollectionWithWhereQuery } from '@/firebase/firestore/query'
 
 
 const props = defineProps({
@@ -50,7 +55,12 @@ const props = defineProps({
 	nodeProps: Array,
 	formValues: Object,
 	hasProps: Boolean,
-	loading: Boolean
+	loading: Boolean,
+	previousNodeOutputs: {
+		type: Object,
+		required: false,
+		default: () => ({})
+	}
 })
 
 const emit = defineEmits(['save', 'cancel'])
@@ -93,18 +103,21 @@ watch(() => form.value.recipientType, async (val) => {
 })
 
 async function prepopulateUserPhone() {
-	// Fetch WhatsApp integration for user
+	// Fetch WhatsApp integration for user using a where query
 	const userId = user.id.value
 	if (!userId) return
-	const userRef = ref()
-	await getSingleFirestoreDocument('users', userId, userRef)
-	// Find WhatsApp integration
+	// Use ref for the integrations array
+	const userIntegrationsRef = ref([])
+	// Fetch the subcollection 'integrations' under the user document, filtered by provider 'WHATSAPP'
+	await getFirestoreSubCollectionWithWhereQuery('users', userId, 'integrations', userIntegrationsRef, { name: 'provider', operator: '==', value: 'WHATSAPP' })
+
+
 	let phone = ''
-	if (userRef.value && userRef.value.integrations) {
-		const wa = Object.values(userRef.value.integrations).find((i: any) => i.provider === 'WHATSAPP')
+	if (userIntegrationsRef.value && userIntegrationsRef.value.length > 0) {
+		const wa = userIntegrationsRef.value[0] as any
 		if (wa && typeof wa === 'object' && 'phone' in wa) phone = wa.phone as string
 	}
-	form.value.phoneNumber = phone || ''
+	form.value.phoneNumber = `+${phone}` || ''
 }
 
 

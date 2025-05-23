@@ -107,7 +107,7 @@
 				<Tooltip v-if="!allNodesValid" placement="top">
 					<template #trigger>
 						<button
-							class="btn-outline w-full mt-2 cursor-not-allowed opacity-60"
+							class="btn-outline w-full  cursor-not-allowed opacity-60"
 							disabled
 						>
 							<PlayCircle :size="16" class="mr-1" />

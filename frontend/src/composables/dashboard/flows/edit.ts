@@ -6,6 +6,7 @@ import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useFlowsModal } from '@/composables/core/modals'
+import { useConfirmationModal } from '@/composables/core/confirmation'
 
 export const useEditFlow = () => {
   const { id: user_id } = useUser()
@@ -46,7 +47,7 @@ export const useEditFlow = () => {
       }
 
 
-      console.log(sent_data)
+
 
 
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
@@ -112,7 +113,7 @@ export const useEditFlow = () => {
     flowData.value.steps.splice(position, 0, { position, ...node, id: uuidv4() })
   }
 
-  const removeNode = (node: Record<string, any>, position?: number | null) => {
+  const removeNode = async (node: Record<string, any>, position?: number | null) => {
     if (node.type === 'trigger') {
       flowData.value.trigger = null
       return
@@ -123,15 +124,24 @@ export const useEditFlow = () => {
     } else {
       flowData.value.steps = flowData.value.steps.filter((step: Record<string, any>) => step.id !== node.id)
     }
+    await updateFlow(flowData.value)
   }
+  const confirmRemoveNode = async (node, position?: number) => {
+	useConfirmationModal().openAlert({
+		type: 'Alert',
+		title: 'Delete Step',
+		desc: 'Are you sure you want to delete this step?',
+    call_function: async () => {
+      loading.value = true
+			await removeNode(node, position)
+      useConfirmationModal().closeAlert()
+      loading.value = false
+		},
+		loading
+	})
+}
 
   const editNode = (node: Record<string, any>) => {
-    // Always pass steps and flowData for context
-    // const nodeWithContext = {
-    //   ...node,
-    //   steps: flowData.value.steps,
-    //   flowData: flowData.value
-    // }
     useFlowsModal().openEditNode(node)
   }
 
@@ -188,6 +198,6 @@ export const useEditFlow = () => {
     removeNode,
     editNode,
     updateNode,
-    handleChangeNode
+    handleChangeNode, confirmRemoveNode
   }
 }

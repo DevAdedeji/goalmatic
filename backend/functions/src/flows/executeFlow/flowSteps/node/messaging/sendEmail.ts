@@ -1,13 +1,15 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { notifyUser } from "../../../../../helpers/emailNotifier";
+import { processMentionsProps } from "../../../../../utils/processMentions";
 
 const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     console.log('sendEmail', previousStepResult);
 
+    // Process all string fields in propsData
+    const processedProps = processMentionsProps(step.propsData, previousStepResult);
+    const { subject, body, emailType, recipientEmail } = processedProps;
 
-    // Extract email data from the step's props
-    const { subject, body, emailType, recipientEmail } = step.propsData;
     const emailMessage = {
         to: [{
             email: recipientEmail,
@@ -28,7 +30,11 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
         // Send the email
         const result = await notifyUser(emailMessage);
         console.log('Email sending result:', result);
-        return { success: result, sentAt: new Date().toISOString(),  payload:step.propsData };
+        return { 
+            success: result, 
+            sentAt: new Date().toISOString(),  
+            payload: processedProps // Return processed props so subsequent nodes get processed values
+        };
     } catch (error: any) {
         console.error('Error sending email:', error);
         return { success: false, error: error?.message || error };

@@ -1,8 +1,8 @@
-import type { FlowNode } from '../types'
-import { validateScheduleDate, validateScheduleTime, getDefaultDateValue, getDefaultTimeValue } from '../validation'
+import { FlowNode } from '../../types'
+import { validateScheduleDate, validateScheduleTime, getDefaultDateValue, getDefaultTimeValue } from '../../validation'
 import { timezones, getDefaultTimezone } from '@/composables/helpers/timezone'
 
-export const flowTriggerNodes: FlowNode[] = [
+export const scheduleTriggerNodes: FlowNode[] = [
     {
         node_id: 'SCHEDULE',
         icon: '/icons/dateTime.svg',

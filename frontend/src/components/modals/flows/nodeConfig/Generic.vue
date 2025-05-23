@@ -33,14 +33,14 @@
 
 					<!-- Custom Input -->
 					<MentionEditor
-						v-if="prop.type === 'text' || prop.type === 'textarea'"
+						v-if="prop.type === 'mentionTextarea' || prop.type === 'mentionInput'"
 						v-model="formValues[prop.key]"
 						:mention-items="props.previousNodeOutputs"
-						:class-node="prop.type === 'textarea' ? 'input-textarea' : 'input-field'"
+						:class-node="prop.type === 'mentionTextarea' ? 'input-textarea' : 'input-field'"
 					/>
-					<!--
+
 					<input
-						v-if="prop.type === 'text'"
+						v-else-if="prop.type === 'text'"
 						v-model="formValues[prop.key]"
 						type="text"
 						:required="prop.required"
@@ -69,7 +69,7 @@
 							prop.disabled ? 'bg-gray-100 cursor-not-allowed opacity-75' : ''
 						]"
 						:placeholder="`Enter ${prop.name.toLowerCase()}`"
-					/> -->
+					/>
 					<!-- Number Input -->
 					<input
 						v-else-if="prop.type === 'number'"
