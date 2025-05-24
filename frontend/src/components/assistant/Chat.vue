@@ -35,7 +35,9 @@
 							{{ message.role === 'user' ? 'You' : `Goalmatic  ${selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)'}` }}
 						</p>
 					</div>
-					<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }" v-html="markdownProcessor(message.content)" />
+					<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }">
+						<MediaDisplay :media-parts="processedMessages[index] || []" />
+					</article>
 				</template>
 
 
@@ -84,9 +86,10 @@
 
 <script setup lang="ts">
 import { MoveRight } from 'lucide-vue-next'
+import MediaDisplay from './MediaDisplay.vue'
 import { useChatAssistant } from '@/composables/dashboard/assistant/messaging'
 import { useOnAssistantLoad } from '@/composables/dashboard/assistant/agents/select'
-import { markdownProcessor } from '@/composables/utils/markdown'
+import { processMessageMedia, type MediaContent } from '@/composables/assistant/mediaProcessor'
 
 // Add Material Icons for tool call icons
 useHead({
@@ -105,6 +108,34 @@ fetchSelectedAgent()
 
 const { conversationHistory, userInput, sendMessage, ai_loading, sessionId, loadConversationHistory, handleUrlChange } = useChatAssistant()
 const textarea = ref()
+
+// Reactive processing of messages for media content
+const processedMessages = ref<MediaContent[][]>([])
+
+// Process messages when conversation history changes
+watch(conversationHistory, async () => {
+  const processed: MediaContent[][] = []
+
+  for (const message of conversationHistory.value) {
+    if ((message.role === 'user' || message.role === 'assistant') && !message.toolId) {
+      try {
+        const mediaParts = await processMessageMedia(message.content)
+        processed.push(mediaParts)
+      } catch (error) {
+        console.error('Failed to process message media:', error)
+        // Fallback to showing original content as text
+        processed.push([{
+          type: 'text',
+          content: message.content
+        }])
+      }
+    } else {
+      processed.push([])
+    }
+  }
+
+  processedMessages.value = processed
+}, { immediate: true, deep: true })
 
 
   watch(() => useRoute().params.sessionId, (newSessionId) => {
@@ -195,9 +226,6 @@ watch(conversationHistory, () => {
 
 .message-bubble {
   @apply bg-[#F4F3FF] px-4 py-2 rounded-lg ml-9 w-auto border border-[#E4E7EC] md:leading-8 leading-7;
-  p {
-    @apply text-sm text-subText ;
-  }
 }
 
 
