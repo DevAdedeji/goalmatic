@@ -240,7 +240,7 @@ const isMessageProcessing = (index: number) => {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .shadow{
 	box-shadow: 0px 8px 24px 0px #959DA533;
 }
@@ -269,6 +269,9 @@ const isMessageProcessing = (index: number) => {
 
 .message-bubble {
   @apply bg-[#F4F3FF] px-4 py-2 rounded-lg ml-9 w-auto border border-[#E4E7EC] md:leading-8 leading-7;
+    p {
+    @apply text-sm text-subText ;
+  }
 }
 
 
@@ -290,3 +293,4 @@ const isMessageProcessing = (index: number) => {
 
 
 </style>
+

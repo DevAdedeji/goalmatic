@@ -8,6 +8,7 @@ export type FlowNodeProp = {
   value?: any
   options?: any[]
   disabled?: boolean
+  ai_enabled?: boolean
 }
 
 export type FlowNode = {

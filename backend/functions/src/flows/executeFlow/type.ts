@@ -8,5 +8,6 @@ export type FlowNode = {
   provider: string; // Or potentially a more specific literal type like 'GOALMATIC'
   category: string; // Or potentially a more specific literal type like 'MESSAGING'
   propsData: Record<string, any>;
+  aiEnabledFields?: string[]; // Array of field keys that should be processed by AI
 };
 

@@ -1,12 +1,35 @@
 <template>
 	<div>
 		<div class="mb-4">
-			<label class="block font-medium mb-1">Message</label>
+			<!-- AI Mode Toggle for Message Field -->
+			<div class="flex items-center justify-between mb-1">
+				<label class="block font-medium">Message</label>
+				<!-- AI Mode Selector - Only for message field since it's ai_enabled in the node definition -->
+				<select
+					v-model="aiMode.message"
+					class="ai_selector"
+					@change="handleAiModeChange('message')"
+				>
+					<option value="manual">
+						Manual
+					</option>
+					<option value="ai">
+						AI
+					</option>
+				</select>
+			</div>
+
+
+
 			<MentionEditor
 				v-model="form.message"
 				:mention-items="props.previousNodeOutputs"
-				class-node="input-textarea"
+				:class-node="['input-textarea', aiMode.message === 'ai' ? 'ai-mode-input' : ''].filter(Boolean).join(' ')"
+				:placeholder="aiMode.message === 'ai' ? 'Enter prompt for message content' : 'Enter your message'"
 			/>
+			<div v-if="aiMode.message === 'ai'" class="mb-2 rounded-md  text-sm text-primary italic">
+				<span>Write a prompt for the AI to generate content from</span>
+			</div>
 		</div>
 		<div class="mb-4">
 			<label class="block font-medium mb-1">Recipient Type</label>
@@ -43,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed, onMounted } from 'vue'
+import { ref, watch, computed, onMounted, reactive } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { useCoreModal } from '@/composables/core/modals'
 import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
@@ -66,11 +89,18 @@ const props = defineProps({
 const emit = defineEmits(['save', 'cancel'])
 const isVerified = ref(false)
 const verifiedPhoneNumber = ref('')
+
+// AI mode tracking for message field
+const aiMode = reactive({
+	message: 'manual'
+})
+
 const form = ref({
 	message: '',
 	recipientType: 'user',
 	phoneNumber: ''
 })
+
 const verified = computed({
   get: () => {
     return isVerified.value && verifiedPhoneNumber.value && form.value.phoneNumber === verifiedPhoneNumber.value
@@ -81,6 +111,12 @@ const verified = computed({
 })
 const user = useUser()
 
+// Handle AI mode change
+const handleAiModeChange = (propKey: string) => {
+	// Don't clear the value when switching modes - users can enter prompts in AI mode
+	// The field value will be treated as either content (manual) or prompt (AI) based on the mode
+}
+
 // Prepopulate from formValues if editing
 onMounted(async () => {
 	if (props.formValues) {
@@ -90,6 +126,14 @@ onMounted(async () => {
       verifiedPhoneNumber.value = form.value.phoneNumber
     }
 	}
+
+	// Initialize AI mode from payload if available
+	if (props.payload?.aiEnabledFields && props.payload.aiEnabledFields.includes('message')) {
+		aiMode.message = 'ai'
+	} else {
+		aiMode.message = 'manual'
+	}
+
 	if (form.value.recipientType === 'user') {
 		await prepopulateUserPhone()
 	}
@@ -146,17 +190,18 @@ const canSave = computed(() => {
 })
 
 function save() {
+	// Create AI enabled fields list - only include message if it's in AI mode
+	const aiEnabledFields = aiMode.message === 'ai' ? ['message'] : []
+
   const payload = {
 		message: form.value.message,
 		recipientType: form.value.recipientType,
-		phoneNumber: form.value.phoneNumber
+		phoneNumber: form.value.phoneNumber,
+		aiEnabledFields
 	}
 	emit('save', payload)
 }
 </script>
 
-<style scoped>
-
-</style>
 
 

@@ -240,7 +240,7 @@ export const checkUnsupportedMessageTypes = async (
 export const logCustomerServiceWindow = (phoneNumber: string) => {
     goals_db.collection('CSW').doc(phoneNumber).set({
         phoneNumber,
-        lastReceivedMessage: Timestamp.now()
+        lastReceivedMessage: new Date().toISOString()
     }, { merge: true }).catch(err => console.error("Error logging CSW:", err));
 }
 

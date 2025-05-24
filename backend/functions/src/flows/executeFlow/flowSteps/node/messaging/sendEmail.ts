@@ -2,13 +2,19 @@ import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { notifyUser } from "../../../../../helpers/emailNotifier";
 import { processMentionsProps } from "../../../../../utils/processMentions";
+import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
 
 const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     console.log('sendEmail', previousStepResult);
 
-    // Process all string fields in propsData
+    // Process all string fields in propsData first
     const processedProps = processMentionsProps(step.propsData, previousStepResult);
-    const { subject, body, emailType, recipientEmail } = processedProps;
+    
+    // Generate AI content for AI-enabled fields and get updated props
+    const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
+    
+    // Use the AI-updated props instead of just processed props
+    const { subject, body, emailType, recipientEmail } = processedPropsWithAiContext;
 
     const emailMessage = {
         to: [{
@@ -33,7 +39,7 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
         return { 
             success: result, 
             sentAt: new Date().toISOString(),  
-            payload: processedProps // Return processed props so subsequent nodes get processed values
+            payload: processedPropsWithAiContext // Return updated props so subsequent nodes get processed values
         };
     } catch (error: any) {
         console.error('Error sending email:', error);

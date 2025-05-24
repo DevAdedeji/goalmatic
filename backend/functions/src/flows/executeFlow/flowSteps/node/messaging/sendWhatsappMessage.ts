@@ -6,12 +6,16 @@ import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/te
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
 import { v4 as uuidv4 } from 'uuid';
 import { processMentionsProps } from "../../../../../utils/processMentions";
+import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
 
 const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
-        console.log('sendWhatsappMessage', previousStepResult);
+        
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
-        let { message, recipientType, phoneNumber } = processedProps;
+        
+        const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
+
+        let { message, recipientType, phoneNumber } = processedPropsWithAiContext;
 
         let recipientNumber = null;
 
@@ -40,6 +44,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         const isCSWOpen = await isCustomerServiceWindowOpen(recipientNumber);
 
+
         if (isCSWOpen) {
             const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
             await send_WA_Message(waMsg);
@@ -58,7 +63,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
         return { 
             success: true, 
             sentAt: new Date().toISOString(), 
-            payload: processedProps // Return processed props so subsequent nodes get processed values
+            payload: processedPropsWithAiContext // Return updated props so subsequent nodes get processed values
         };
     } catch (error: any) {
         console.error(error.response?.data);
@@ -76,6 +81,7 @@ const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
     if (!cswSnap.exists) return false;
     const cswData = cswSnap.data();
     const lastReceivedMessage = cswData?.lastReceivedMessage;
+
     const now = new Date();
     const timeSinceLastMessage = now.getTime() - new Date(lastReceivedMessage).getTime();
     return timeSinceLastMessage < 1000 * 60 * 60 * 24;

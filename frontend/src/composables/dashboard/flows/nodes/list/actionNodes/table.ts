@@ -59,7 +59,8 @@ export const tableActionNodes:FlowNode[] = [
                         key: 'recordData',
                         type: 'textarea',
                         required: true,
-                        description: 'JSON object with field values for the new record'
+                        description: 'JSON object with field values for the new record',
+                        ai_enabled: true
                     }
                 ]
             },
@@ -88,7 +89,8 @@ export const tableActionNodes:FlowNode[] = [
                         key: 'recordData',
                         type: 'textarea',
                         required: true,
-                        description: 'JSON object with updated field values'
+                        description: 'JSON object with updated field values',
+                        ai_enabled: true
                     }
                 ]
             },

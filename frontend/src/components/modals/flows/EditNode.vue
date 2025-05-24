@@ -87,5 +87,17 @@ const {
 </script>
 
 <style scoped>
-/* Add your styles here */
+/* AI mode styling for input fields */
+:deep(.ai-mode-input) {
+	background-color: rgb(250 245 255); /* bg-purple-50 */
+	border-color: var(--primary);
+}
+
+:deep(.ai-mode-input:focus) {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 1px var(--primary);
+}
+:deep(.ai_selector) {
+	@apply text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary outline-none w-auto min-w-20
+}
 </style>

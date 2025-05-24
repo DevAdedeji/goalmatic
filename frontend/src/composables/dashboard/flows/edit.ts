@@ -147,7 +147,14 @@ export const useEditFlow = () => {
 
   // Update a node with new values
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
-    const updatedNode = { ...node, propsData: updatedValues }
+    // Extract aiEnabledFields from updatedValues if present
+    const { aiEnabledFields, ...propsData } = updatedValues
+
+    const updatedNode = {
+      ...node,
+      propsData,
+      ...(aiEnabledFields && { aiEnabledFields })
+    }
 
     // If it's a trigger node
     if (node.type === 'trigger') {

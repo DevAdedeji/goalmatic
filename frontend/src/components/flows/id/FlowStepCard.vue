@@ -81,9 +81,16 @@
 				Properties:
 			</p>
 			<div class="grid grid-cols-1 gap-2">
-				<div v-for="(value, key) in step.propsData" :key="key" class="flex gap-2 text-sm">
+				<div v-for="(value, key) in step.propsData" :key="key" class="flex gap-2 text-sm items-center">
 					<span class="font-medium text-gray-700">{{ key }}:</span>
-					<span class="text-gray-600 truncate">{{ parseMentionsFromHtml(value) }}</span>
+					<span class="text-gray-600 truncate flex-1">{{ parseMentionsFromHtml(value) }}</span>
+					<!-- AI Mode Indicator -->
+					<span v-if="isAiEnabledField(String(key))" class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-primary text-xs rounded-full">
+						<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+							<path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
+						</svg>
+						AI Prompt
+					</span>
 				</div>
 			</div>
 		</div>
@@ -160,6 +167,11 @@ const missingRequiredProps = computed(() => {
 const hasPropsData = computed(() => {
 	return props.step.propsData && Object.keys(props.step.propsData).length > 0
 })
+
+// Check if a field is AI-enabled
+const isAiEnabledField = (fieldKey: string) => {
+	return props.step.aiEnabledFields && props.step.aiEnabledFields.includes(fieldKey)
+}
 
 // Define Emits
 defineEmits([

@@ -23,7 +23,8 @@ export const messagingActionNodes:FlowNode[] = [
                         key: 'message',
                         type: 'mentionTextarea',
                         required: true,
-                        description: 'The message content to send'
+                        description: 'The message content to send',
+                        ai_enabled: true
                     },
                     {
                         name: 'Recipient Type',
@@ -71,7 +72,8 @@ export const messagingActionNodes:FlowNode[] = [
                         name: 'Body',
                         key: 'body',
                         type: 'mentionTextarea',
-                        required: true
+                        required: true,
+                        ai_enabled: true
                     },
                     {
                         name: 'Recipient Email',

@@ -32,10 +32,18 @@ export const isNodeValid = (node: Record<string, any>) => {
   // If no props defined, consider it valid
   if (!nodeProps || nodeProps.length === 0) return true
 
-  // Check if all required props have values
+  // Check if all required props have values or are AI-enabled
   for (const prop of nodeProps) {
     if (prop.required) {
       const propValue = node.propsData?.[prop.key]
+      const isAiEnabled = node.aiEnabledFields && node.aiEnabledFields.includes(prop.key)
+
+      // If AI is enabled for this prop, consider it valid regardless of manual input
+      if (isAiEnabled) {
+        continue
+      }
+
+      // Otherwise, check if manual input is provided
       if (propValue === undefined || propValue === null || propValue === '') {
         return false
       }

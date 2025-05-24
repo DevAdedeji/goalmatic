@@ -44,7 +44,7 @@ export const initialiseAIChat = async (
         const agentTools = generateAgentTools(agent.spec.tools, sessionId);
         const agentSystemInfo = customSystemInfo(agent.spec.tools, agent.spec.systemInfo);
         const result = await generateText({
-            model: google("gemini-2.5-flash-preview-04-17"),
+            model: google("gemini-2.5-flash-preview-05-20"),
             maxSteps: 5,
             messages: conversationHistory,
             tools: agentTools,
