@@ -41,8 +41,9 @@ export async function processWhatsAppImage(
     mediaId: string,
     from?: string,
     phone_number_id?: string,
-    agentData?: Record<string, any>
-): Promise<{ isImage: boolean, buffer: Buffer, contentType: string }> {
+    agentData?: Record<string, any>,
+    imageCaption?: string
+): Promise<{ isImage: boolean, buffer: Buffer, contentType: string, caption?: string }> {
     try {
         // Send initial "processing" message if recipient info is provided
         if (from && phone_number_id) {
@@ -59,7 +60,8 @@ export async function processWhatsAppImage(
         return {
             isImage: true,
             buffer,
-            contentType
+            contentType,
+            caption: imageCaption
         };
     } catch (error) {
         console.error('Error processing image:', error);

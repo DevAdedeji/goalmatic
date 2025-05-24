@@ -20,17 +20,13 @@ export const defaultGoalmaticAgent = {
     created_at: new Date('2025-01-01').toISOString()
 }
 
-/**
- * Helper function to update or create a chat session with a new message
- * @param chatSessionRef - Reference to the chat session document
- * @param chatSessionDoc - The chat session document snapshot
- * @param message - The message to add to the chat session
- * @param agentData - Data about the agent handling the conversation
- */
-const updateChatSession = async (
+
+
+
+const updateChatSessionWithMessages = async (
     chatSessionRef: FirebaseFirestore.DocumentReference,
     chatSessionDoc: FirebaseFirestore.DocumentSnapshot,
-    message: Record<string, any>,
+    newMessages: Record<string, any>[],
     agentData: Record<string, any>
 ) => {
     try {
@@ -41,8 +37,8 @@ const updateChatSession = async (
             // Get the existing messages or initialize an empty array
             const messages = Array.isArray(chatSessionData.messages) ? chatSessionData.messages : [];
 
-            // Add the new message
-            messages.push(message);
+            // Add all new messages
+            messages.push(...newMessages);
 
             // Update the chat session
             await chatSessionRef.update({
@@ -50,25 +46,26 @@ const updateChatSession = async (
                 updated_at: Timestamp.now()
             });
         } else {
-            // Create a new chat session with the message
+            // Create a new chat session with the messages
             await chatSessionRef.set({
                 id: chatSessionRef.id,
                 agent_id: agentData.id || '0',
                 created_at: Timestamp.now(),
                 updated_at: Timestamp.now(),
-                messages: [message]
+                messages: newMessages
             });
         }
     } catch (error) {
-        console.error('Error updating chat session:', error);
+        console.error('Error updating chat session with messages:', error);
         throw error;
     }
 };
 
 export const WhatsappAgent = async (
     userDetails: Record<string, any>,
-    userMsg: string | { isImage: boolean, buffer: Buffer, contentType: string } | { role: string, content: string } | { type: string, mimeType?: string, data?: Buffer, text?: string }[],
-    agentData: Record<string, any>
+    userMsg: string | { isImage: boolean, buffer: Buffer, contentType: string, caption?: string } | { role: string, content: string } | { type: string, mimeType?: string, data?: Buffer, text?: string }[],
+    agentData: Record<string, any>,
+    messageType: string = 'text'
 ) => {
     try {
         setUserUid(userDetails.user_id);
@@ -101,22 +98,17 @@ export const WhatsappAgent = async (
 
         // Check if the message is an image
         let result: string;
+        let userMessage: Record<string, any>;
+        
         if (typeof userMsg === 'object' && 'isImage' in userMsg && userMsg.isImage) {
-            // The message is an image - don't store it in history but pass it to the AI model
-
-            // Add a placeholder message in the history
-            const userMessage = {
-                id: uuidv4(),
-                role: 'user',
-                content: 'I sent an image for analysis.',
-                timestamp: Timestamp.now(),
-                agent_id: agentData.id || '0'
-            };
-
+            // The message is an image - store appropriate context
+            const hasCaption = userMsg.caption && userMsg.caption.trim() !== '';
+            const baseImageDescription = `[Image Message] User sent an image${hasCaption ? ` with caption: "${userMsg.caption}"` : ' for analysis.'}`;
+            
             // Add the user message to the history array for AI processing
             history.push({
                 role: 'user',
-                content: 'I sent an image for analysis.'
+                content: baseImageDescription
             });
 
             const imageMessages = [
@@ -124,6 +116,7 @@ export const WhatsappAgent = async (
                 {
                     role: 'user',
                     content: [
+                        ...(hasCaption ? [{ type: 'text', text: userMsg.caption }] : []),
                         {
                             type: 'file',
                             mimeType: userMsg.contentType || 'image/jpeg',
@@ -135,54 +128,69 @@ export const WhatsappAgent = async (
 
             // Pass the special image message array to the AI
             result = await initialiseAIChat(imageMessages, agentData, sessionId, true);
-
-            // Update or create the chat session with the new message
-            await updateChatSession(chatSessionRef, chatSessionDoc, userMessage, agentData);
+            
+            // Create a more descriptive message based on AI response for storage
+            const enhancedImageDescription = `[Image Message] User sent an image${hasCaption ? ` with caption: "${userMsg.caption}"` : ''}`;
+            
+            // Create the user message object for later storage
+            userMessage = {
+                id: uuidv4(),
+                role: 'user',
+                content: enhancedImageDescription,
+                messageType: 'image',
+                timestamp: Timestamp.now(),
+                agent_id: agentData.id || '0'
+            };
         } else {
-            // Normal message handling
-            // Create the user message object
+            // Normal message handling (text or transcribed audio)
             let userMessageContent: string;
+            let displayContent: string;
 
             // If userMsg is already in the format {role, content}, extract the content
             if (typeof userMsg === 'object' && 'role' in userMsg && 'content' in userMsg) {
                 userMessageContent = userMsg.content as string;
+                displayContent = userMessageContent;
                 history.push(userMsg);
             } else {
                 // Otherwise format it as a user message
                 userMessageContent = userMsg as string || 'n/a';
+                
+                // Add context for different message types
+                if (messageType === 'audio') {
+                    displayContent = `[Voice Message] ${userMessageContent}`;
+                } else {
+                    displayContent = userMessageContent;
+                }
+                
                 history.push({role: 'user', content: userMessageContent});
             }
 
-            // Create the user message object for Firestore
-            const userMessage = {
+            // Create the user message object for later storage
+            userMessage = {
                 id: uuidv4(),
                 role: 'user',
-                content: userMessageContent,
+                content: displayContent,
+                messageType: messageType,
                 timestamp: Timestamp.now(),
                 agent_id: agentData.id || '0'
             };
-
-            // Update or create the chat session with the new message
-            await updateChatSession(chatSessionRef, chatSessionDoc, userMessage, agentData);
 
             // Get AI chat response with the updated history
             result = await initialiseAIChat(history, agentData, sessionId);
         }
 
-        // Create the assistant message object for Firestore
+        // Create the assistant message object
         const assistantMessage = {
             id: uuidv4(),
             role: 'assistant',
             content: result ?? 'n/a',
+            messageType: 'text', // Assistant responses are always text
             timestamp: Timestamp.now(),
             agent_id: agentData.id || '0'
         };
 
-        // Append the assistant's response to the conversation history for the next interaction
-        history.push({role: 'assistant', content: result ?? 'n/a'});
-
-        // Update the chat session with the assistant's response
-        await updateChatSession(chatSessionRef, chatSessionDoc, assistantMessage, agentData);
+        // Update the chat session with both messages in a single operation
+        await updateChatSessionWithMessages(chatSessionRef, chatSessionDoc, [userMessage, assistantMessage], agentData);
 
         return { data: agentData, status: 200, msg: `${result}` };
 

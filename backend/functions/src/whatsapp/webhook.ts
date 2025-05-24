@@ -99,11 +99,16 @@ export const goals_WA_message_webhook = onRequest({
 
                         // Process message based on type
                         let msg_body: string | { isImage: boolean, buffer: Buffer, contentType: string } | { role: string, content: string } | { type: string, mimeType?: string, data?: Buffer, text?: string }[] = ''
+                        let messageType = 'text'; // Track the original message type
+                        
                         if (message.type === 'text') {
                             msg_body = message.text.body
+                            messageType = 'text';
                         } else if (message.type === 'audio') {
                             // Process audio message by transcribing it into text
-                            msg_body = await transcribeWhatsAppAudio(message.audio.id, from, phone_number_id)
+                            const transcription = await transcribeWhatsAppAudio(message.audio.id, from, phone_number_id)
+                            msg_body = transcription;
+                            messageType = 'audio';
                         }
 
                         // Get agent data based on user configuration
@@ -122,11 +127,15 @@ export const goals_WA_message_webhook = onRequest({
                         try {
                             // Process image after getting agent data so we can pass it to the image processor
                             if (message.type === 'image') {
+                                // Extract caption text if present
+                                const imageCaption = message.image.caption || '';
+                                
                                 // Process image message, getting the buffer to pass directly to the WhatsApp agent
-                                msg_body = await processWhatsAppImage(message.image.id, from, phone_number_id, agentData)
+                                msg_body = await processWhatsAppImage(message.image.id, from, phone_number_id, agentData, imageCaption)
+                                messageType = 'image';
                             }
 
-                            const gpt_response = await WhatsappAgent(user_data.data!, msg_body, agentData)
+                            const gpt_response = await WhatsappAgent(user_data.data!, msg_body, agentData, messageType)
                             const data = get_WA_TextMessageInput(from, gpt_response.msg)
                             await send_WA_Message(data, phone_number_id)
                         } catch (error) {
