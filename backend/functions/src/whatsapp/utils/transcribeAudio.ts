@@ -2,6 +2,7 @@ import axios from 'axios';
 import { generateText } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { get_WA_TextMessageInput, send_WA_Message } from './sendMessage';
+import { uploadMediaToStorage } from './mediaStorage';
 
 const whatsAppToken = process.env.WHATSAPP_TOKEN;
 const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
@@ -152,5 +153,71 @@ export async function transcribeWhatsAppAudio(
         
         // Fallback: return a simulated transcript
         return `This is a transcribed voice note message (fallback using ${service}).`;
+    }
+}
+
+// Enhanced transcription function with storage support
+export async function transcribeWhatsAppAudioWithStorage(
+    mediaId: string, 
+    userId: string,
+    sessionId: string,
+    from?: string, 
+    phone_number_id?: string, 
+    service: 'deepgram' | 'gemini' = 'deepgram'
+): Promise<{ transcription: string; filePath?: string }> {
+    try {
+        // Send initial "transcribing" message if recipient info is provided
+        if (from && phone_number_id) {
+            const initialMsg = get_WA_TextMessageInput(from, 'Transcribing your voice message...');
+            await send_WA_Message(initialMsg, phone_number_id);
+        }
+        
+
+        // Download the audio
+        const audioBuffer = await downloadWhatsAppAudio(mediaId);
+
+        // Transcribe using the selected service
+        let transcriptText: string;
+        if (service === 'gemini') {
+            transcriptText = await transcribeWithGemini(audioBuffer);
+        } else {
+            transcriptText = await transcribeWithDeepgram(audioBuffer);
+        }
+
+        let filePath: string | undefined;
+        
+        // Upload to Firebase Storage
+        try {
+            // Use audio/ogg as default content type for WhatsApp voice messages
+            filePath = await uploadMediaToStorage(audioBuffer, 'audio/ogg', userId, 'audio', sessionId);
+            console.log(`Audio uploaded to storage: ${filePath}`);
+        } catch (storageError) {
+            console.error('Failed to upload audio to storage:', storageError);
+            // Continue without file path - don't fail the entire process
+        }
+
+        // Send completion message with transcription if recipient info is provided
+        if (from && phone_number_id) {
+            const completionMsg = get_WA_TextMessageInput(from, `Transcription: ${transcriptText}`);
+            await send_WA_Message(completionMsg, phone_number_id);
+        }
+
+        return {
+            transcription: transcriptText,
+            filePath
+        };
+    } catch (error) {
+        console.error(`Error transcribing audio with ${service}:`, error);
+        
+        // Send error message if recipient info is provided
+        if (from && phone_number_id) {
+            const errorMsg = get_WA_TextMessageInput(from, 'Sorry, there was an error transcribing your message.');
+            await send_WA_Message(errorMsg, phone_number_id);
+        }
+        
+        // Fallback: return a simulated transcript without file path
+        return {
+            transcription: `This is a transcribed voice note message (fallback using ${service}).`
+        };
     }
 }

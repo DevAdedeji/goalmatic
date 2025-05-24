@@ -11,7 +11,9 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "noEmit": false
+    "noEmit": false,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
   },
   "compileOnSave": true,
   "include": [

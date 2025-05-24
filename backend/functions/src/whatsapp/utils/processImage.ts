@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { get_WA_TextMessageInput, send_WA_Message } from './sendMessage';
-
+import { uploadMediaToStorage } from './mediaStorage';
 
 const whatsAppToken = process.env.WHATSAPP_TOKEN;
-
 
 // Helper function to download image from WhatsApp
 async function downloadWhatsAppImage(mediaId: string): Promise<{ buffer: Buffer, contentType: string }> {
@@ -35,7 +34,6 @@ async function downloadWhatsAppImage(mediaId: string): Promise<{ buffer: Buffer,
     }
 }
 
-
 // Main image processing function
 export async function processWhatsAppImage(
     mediaId: string,
@@ -62,6 +60,63 @@ export async function processWhatsAppImage(
             buffer,
             contentType,
             caption: imageCaption
+        };
+    } catch (error) {
+        console.error('Error processing image:', error);
+
+        // Send error message if recipient info is provided
+        if (from && phone_number_id) {
+            // You can customize error message based on agent data
+            const errorMessage = agentData?.spec?.imageErrorMessage || 'Sorry, there was an error processing your image.';
+            const errorMsg = get_WA_TextMessageInput(from, errorMessage);
+            await send_WA_Message(errorMsg, phone_number_id);
+        }
+
+        // Rethrow the error to be handled by the calling function
+        throw error;
+    }
+}
+
+// Enhanced image processing function with storage support
+export async function processWhatsAppImageWithStorage(
+    mediaId: string,
+    userId: string,
+    sessionId: string,
+    from?: string,
+    phone_number_id?: string,
+    agentData?: Record<string, any>,
+    imageCaption?: string
+): Promise<{ isImage: boolean, buffer: Buffer, contentType: string, caption?: string, filePath?: string }> {
+    try {
+        // Send initial "processing" message if recipient info is provided
+        if (from && phone_number_id) {
+            // You can customize the message based on agent data if needed
+            const processingMessage = agentData?.spec?.imageProcessingMessage || 'Processing your image...';
+            const initialMsg = get_WA_TextMessageInput(from, processingMessage);
+            await send_WA_Message(initialMsg, phone_number_id);
+        }
+
+        // Download the image
+        const { buffer, contentType } = await downloadWhatsAppImage(mediaId);
+
+        let filePath: string | undefined;
+        
+        // Upload to Firebase Storage
+        try {
+            filePath = await uploadMediaToStorage(buffer, contentType, userId, 'image', sessionId);
+            console.log(`Image uploaded to storage: ${filePath}`);
+        } catch (storageError) {
+            console.error('Failed to upload image to storage:', storageError);
+            // Continue without file path - don't fail the entire process
+        }
+
+        // Return the image buffer with a flag indicating it's an image
+        return {
+            isImage: true,
+            buffer,
+            contentType,
+            caption: imageCaption,
+            filePath
         };
     } catch (error) {
         console.error('Error processing image:', error);
