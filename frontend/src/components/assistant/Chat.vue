@@ -36,12 +36,19 @@
 						</p>
 					</div>
 					<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }">
-						<!-- Show loading animation if message is being processed -->
-						<div v-if="isMessageProcessing(index)" class="flex items-center gap-3 py-2">
-							<Spinner size="16px" />
-							<span class="text-gray-600 text-sm">
-								{{ ai_loading && index === conversationHistory.length - 1 ? 'Typing...' : 'Processing message...' }}
-							</span>
+						<!-- Show raw content while processing or loading animation for assistant -->
+						<div v-if="isMessageProcessing(index)">
+							<!-- For user messages, show raw content while processing -->
+							<div v-if="message.role === 'user'" class="whitespace-pre-wrap">
+								{{ message.content }}
+							</div>
+							<!-- For assistant messages, show loading animation -->
+							<div v-else class="flex items-center gap-3 py-2">
+								<Spinner size="16px" />
+								<span class="text-gray-600 text-sm">
+									{{ ai_loading && index === conversationHistory.length - 1 ? 'Typing...' : 'Processing message...' }}
+								</span>
+							</div>
 						</div>
 						<!-- Show processed content when ready -->
 						<MediaDisplay v-else :media-parts="processedMessages[index] || []" />
@@ -224,9 +231,6 @@ watch(conversationHistory, () => {
 const isMessageProcessing = (index: number) => {
   const message = conversationHistory.value[index]
   if (!message || message.toolId) return false
-
-  // Only show loading for assistant messages, user messages are processed instantly
-  if (message.role === 'user') return false
 
   // Check if the message exists but hasn't been processed yet
   const processedMessage = processedMessages.value[index]
