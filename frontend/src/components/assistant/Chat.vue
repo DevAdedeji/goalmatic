@@ -36,7 +36,15 @@
 						</p>
 					</div>
 					<article class="message-bubble" :class="{ 'ml-0 mr-7 !bg-light !border-[#9A6BFF]': message.role === 'user' }">
-						<MediaDisplay :media-parts="processedMessages[index] || []" />
+						<!-- Show loading animation if message is being processed -->
+						<div v-if="isMessageProcessing(index)" class="flex items-center gap-3 py-2">
+							<Spinner size="16px" />
+							<span class="text-gray-600 text-sm">
+								{{ ai_loading && index === conversationHistory.length - 1 ? 'Typing...' : 'Processing message...' }}
+							</span>
+						</div>
+						<!-- Show processed content when ready -->
+						<MediaDisplay v-else :media-parts="processedMessages[index] || []" />
 					</article>
 				</template>
 
@@ -59,6 +67,24 @@
 						</div>
 					</article>
 				</template>
+			</div>
+
+			<!-- Show typing indicator when AI is generating response but no message exists yet -->
+			<div v-if="ai_loading && (conversationHistory.length === 0 || conversationHistory[conversationHistory.length - 1].role === 'user')" class="message-container">
+				<div class="header-container">
+					<div class="assistant-avatar">
+						<img class="size-5" src="/og.png" alt="goalmatic logo">
+					</div>
+					<p class="name-label">
+						Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
+					</p>
+				</div>
+				<article class="message-bubble">
+					<div class="flex items-center gap-3 py-2">
+						<Spinner size="16px" />
+						<span class="text-gray-600 text-sm">Thinking...</span>
+					</div>
+				</article>
 			</div>
 		</section>
 
@@ -194,6 +220,19 @@ watch(conversationHistory, () => {
   })
 }, { deep: true })
 
+// Check if a message is still being processed
+const isMessageProcessing = (index: number) => {
+  const message = conversationHistory.value[index]
+  if (!message || message.toolId) return false
+
+  // Only show loading for assistant messages, user messages are processed instantly
+  if (message.role === 'user') return false
+
+  // Check if the message exists but hasn't been processed yet
+  const processedMessage = processedMessages.value[index]
+  return !processedMessage || processedMessage.length === 0 ||
+         (processedMessage.length === 1 && (!processedMessage[0].content || processedMessage[0].content.trim() === ''))
+}
 
 </script>
 

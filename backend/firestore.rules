@@ -210,6 +210,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Processed messages collection: tracks WhatsApp message IDs to prevent duplicates
+    // Only accessible by Cloud Functions (admin privileges)
+    match /processed_messages/{messageId} {
+      // Deny all user access - this collection is managed only by Cloud Functions
+      allow read, write: if false;
+    }
+
     // Deny access to any other documents not explicitly covered above.
     match /{document=**} {
       allow read, write: if false;

@@ -11,7 +11,8 @@ import {
     processCommand,
     handleButtonClick,
     checkUnsupportedMessageTypes,
-    logCustomerServiceWindow
+    logCustomerServiceWindow,
+    isDuplicateMessage
 } from './webhookHelpers'
 
 export const goals_WA_message_webhook = onRequest({
@@ -29,6 +30,13 @@ export const goals_WA_message_webhook = onRequest({
 
             if (!message) {
                 console.log("Webhook received non-message event or malformed body:", JSON.stringify(req.body));
+                res.sendStatus(200);
+                return;
+            }
+
+            // Check for duplicate messages early to prevent reprocessing
+            if (message.id && await isDuplicateMessage(message.id)) {
+                console.log(`Duplicate message ${message.id} from ${from} - skipping processing`);
                 res.sendStatus(200);
                 return;
             }

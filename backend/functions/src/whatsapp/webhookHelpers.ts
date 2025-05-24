@@ -242,4 +242,35 @@ export const logCustomerServiceWindow = (phoneNumber: string) => {
         phoneNumber,
         lastReceivedMessage: Timestamp.now()
     }, { merge: true }).catch(err => console.error("Error logging CSW:", err));
+}
+
+/**
+ * Check if a message has already been processed to prevent duplicates
+ * Store processed message IDs in Firestore with TTL for cleanup
+ */
+export async function isDuplicateMessage(messageId: string): Promise<boolean> {
+    try {
+        const processedMessageRef = goals_db.collection('processed_messages').doc(messageId);
+        const doc = await processedMessageRef.get();
+        
+        if (doc.exists) {
+            console.log(`Duplicate message detected: ${messageId}`);
+            return true;
+        }
+        
+        // Mark message as processed with TTL (24 hours)
+        const expiresAt = new Date();
+        expiresAt.setHours(expiresAt.getHours() + 24);
+        
+        await processedMessageRef.set({
+            processed_at: new Date(),
+            expires_at: expiresAt
+        });
+        
+        return false;
+    } catch (error) {
+        console.error('Error checking/storing message ID:', error);
+        // If we can't check duplicates, allow processing to avoid missing messages
+        return false;
+    }
 } 
