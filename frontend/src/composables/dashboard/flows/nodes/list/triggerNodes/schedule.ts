@@ -25,7 +25,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         required: true,
                         description: 'The date to run the flow (must be today or in the future)',
                         validate: validateScheduleDate,
-                        value: getDefaultDateValue
+                        value: getDefaultDateValue,
+                        cloneable: false
                     },
                     {
                         name: 'Time',
@@ -34,7 +35,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         required: true,
                         description: 'The time to run the flow (must be at least 5 minutes in the future)',
                         validate: validateScheduleTime,
-                        value: getDefaultTimeValue
+                        value: getDefaultTimeValue,
+                        cloneable: true
                     },
                     {
                         name: 'Timezone',
@@ -43,7 +45,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         required: true,
                         description: 'The timezone for the scheduled time',
                         options: timezones,
-                        value: getDefaultTimezone
+                        value: getDefaultTimezone,
+                        cloneable: true
                     }
                 ]
             },
@@ -58,7 +61,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         key: 'Input',
                         type: 'text',
                         required: true,
-                        description: 'Describe how often you want this to run (e.g. 12pm every week days)'
+                        description: 'Describe how often you want this to run (e.g. 12pm every week days)',
+                        cloneable: true
                     },
                     {
                         name: 'CRON Expression',
@@ -66,7 +70,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         type: 'text',
                         required: true,
                         description: 'The generated CRON expression',
-                        disabled: true
+                        disabled: true,
+                        cloneable: true
                     },
                     {
                         name: 'Plain English Description',
@@ -74,7 +79,8 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         type: 'text',
                         required: true,
                         description: 'A plain English description of the schedule',
-                        disabled: true
+                        disabled: true,
+                        cloneable: true
                     }
                 ]
             }

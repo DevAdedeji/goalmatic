@@ -1,4 +1,4 @@
-import { FlowNode } from '../../types'
+import type { FlowNode } from '../../types'
 
 
 
@@ -7,38 +7,53 @@ export const tableActionNodes:FlowNode[] = [
         node_id: 'TABLE',
         icon: '/icons/table.svg',
         name: 'Table',
-        description: 'Manage your table records',
+        description: 'Interact with your database tables',
         type: 'action',
         provider: 'GOALMATIC',
-        category: 'DATA_MANAGEMENT',
+        category: 'DATABASE',
         children: [
             {
                 node_id: 'TABLE_READ',
                 type: 'action',
-                name: 'Read Records',
-                description: 'Fetch records from a table with optional filtering',
+                name: 'Read Table',
+                description: 'Read records from a table',
                 props: [
                     {
                         name: 'Table ID',
                         key: 'tableId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the table to read from'
-                    },
-                    {
-                        name: 'Record ID',
-                        key: 'recordId',
-                        type: 'text',
-                        required: false,
-                        description: 'Optional ID of a specific record to retrieve'
+                        description: 'ID of the table to read from',
+                        cloneable: false
                     },
                     {
                         name: 'Limit',
                         key: 'limit',
                         type: 'number',
                         required: false,
-                        description: 'Maximum number of records to return'
-                     }
+                        description: 'Maximum number of records to retrieve (default: 10)',
+                        cloneable: true
+                    },
+                    {
+                        name: 'Sort Field',
+                        key: 'sortField',
+                        type: 'text',
+                        required: false,
+                        description: 'Field name to sort by (default: created_at)',
+                        cloneable: true
+                    },
+                    {
+                        name: 'Sort Order',
+                        key: 'sortOrder',
+                        type: 'select',
+                        options: [
+                            { name: 'Ascending', value: 'asc' },
+                            { name: 'Descending', value: 'desc' }
+                        ],
+                        required: false,
+                        description: 'Sort order (default: desc)',
+                        cloneable: true
+                    }
                 ]
             },
             {
@@ -52,7 +67,8 @@ export const tableActionNodes:FlowNode[] = [
                         key: 'tableId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the table to add the record to'
+                        description: 'ID of the table to add the record to',
+                        cloneable: false
                     },
                     {
                         name: 'Record Data',
@@ -60,7 +76,8 @@ export const tableActionNodes:FlowNode[] = [
                         type: 'textarea',
                         required: true,
                         description: 'JSON object with field values for the new record',
-                        ai_enabled: true
+                        ai_enabled: true,
+                        cloneable: true
                     }
                 ]
             },
@@ -75,14 +92,16 @@ export const tableActionNodes:FlowNode[] = [
                         key: 'tableId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the table containing the record'
+                        description: 'ID of the table containing the record',
+                        cloneable: false
                     },
                     {
                         name: 'Record ID',
                         key: 'recordId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the record to update'
+                        description: 'ID of the record to update',
+                        cloneable: false
                     },
                     {
                         name: 'Record Data',
@@ -90,7 +109,8 @@ export const tableActionNodes:FlowNode[] = [
                         type: 'textarea',
                         required: true,
                         description: 'JSON object with updated field values',
-                        ai_enabled: true
+                        ai_enabled: true,
+                        cloneable: true
                     }
                 ]
             },
@@ -105,14 +125,16 @@ export const tableActionNodes:FlowNode[] = [
                         key: 'tableId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the table containing the record'
+                        description: 'ID of the table containing the record',
+                        cloneable: false
                     },
                     {
                         name: 'Record ID',
                         key: 'recordId',
                         type: 'text',
                         required: true,
-                        description: 'ID of the record to delete'
+                        description: 'ID of the record to delete',
+                        cloneable: false
                     }
                 ]
             }

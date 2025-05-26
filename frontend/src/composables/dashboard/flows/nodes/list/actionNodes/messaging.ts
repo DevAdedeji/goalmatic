@@ -24,7 +24,8 @@ export const messagingActionNodes:FlowNode[] = [
                         type: 'mentionTextarea',
                         required: true,
                         description: 'The message content to send',
-                        ai_enabled: true
+                        ai_enabled: true,
+                        cloneable: true
                     },
                     {
                         name: 'Recipient Type',
@@ -35,14 +36,16 @@ export const messagingActionNodes:FlowNode[] = [
                             { name: 'Custom Phone Number', value: 'custom' }
                         ],
                         required: true,
-                        description: 'Send to user\'s linked WhatsApp or a custom phone number'
+                        description: 'Send to user\'s linked WhatsApp or a custom phone number',
+                        cloneable: true
                     },
                     {
                         name: 'Phone Number',
                         key: 'phoneNumber',
                         type: 'text',
                         required: false,
-                        description: 'Phone number with country code (e.g., +1234567890)'
+                        description: 'Phone number with country code (e.g., +1234567890)',
+                        cloneable: false
                     }
                 ]
             },
@@ -56,7 +59,8 @@ export const messagingActionNodes:FlowNode[] = [
                         name: 'Subject',
                         key: 'subject',
                         type: 'text',
-                        required: true
+                        required: true,
+                        cloneable: true
                     },
                     {
                         name: 'Email Type',
@@ -66,14 +70,16 @@ export const messagingActionNodes:FlowNode[] = [
                             { name: 'Plain Text', value: 'plain' },
                             { name: 'HTML', value: 'html' }
                         ],
-                        required: true
+                        required: true,
+                        cloneable: true
                     },
                     {
                         name: 'Body',
                         key: 'body',
                         type: 'mentionTextarea',
                         required: true,
-                        ai_enabled: true
+                        ai_enabled: true,
+                        cloneable: true
                     },
                     {
                         name: 'Recipient Email',
@@ -82,7 +88,8 @@ export const messagingActionNodes:FlowNode[] = [
                         required: true,
                         disabled: true,
                         value: 'USER_EMAIL',
-                        description: 'For security reasons, emails will be sent to your account email address only.'
+                        description: 'The email address to send the email to. For security reasons, emails will be sent to your account email address only.',
+                        cloneable: false
                     }
                 ]
             }

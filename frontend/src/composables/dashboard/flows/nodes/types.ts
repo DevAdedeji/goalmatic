@@ -9,6 +9,7 @@ export type FlowNodeProp = {
   options?: any[]
   disabled?: boolean
   ai_enabled?: boolean
+  cloneable?: boolean
 }
 
 export type FlowNode = {

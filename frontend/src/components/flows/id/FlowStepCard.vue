@@ -16,12 +16,12 @@
 					<span class="italic">{{ step.name.split(':').pop().trim() }}</span>
 				</span>
 				<!-- Node Validation Status -->
-				<span v-if="!isNodeValid" class="text-danger text-sm flex items-center ml-2">
+				<span v-if="!isNodeValid && isOwner" class="text-danger text-sm flex items-center ml-2">
 					<AlertCircle :size="14" class="mr-1" />
 					Invalid
 				</span>
 			</h3>
-			<div class="flex gap-2">
+			<div v-if="isOwner" class="flex gap-2">
 				<!-- Change Button -->
 				<span v-if="props.isFlowActive" class="tooltip-wrapper">
 					<button class="icon-btn disabled-btn" disabled>
@@ -61,7 +61,7 @@
 		</p>
 
 		<!-- Required Props Warning -->
-		<div v-if="!isNodeValid" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
+		<div v-if="!isNodeValid && isOwner" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
 			<p class="font-semibold">
 				This node is missing required properties:
 			</p>
@@ -118,6 +118,10 @@ const props = defineProps({
 	isFlowActive: {
 		type: Boolean,
 		default: false
+	},
+	isOwner: {
+		type: Boolean,
+		default: false
 	}
 })
 
@@ -141,6 +145,9 @@ const isNodeValid = computed(() => {
 
 	return true
 })
+
+// Access isOwner prop
+const isOwner = computed(() => props.isOwner)
 
 // Utility: Parse mentions in Tiptap HTML to @NodeName.key
 const parseMentionsFromHtml = (html: string): string => {

@@ -11,11 +11,65 @@ import { useConfirmationModal } from '@/composables/core/confirmation'
 export const useEditFlow = () => {
   const { id: user_id } = useUser()
   const loading = ref(false)
+  const toggleVisibilityLoading = ref(false)
 
   // Get flow runs functionality from the dedicated composable
   const { flowRuns, flowRunsLoading, fetchFlowRuns } = useFlowRuns()
 
   const { flowData } = useFetchUserFlows()
+
+  /**
+   * Open confirmation modal for visibility toggle
+   * @param flow The flow to toggle visibility for
+   */
+  const openVisibilityConfirmation = (flow: Record<string, any>) => {
+    const isPublic = flow.public === true
+    const newVisibility = isPublic ? 'private' : 'public'
+
+    useConfirmationModal().openAlert({
+      type: 'Alert',
+      title: `Make Flow ${newVisibility === 'public' ? 'Public' : 'Private'}`,
+      desc: `Are you sure you want to make "${flow.name}" ${newVisibility}? ${newVisibility === 'public' ? 'Anyone will be able to view and clone this flow.' : 'Only you will be able to view this flow.'}`,
+      call_function: () => toggleFlowVisibility(flow),
+      loading: toggleVisibilityLoading
+    })
+  }
+
+  /**
+   * Toggle flow visibility between public and private
+   * @param flow The flow to toggle visibility for
+   */
+  const toggleFlowVisibility = async (flow: Record<string, any>) => {
+    if (!flow || !flow.id) {
+      useAlert().openAlert({ type: 'ERROR', msg: 'Invalid flow data' })
+      return
+    }
+
+    toggleVisibilityLoading.value = true
+    try {
+      // Toggle the public flag
+      const isPublic = flow.public === true
+
+      await updateFirestoreDocument('flows', flow.id, {
+        public: !isPublic,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      // Update the local flow object to reflect the change
+      flow.public = !isPublic
+
+      useAlert().openAlert({
+        type: 'SUCCESS',
+        msg: `Flow is now ${!isPublic ? 'public' : 'private'}`
+      })
+    } catch (error) {
+      console.error('Error toggling flow visibility:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+    } finally {
+      toggleVisibilityLoading.value = false
+      useConfirmationModal().closeAlert()
+    }
+  }
 
   const updateFlow = async (data: Record<string, any>) => {
     if (!user_id.value) return
@@ -33,22 +87,33 @@ export const useEditFlow = () => {
         updated_at: Timestamp.fromDate(new Date())
       } as Record<string, any>
 
-
+      // Process steps to ensure proper data structure and clonable fields
       sent_data.steps = (sent_data.steps || []).map((step: Record<string, any>) => {
         const { props, ...rest } = step
-        return { ...rest }
+
+        // Ensure clonable data fields are properly structured
+        const processedStep = {
+          ...rest,
+          // Preserve propsData with all configured values
+          propsData: step.propsData || {},
+          // Preserve aiEnabledFields array for AI-enabled properties
+          ...(step.aiEnabledFields && step.aiEnabledFields.length > 0 && { aiEnabledFields: step.aiEnabledFields })
+        }
+
+        return processedStep
       })
 
-
-      // Same for trigger
+      // Same for trigger - ensure proper data structure
       if (sent_data.trigger) {
         const { props, ...rest } = sent_data.trigger
-        sent_data.trigger = { ...rest }
+        sent_data.trigger = {
+          ...rest,
+          // Preserve propsData with all configured values
+          propsData: sent_data.trigger.propsData || {},
+          // Preserve aiEnabledFields array for AI-enabled properties
+          ...(sent_data.trigger.aiEnabledFields && sent_data.trigger.aiEnabledFields.length > 0 && { aiEnabledFields: sent_data.trigger.aiEnabledFields })
+        }
       }
-
-
-
-
 
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow updated successfully' })
@@ -90,8 +155,8 @@ export const useEditFlow = () => {
   }
 
   const isFlowValid = computed(() => {
-    const hasTrigger = flowData.value.trigger !== undefined && flowData.value.trigger !== null
-    const hasActionSteps = flowData.value.steps && flowData.value.steps.length > 0
+    const hasTrigger = flowData.value?.trigger !== undefined && flowData.value?.trigger !== null
+    const hasActionSteps = flowData.value?.steps && flowData.value?.steps.length > 0
     return hasTrigger && hasActionSteps
   })
 
@@ -205,6 +270,10 @@ export const useEditFlow = () => {
     removeNode,
     editNode,
     updateNode,
-    handleChangeNode, confirmRemoveNode
+    handleChangeNode,
+    confirmRemoveNode,
+    openVisibilityConfirmation,
+    toggleFlowVisibility,
+    toggleVisibilityLoading
   }
 }

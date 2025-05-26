@@ -34,15 +34,6 @@
 			<template v-if="flow.cloned_from">
 				<span class="text-xs text-text-secondary">From: {{ flow.cloned_from.name }}</span>
 			</template>
-			<template v-else>
-				<button
-					v-if="flow.status !== 'cloned'"
-					class="text-xs text-text-secondary hover:text-headline"
-					@click="$emit('toggle-status', flow)"
-				>
-					{{ flow.status === 1 ? 'Pause' : 'Activate' }}
-				</button>
-			</template>
 		</div>
 	</div>
 </template>
@@ -98,7 +89,6 @@ const statusClass = computed(() => {
 
 const emit = defineEmits<{(e: 'edit', flow: Flow): void
     (e: 'delete', flow: Flow): void
-    (e: 'toggle-status', flow: Flow): void
 }>()
 </script>
 
