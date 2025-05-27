@@ -1,7 +1,7 @@
 import { Timestamp, collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
-import { useFetchUserFlows } from './fetch'
 import { useFlowRuns } from './runs'
+import { useFetchFlowById } from './id'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
@@ -16,7 +16,7 @@ export const useEditFlow = () => {
   // Get flow runs functionality from the dedicated composable
   const { flowRuns, flowRunsLoading, fetchFlowRuns } = useFlowRuns()
 
-  const { flowData } = useFetchUserFlows()
+  const { flowDetails } = useFetchFlowById()
 
   /**
    * Open confirmation modal for visibility toggle
@@ -155,41 +155,43 @@ export const useEditFlow = () => {
   }
 
   const isFlowValid = computed(() => {
-    const hasTrigger = flowData.value?.trigger !== undefined && flowData.value?.trigger !== null
-    const hasActionSteps = flowData.value?.steps && flowData.value?.steps.length > 0
+    const hasTrigger = flowDetails.value?.trigger !== undefined && flowDetails.value?.trigger !== null
+    const hasActionSteps = flowDetails.value?.steps && flowDetails.value?.steps.length > 0
     return hasTrigger && hasActionSteps
   })
 
   const saveFlow = async () => {
-    await updateFlow(flowData.value)
+    await updateFlow(flowDetails.value)
   }
 
   const addNode = (node: Record<string, any>, position: number | null) => {
     if (node.type === 'trigger') {
-      flowData.value.trigger = node
+      console.log(flowDetails.value)
+      flowDetails.value.trigger = node
       return
     }
 
     if (!position) {
-      flowData.value.steps.push({ position: flowData.value.steps.length + 1, ...node, id: uuidv4() })
+      console.log(flowDetails.value)
+      flowDetails.value.steps.push({ position: flowDetails.value.steps.length + 1, ...node, id: uuidv4() })
       return
     }
 
-    flowData.value.steps.splice(position, 0, { position, ...node, id: uuidv4() })
+    flowDetails.value.steps.splice(position, 0, { position, ...node, id: uuidv4() })
   }
 
   const removeNode = async (node: Record<string, any>, position?: number | null) => {
     if (node.type === 'trigger') {
-      flowData.value.trigger = null
+      flowDetails.value.trigger = null
       return
     }
 
     if (position !== undefined && position !== null) {
-      flowData.value.steps = flowData.value.steps.slice(0, position).concat(flowData.value.steps.slice(position + 1))
+      flowDetails.value.steps = flowDetails.value.steps.slice(0, position).concat(flowDetails.value.steps.slice(position + 1))
     } else {
-      flowData.value.steps = flowData.value.steps.filter((step: Record<string, any>) => step.id !== node.id)
+      flowDetails.value.steps = flowDetails.value.steps.filter((step: Record<string, any>) => step.id !== node.id)
     }
-    await updateFlow(flowData.value)
+    await updateFlow(flowDetails.value)
   }
   const confirmRemoveNode = async (node, position?: number) => {
 	useConfirmationModal().openAlert({
@@ -213,35 +215,35 @@ export const useEditFlow = () => {
   // Update a node with new values
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
     // Extract aiEnabledFields from updatedValues if present
-    const { aiEnabledFields, ...propsData } = updatedValues
+    const { aiEnabledFields, nonCloneables, ...propsData } = updatedValues
 
     const updatedNode = {
       ...node,
       propsData,
-      ...(aiEnabledFields && { aiEnabledFields })
+      ...(aiEnabledFields && { aiEnabledFields }),
+      ...(nonCloneables && { nonCloneables })
     }
+
+    console.log(updatedNode)
 
     // If it's a trigger node
     if (node.type === 'trigger') {
-      flowData.value.trigger = updatedNode
-      await updateFlow(flowData.value)
+      flowDetails.value.trigger = updatedNode
+      await updateFlow(flowDetails.value)
       return
     }
 
     // If it's an action node, find it in the steps and update it
-    const stepIndex = flowData.value.steps.findIndex((step: Record<string, any>) => {
-      // Compare by ID if available, otherwise fallback to a deeper comparison
+    const stepIndex = flowDetails.value.steps.findIndex((step: Record<string, any>) => {
       if (step.id && node.id) {
         return step.id === node.id
       }
-
-
       return false
     })
 
     if (stepIndex !== -1) {
-      flowData.value.steps[stepIndex] = updatedNode
-      await updateFlow(flowData.value)
+      flowDetails.value.steps[stepIndex] = updatedNode
+      await updateFlow(flowDetails.value)
     }
   }
 

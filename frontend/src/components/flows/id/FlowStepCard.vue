@@ -16,7 +16,7 @@
 					<span class="italic">{{ step.name.split(':').pop().trim() }}</span>
 				</span>
 				<!-- Node Validation Status -->
-				<span v-if="!isNodeValid && isOwner" class="text-danger text-sm flex items-center ml-2">
+				<span v-if="!isNodeValidComputed && isOwner" class="text-danger text-sm flex items-center ml-2">
 					<AlertCircle :size="14" class="mr-1" />
 					Invalid
 				</span>
@@ -61,7 +61,7 @@
 		</p>
 
 		<!-- Required Props Warning -->
-		<div v-if="!isNodeValid && isOwner" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
+		<div v-if="!isNodeValidComputed && isOwner" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
 			<p class="font-semibold">
 				This node is missing required properties:
 			</p>
@@ -100,6 +100,7 @@
 <script setup lang="ts">
 import { Edit2, Trash2, RefreshCw, AlertCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
+import { isNodeValid, getMissingRequiredProps } from '@/composables/dashboard/flows/nodes/nodeOperations'
 
 // Define Props
 const props = defineProps({
@@ -125,25 +126,9 @@ const props = defineProps({
 	}
 })
 
-// Check if node is valid
-const isNodeValid = computed(() => {
-	const node = props.step
-	const nodeProps = node.props || []
-
-	// If no props or no required props, node is valid
-	if (!nodeProps.length) return true
-
-	// Check for missing required props
-	for (const prop of nodeProps) {
-		if (prop.required) {
-			const propValue = node.propsData?.[prop.key]
-			if (propValue === undefined || propValue === null || propValue === '') {
-				return false
-			}
-		}
-	}
-
-	return true
+// Check if node is valid - now using centralized function
+const isNodeValidComputed = computed(() => {
+	return isNodeValid(props.step)
 })
 
 // Access isOwner prop
@@ -151,23 +136,17 @@ const isOwner = computed(() => props.isOwner)
 
 // Utility: Parse mentions in Tiptap HTML to @NodeName.key
 const parseMentionsFromHtml = (html: string): string => {
+	if (!html) return ''
+	if (typeof html !== 'string') return ''
 	// Replace <span class="mention" data-id="NodeName.key">...</span> with @NodeName.key
 	return html.replace(/<span[^>]*class=["']mention["'][^>]*data-id=["']([\w\-. ]+)["'][^>]*>[^<]*<\/span>/g, (match, id) => `@${id}`)
 		.replace(/<[^>]+>/g, '') // Remove other HTML tags
 		.replace(/&nbsp;/g, ' ')
 }
 
-// Get missing required props
+// Get missing required props - now using centralized function
 const missingRequiredProps = computed(() => {
-	const nodeProps = props.step.props || []
-
-	return nodeProps.filter((prop) => {
-		if (prop.required) {
-			const propValue = props.step.propsData?.[prop.key]
-			return propValue === undefined || propValue === null || propValue === ''
-		}
-		return false
-	})
+	return getMissingRequiredProps(props.step)
 })
 
 // Check if node has any props data to display

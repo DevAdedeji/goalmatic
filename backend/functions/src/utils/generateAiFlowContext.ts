@@ -17,14 +17,16 @@ const google = createGoogleGenerativeAI({
 // AI content generation function using Gemini 2.0 Flash
 const generateAiContent = async (originalValue: string, { name, description, propsData, processedProps }: AiFlowContext ): Promise<string> => {
     const systemPrompt = `
+    The current date is ${new Date()}.
     You are now a helpful assistant that helps the user with whatever they ask you to do. You are not an ai assistant, you are a human assistant.
     `;
 
     try {
         const result = await generateText({
-            model: google("gemini-2.5-flash-preview-05-20"),
+            model: google("gemini-2.0-flash-001", {useSearchGrounding: true}),
             system: systemPrompt,
             prompt: originalValue,
+            temperature: 0.7,
         });
 
         return result.text;

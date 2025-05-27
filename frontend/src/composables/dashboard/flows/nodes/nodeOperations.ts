@@ -1,5 +1,5 @@
 import { useEditFlow } from '../edit'
-import { useFetchUserFlows } from '../fetch'
+import { useFetchFlowById } from '../id'
 import { flowTriggerNodes, flowActionNodes } from './list'
 import { useFlowsModal } from '@/composables/core/modals'
 import { useAlert } from '@/composables/core/notification'
@@ -51,6 +51,49 @@ export const isNodeValid = (node: Record<string, any>) => {
   }
 
   return true
+}
+
+/**
+ * Get missing required props for a node (accounting for AI-enabled fields)
+ */
+export const getMissingRequiredProps = (node: Record<string, any>) => {
+  if (!node) return []
+
+  // Get the node props - either directly from the node or find them
+  let nodeProps = node.props || []
+
+  // For child nodes, find their props from the parent node's children
+  if (node.parent_node_id && node.node_id) {
+    const parentNodes = node.type === 'trigger' ? flowTriggerNodes : flowActionNodes
+    const parentNode = parentNodes.find((n) => n.node_id === node.parent_node_id)
+
+    if (parentNode && parentNode.children) {
+      const childNode = parentNode.children.find((c) => c.node_id === node.node_id)
+      if (childNode?.props) {
+        nodeProps = childNode.props
+      }
+    }
+  }
+
+  // If no props defined, no missing props
+  if (!nodeProps || nodeProps.length === 0) return []
+
+  // Filter for missing required props
+  return nodeProps.filter((prop) => {
+    if (prop.required) {
+      const propValue = node.propsData?.[prop.key]
+      const isAiEnabled = node.aiEnabledFields && node.aiEnabledFields.includes(prop.key)
+
+      // If AI is enabled for this prop, consider it valid (not missing)
+      if (isAiEnabled) {
+        return false
+      }
+
+      // Otherwise, check if manual input is missing
+      return propValue === undefined || propValue === null || propValue === ''
+    }
+    return false
+  })
 }
 
 // -------------------- SELECT NODE LOGIC --------------------
@@ -111,19 +154,19 @@ export const useSelectNodeLogic = (props: any) => {
         // If it's a trigger node
         if (node.type === 'trigger') {
           // Get the trigger node from flowData
-          const { flowData } = useFetchUserFlows()
-          editNode(flowData.value.trigger)
+          const { flowDetails } = useFetchFlowById()
+          editNode(flowDetails.value.trigger)
         } else {
           // For action nodes, find the correct step based on position
-          const { flowData } = useFetchUserFlows()
+          const { flowDetails } = useFetchFlowById()
           const position = props.payload?.position
 
           // If position is specified, find the node at that position
           if (position !== undefined && position !== null) {
-            editNode(flowData.value.steps[position])
+            editNode(flowDetails.value.steps[position])
           } else {
             // Otherwise, it was added at the end
-            editNode(flowData.value.steps[flowData.value.steps.length - 1])
+            editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
           }
         }
       }, 100) // Small delay to ensure UI updates
@@ -155,19 +198,19 @@ export const useSelectNodeLogic = (props: any) => {
       // If it's a trigger node
       if (mergedNode.type === 'trigger') {
         // Get the trigger node from flowData
-        const { flowData } = useFetchUserFlows()
-        editNode(flowData.value.trigger)
+        const { flowDetails } = useFetchFlowById()
+        editNode(flowDetails.value.trigger)
       } else {
         // For action nodes, find the correct step based on position
-        const { flowData } = useFetchUserFlows()
+        const { flowDetails } = useFetchFlowById()
         const position = props.payload?.position
 
         // If position is specified, find the node at that position
         if (position !== undefined && position !== null) {
-          editNode(flowData.value.steps[position])
+          editNode(flowDetails.value.steps[position])
         } else {
           // Otherwise, it was added at the end
-          editNode(flowData.value.steps[flowData.value.steps.length - 1])
+          editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
         }
       }
     }, 100) // Small delay to ensure UI updates
@@ -233,8 +276,8 @@ export const useEditNodeLogic = (props: any) => {
   const previousNodeOutputs = computed(() => {
     // Only for action nodes (not trigger)
     if (!props.payload || props.payload.type === 'trigger') return {}
-    const { flowData } = useFetchUserFlows()
-    const flow = flowData.value
+    const { flowDetails } = useFetchFlowById()
+    const flow = flowDetails.value
     // fallback: try to get from parent if not passed
     let steps: any[] = []
     if (flow && flow.steps) {

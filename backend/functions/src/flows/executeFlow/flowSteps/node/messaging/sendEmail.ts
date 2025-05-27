@@ -14,7 +14,7 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
     const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
     
     // Use the AI-updated props instead of just processed props
-    const { subject, body, emailType, recipientEmail } = processedPropsWithAiContext;
+    const { subject, message, emailType, recipientEmail } = processedPropsWithAiContext;
 
     const emailMessage = {
         to: [{
@@ -28,7 +28,7 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
         subject: subject,
         message_body: {
             type: emailType === 'html' ? "text/html" : "text/plain",
-            value: body
+            value: message
         }
     };
 

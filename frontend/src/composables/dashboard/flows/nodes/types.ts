@@ -2,7 +2,7 @@ export type FlowNodeProp = {
   name: string
   key: string
   type: string
-  required?: boolean
+  required: boolean
   description?: string
   validate?: any
   value?: any

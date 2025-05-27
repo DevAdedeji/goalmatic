@@ -43,7 +43,7 @@ export const messagingActionNodes:FlowNode[] = [
                         name: 'Phone Number',
                         key: 'phoneNumber',
                         type: 'text',
-                        required: false,
+                        required: true,
                         description: 'Phone number with country code (e.g., +1234567890)',
                         cloneable: false
                     }
@@ -74,8 +74,8 @@ export const messagingActionNodes:FlowNode[] = [
                         cloneable: true
                     },
                     {
-                        name: 'Body',
-                        key: 'body',
+                        name: 'Message',
+                        key: 'message',
                         type: 'mentionTextarea',
                         required: true,
                         ai_enabled: true,

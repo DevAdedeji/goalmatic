@@ -34,29 +34,7 @@ export const useFetchUserFlows = () => {
     }
   }
 
-  // Get a single flow by ID
-  const fetchFlowById = async (flow_id: string) => {
-    loading.value = true
-    if (import.meta.server) return
 
-    try {
-      await getSingleFirestoreDocument('flows', flow_id, flowData)
-      return flowData.value
-    } catch (error: any) {
-      console.error('Error fetching flow by ID:', error)
-      if (error.code === 'permission-denied') {
-        useAlert().openAlert({
-          type: 'ERROR',
-          msg: "You don't have permission to access this flow. It may be private"
-        })
-      } else {
-        useAlert().openAlert({ type: 'ERROR', msg: `Error fetching flow: ${error.message}` })
-      }
-      return null
-    } finally {
-      loading.value = false
-    }
-  }
 
   // Computed property for active flows
   const activeFlows = computed(() => {
@@ -73,7 +51,6 @@ export const useFetchUserFlows = () => {
     userFlows,
     loading,
     fetchAllFlows,
-    fetchFlowById,
     activeFlows,
     draftFlows,
     hasInitialFetch

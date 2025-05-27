@@ -192,12 +192,14 @@ const canSave = computed(() => {
 function save() {
 	// Create AI enabled fields list - only include message if it's in AI mode
 	const aiEnabledFields = aiMode.message === 'ai' ? ['message'] : []
+	const nonCloneables = ['phoneNumber']
 
   const payload = {
 		message: form.value.message,
 		recipientType: form.value.recipientType,
 		phoneNumber: form.value.phoneNumber,
-		aiEnabledFields
+		aiEnabledFields,
+		nonCloneables
 	}
 	emit('save', payload)
 }

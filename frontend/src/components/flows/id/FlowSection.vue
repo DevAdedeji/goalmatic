@@ -120,7 +120,7 @@ const props = defineProps({
 	}
 })
 
-console.log(props.flowData)
+
 
 defineEmits([
 	'openStepPanel',

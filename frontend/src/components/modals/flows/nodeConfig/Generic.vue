@@ -203,19 +203,7 @@ import { Info as InfoIcon } from 'lucide-vue-next'
 import { useUser } from '@/composables/auth/user'
 import Tooltip from '@/components/core/Tooltip.vue'
 import MentionEditor from '@/components/core/MentionEditor/index.vue'
-
-interface NodeProp {
-	name: string
-	key: string
-	type: string
-	required?: boolean
-	description?: string
-	options?: Array<string | { name: string, value: string }>
-	disabled?: boolean
-	value?: (() => any) | string
-	validate?: (value: any, formValues: Record<string, any>) => { valid: boolean; message?: string }
-	ai_enabled?: boolean
-}
+import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
 
 const props = defineProps({
 	payload: {
@@ -223,7 +211,7 @@ const props = defineProps({
 		required: true
 	},
 	nodeProps: {
-		type: Array as () => NodeProp[],
+		type: Array as () => FlowNodeProp[],
 		required: true
 	},
 	formValues: {
@@ -262,7 +250,7 @@ const handleAiModeChange = (propKey: string) => {
 }
 
 // Generate input classes based on prop state
-const getInputClasses = (prop: NodeProp) => {
+const getInputClasses = (prop: FlowNodeProp) => {
 	const baseClasses = 'border rounded-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none'
 
 	let conditionalClasses = ''
@@ -355,8 +343,27 @@ const validateAndSave = () => {
 		return prop?.ai_enabled && aiMode[key] === 'ai'
 	})
 
+	const nonCloneables = props.nodeProps.filter((prop) => {
+		// Include fields that are explicitly marked as non-cloneable
+		if (prop.cloneable === false) return true
+
+		// Include fields with function values (they should be re-evaluated)
+		if (prop.value && typeof prop.value === 'function') return true
+
+		// Include fields with special user-specific values
+		if (prop.value === 'USER_EMAIL') return true
+
+		// Include disabled properties
+		if (prop.disabled) return true
+
+		// Include properties that have validation functions (they might be context-specific)
+		if (prop.validate) return true
+
+		return false
+	}).map((prop) => prop.key)
+
 	hasValidationErrors.value = false
-	emit('save', { ...resolvedValues, aiEnabledFields })
+	emit('save', { ...resolvedValues, aiEnabledFields, nonCloneables })
 }
 
 const closeModal = () => {

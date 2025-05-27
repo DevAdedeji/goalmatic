@@ -126,7 +126,7 @@ The UI will automatically show the AI toggle for this field.
 ### Messaging Nodes:
 - ✅ `message` (WhatsApp messages)
 - ✅ `subject` (Email subject lines)
-- ✅ `body` (Email content)
+- ✅ `message` (Email content)
 
 ### Table Nodes:
 - ✅ `recordData` (JSON data for create/update operations)
