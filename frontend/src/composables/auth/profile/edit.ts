@@ -14,6 +14,7 @@ const userProfileForm = {
     phone: ref(''),
 	bio: ref(''),
 	photo_url: ref(''),
+    referral_code: ref(''),
     showLogs: ref(false)
 }
 
@@ -26,6 +27,7 @@ const populateData = () => {
     userProfileForm.bio.value = userProfile.value!.bio
     userProfileForm.email.value = userProfile.value!.email
     userProfileForm.phone.value = userProfile.value!.phone
+    userProfileForm.referral_code.value = userProfile.value!.referral_code
     userProfileForm.showLogs.value = userProfile.value!.showLogs ?? false
 }
 
