@@ -7,14 +7,18 @@
 		</div>
 		<div class="col-span-7 flex items-center gap-3">
 			<div class="w-10 h-10 rounded-full overflow-hidden">
-				<img v-if="user.photo_url" :src="user.photo_url" alt="User avatar" class="w-full h-full object-cover" />
+				<img v-if="user.photo_url" :src="user.photo_url" alt="User avatar" class="w-full h-full object-cover">
 				<div v-else class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
 					{{ getUserInitials(user.name) }}
 				</div>
 			</div>
 			<div>
-				<h4 class="font-medium">{{ user.name }}</h4>
-				<p class="text-sm text-text-secondary">{{ user.agents_cloned }} agents cloned</p>
+				<h4 class="font-medium">
+					{{ user.name }}
+				</h4>
+				<p class="text-sm text-text-secondary">
+					{{ user.agents_cloned }} agents cloned
+				</p>
 			</div>
 		</div>
 		<div class="col-span-4 flex items-center justify-end">
@@ -54,7 +58,7 @@ const getRankIconColor = (rank: number) => {
 
 const getUserInitials = (name: string) => {
 	if (!name) return '?'
-	return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
+	return name.split(' ').map((n) => n[0]).join('').toUpperCase().substring(0, 2)
 }
 </script>
 

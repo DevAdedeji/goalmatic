@@ -1,6 +1,6 @@
 <template>
 	<div class="flex w-full h-screen bg-light relative  md:py-0  px-0 overflow-y-hidden ">
-		<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" class="!w-[268px]" />
+		<LayoutsSideBarLeftSidebar v-if="isLoggedIn" :routes="mainShowRoutes" :operational-routes="operationalRoutes()" class="!w-[268px]" />
 
 
 
@@ -18,7 +18,7 @@
 			<ModalBase />
 		</div>
 		<ClientOnly>
-			<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" />
+			<LayoutsBottomBar v-if="isLoggedIn" :drawer-function="useBottombarModal().toggleBottomMenu" :routes="mainBottomNavRoutes" :operational-routes="operationalRoutes()" />
 		</ClientOnly>
 	</div>
 </template>
@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { useBottombarModal } from '@/composables/core/modals'
-import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
+import { dashboardRoutes, operationalRoutes } from '@/composables/utils/menu/dashboard'
 import { useUser } from '@/composables/auth/user'
 
 
@@ -34,6 +34,7 @@ import { useUser } from '@/composables/auth/user'
 const { isLoggedIn } = useUser()
 const mainShowRoutes = dashboardRoutes().filter((route) => true)
 const mainBottomNavRoutes = dashboardRoutes().filter((route) => route.main === true)
+
 
 
 

@@ -1,4 +1,4 @@
-import { Settings, Grid3X3, FileSpreadsheetIcon, Workflow, Trophy } from 'lucide-vue-next'
+import { Settings, Grid3X3, FileSpreadsheetIcon, Workflow, Megaphone, Headset } from 'lucide-vue-next'
 
 import Bot from '@/assets/icons/Bot.vue'
 
@@ -54,6 +54,21 @@ export const dashboardRoutes = () => [
 		icon: Settings,
 		name: 'Settings',
 		route: '/settings',
+		type: 'all'
+	}
+]
+
+export const operationalRoutes = () => [
+	{
+		icon: Megaphone,
+		name: 'Refer a Friend',
+		route: '/referral',
+		type: 'all'
+	},
+	{
+		icon: Headset,
+		name: 'Help & Support',
+		route: '/support',
 		type: 'all'
 	}
 ]

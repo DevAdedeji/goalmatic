@@ -62,7 +62,12 @@ const props = defineProps({
   nodeProps: Array,
   formValues: Object,
   hasProps: Boolean,
-  loading: Boolean
+  loading: Boolean,
+  previousNodeOutputs: {
+    type: Object,
+    required: false,
+    default: () => ({})
+  }
 })
 
 const emit = defineEmits(['save', 'cancel'])
@@ -77,10 +82,12 @@ async function generateCron() {
   try {
     // Call the backend Firebase function to generate the cron expression
       const result = await callFirebaseFunction('generateCron', { input: scheduleInput.value }) as { cron: string; PlainText: string }
-
+console.log(result)
     cronResult.value = result
-      const PlainText = parseCronExpression(result.cron)
-    cronResult.value.PlainText = PlainText.toString()
+	  const PlainText = parseCronExpression(result.cron)
+	  console.log(PlainText)
+	  cronResult.value.PlainText = PlainText.toString()
+	console.log(cronResult.value)
   } catch (error) {
     cronResult.value = null
   } finally {

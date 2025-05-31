@@ -20,7 +20,7 @@ export const useFetchLeaderboard = () => {
   const fetchLeaderboard = async (limitCount = 50) => {
     loading.value = true
     leaderboardData.value = []
-    
+
     try {
       // Query the leaderboard collection, ordered by points in descending order
       const leaderboardRef = collection(db, 'leaderboard')
@@ -29,9 +29,9 @@ export const useFetchLeaderboard = () => {
         orderBy('points', 'desc'),
         limit(limitCount)
       )
-      
+
       const querySnapshot = await getDocs(leaderboardQuery)
-      
+
       // Process the query results
       querySnapshot.forEach((doc) => {
         const userData = doc.data() as LeaderboardUser
@@ -45,15 +45,15 @@ export const useFetchLeaderboard = () => {
       })
     } catch (error: any) {
       console.error('Error fetching leaderboard:', error)
-      useAlert().openAlert({ 
-        type: 'ERROR', 
-        msg: `Error fetching leaderboard: ${error.message}` 
+      useAlert().openAlert({
+        type: 'ERROR',
+        msg: `Error fetching leaderboard: ${error.message}`
       })
     } finally {
       loading.value = false
     }
   }
-  
+
   return {
     leaderboardData,
     loading,

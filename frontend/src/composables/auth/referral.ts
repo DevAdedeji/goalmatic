@@ -8,11 +8,15 @@ export const useReferral = () => {
   const referralStats = ref<{
     referralCode: string | null
     totalReferrals: number
+    successfulReferrals: number
+    totalEarnings: number
     referrals: Array<{
       id: string
       name: string
       email: string
       created_at: any
+      status: 'completed' | 'pending'
+      subscription_status: 'active' | 'none'
     }>
   } | null>(null)
 
@@ -32,11 +36,15 @@ export const useReferral = () => {
       const result = await callFirebaseFunction('getReferralStats', {}) as {
         referralCode: string | null
         totalReferrals: number
+        successfulReferrals: number
+        totalEarnings: number
         referrals: Array<{
           id: string
           name: string
           email: string
           created_at: any
+          status: 'completed' | 'pending'
+          subscription_status: 'active' | 'none'
         }>
       }
       referralStats.value = result

@@ -58,6 +58,11 @@ export const useEditFlow = () => {
       // Update the local flow object to reflect the change
       flow.public = !isPublic
 
+      // Also update the local flowDetails to reflect the change immediately
+      if (flowDetails.value && flowDetails.value.id === flow.id) {
+        flowDetails.value.public = !isPublic
+      }
+
       useAlert().openAlert({
         type: 'SUCCESS',
         msg: `Flow is now ${!isPublic ? 'public' : 'private'}`
@@ -116,6 +121,10 @@ export const useEditFlow = () => {
       }
 
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
+
+      // Update the local flowDetails to reflect changes immediately
+      flowDetails.value = { ...sent_data }
+
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow updated successfully' })
     } catch (error: any) {
       console.error('Error updating flow:', error)
