@@ -65,7 +65,7 @@ export const operationalRoutes = () => [
 		route: '/referral',
 		type: 'all',
 		bg: 'bg-tertiary',
-		color: '!text-primary'
+		color: 'text-primary'
 	},
 	{
 		icon: Headset,

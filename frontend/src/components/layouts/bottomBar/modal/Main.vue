@@ -59,10 +59,10 @@ watch(() => useRoute().path, () => {
 <style scoped lang="scss">
 
 :deep(a, a.mbtn, .mbtn) {
-	@apply text-dark w-full h-[51px] px-4 text-base duration-[10ms] rounded
+	@apply  w-full h-[51px] px-4 text-base duration-[10ms] rounded
 }
 a.mbtn, .mbtn {
-	@apply text-dark w-full h-[51px] px-4 text-base duration-[10ms] rounded
+	@apply  w-full h-[51px] px-4 text-base duration-[10ms] rounded
 }
 /* exact link will show the dark color for only the exact matching link */
 :deep(a.router-link-exact-active.black) {
@@ -76,7 +76,7 @@ a.mbtn, .mbtn {
 	// }
 }
 .link {
-	@apply flex items-center gap-2.5 text-headline py-3 !px-4 rounded-lg hover:text-primary hover:font-medium hover:border hover:bg-tertiary border-primary
+	@apply flex items-center gap-2.5  py-3 !px-4 rounded-lg hover:text-primary hover:font-medium hover:border hover:bg-tertiary border-primary
 }
 
 .link_active {

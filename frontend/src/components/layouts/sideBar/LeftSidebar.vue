@@ -104,7 +104,7 @@ const isRouteActive = (menuItem: RouteType) => {
 
 <style scoped lang="scss">
 :deep(a) {
-	@apply text-grey_two w-full lg:h-11 h-10 lg:px-6 lg:pr-3 duration-75 rounded-md;
+	@apply  w-full lg:h-11 h-10 lg:px-6 lg:pr-3 duration-75 rounded-md;
 
 	&:hover.use-hover {
 		@apply bg-hover;
@@ -114,7 +114,7 @@ const isRouteActive = (menuItem: RouteType) => {
 
 /* exact link will show the primary color for only the exact matching link */
 :deep(a.router-link-exact-active.black) {
-	@apply text-dark font-semibold;
+	@apply  font-semibold;
 	// color: var(--primary);
 	border-color: var(--primary);
 	background-color: #F4F3FF;
@@ -135,7 +135,7 @@ const isRouteActive = (menuItem: RouteType) => {
 }
 
 .link {
-	@apply flex items-center gap-2.5 text-headline py-3 px-4 rounded-lg hover:bg-tertiary
+	@apply flex items-center gap-2.5  py-3 px-4 rounded-lg hover:bg-tertiary
 }
 
 .link_active {
