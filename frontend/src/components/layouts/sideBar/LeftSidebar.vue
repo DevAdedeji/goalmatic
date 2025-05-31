@@ -28,7 +28,7 @@
 						v-for="n,i in operationalRoutes"
 						:key="i"
 						:to="n?.route"
-						:class="['link', {
+						:class="['link', n.bg, n.color, {
 							'link_active': isRouteActive(n)
 						}]">
 						<component :is="n.icon" class="w-5 h-5" />

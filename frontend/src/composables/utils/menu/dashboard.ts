@@ -63,7 +63,9 @@ export const operationalRoutes = () => [
 		icon: Megaphone,
 		name: 'Refer a Friend',
 		route: '/referral',
-		type: 'all'
+		type: 'all',
+		bg: 'bg-tertiary',
+		color: '!text-primary'
 	},
 	{
 		icon: Headset,

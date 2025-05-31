@@ -4,12 +4,9 @@
 		type="bottom_bar"
 	>
 		<aside class="overflow-y-auto max-h-[70%]">
-			<div class="relative h-full flex flex-col gap-2 mb-16">
+			<div class="relative h-full flex flex-col gap-2 mb-8">
 				<span v-for="menu in dashboardRoutes()" :key="menu.name" class="w-full h-full">
-
-
 					<nuxt-link
-
 						:to="menu.route"
 						active-class="link_active" class="link"
 					>
@@ -19,13 +16,33 @@
 						</p>
 					</nuxt-link>
 				</span>
+
+				<!-- Operational Routes Section -->
+				<div v-if="operationalRoutes().length > 0" class="mt-4 pt-4 border-t border-gray-200">
+					<span v-for="menu in operationalRoutes()" :key="menu.name" class="w-full h-full">
+						<nuxt-link
+							:to="menu.route"
+							active-class="link_active"
+							:class="[
+								'link',
+								menu.bg || '',
+								menu.color || ''
+							]"
+						>
+							<component :is="menu.icon" class="mr-4 w-5" />
+							<p class="text-base">
+								{{ menu.name }}
+							</p>
+						</nuxt-link>
+					</span>
+				</div>
 			</div>
 		</aside>
 	</Modal>
 </template>
 
 <script setup lang="ts">
-import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
+import { dashboardRoutes, operationalRoutes } from '@/composables/utils/menu/dashboard'
 import { modal, closeModalType } from '@/composables/core/modal'
 
 const { stack, close } = modal
