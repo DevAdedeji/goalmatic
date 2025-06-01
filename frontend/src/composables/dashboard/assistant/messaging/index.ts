@@ -25,7 +25,7 @@ export const useChatAssistant = () => {
   // Check for session ID in URL and load conversation
   onMounted(async () => {
     // If we're on a specific session page
-    if (route.path.startsWith('/agents/') && route.path !== '/agents/list') {
+    if (route.path.startsWith('/agents/') && route.path !== '/agents/explore') {
       const pathSessionId = route.path.split('/').pop()
 
       if (pathSessionId) {

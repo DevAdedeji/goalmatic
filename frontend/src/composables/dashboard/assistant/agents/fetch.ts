@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
@@ -73,4 +73,19 @@ export const fetchUserAgentsForIntegration = async () => {
     } catch (e: any) {
         useAlert().openAlert({ type: 'ERROR', msg: `Error: ${e.message}` })
     }
+}
+
+/**
+ * Composable to check if user has any selected agents
+ * Returns a computed property that checks the selected_agent_id in user profile
+ */
+export const useHasSelectedAgent = () => {
+    const { userProfile } = useUser()
+
+    const hasSelectedAgent = computed(() => {
+        if (!userProfile.value) return false
+        return !!(userProfile.value.selected_agent_id)
+    })
+
+    return { hasSelectedAgent }
 }

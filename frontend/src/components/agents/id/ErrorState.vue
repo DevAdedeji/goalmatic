@@ -7,7 +7,7 @@
 		<p class="text-text-secondary mb-6">
 			The agent you are looking for does not exist or you don't have permission to view it.
 		</p>
-		<button class="btn-outline border border-border px-4 py-2 rounded-md" @click="router.push('/agents/list')">
+		<button class="btn-outline border border-border px-4 py-2 rounded-md" @click="router.push('/agents/explore')">
 			Back to Agents
 		</button>
 	</div>

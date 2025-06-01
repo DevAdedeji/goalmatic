@@ -6,7 +6,7 @@
 
 		<div :class="['relative bg-light page w-full border-dark h-screen sm:h-auto   overflow-hidden ',
 			!isLoggedIn ? '!w-full' : 'md:!w-[calc(100vw-268px)]']">
-			<LayoutsDashboadHeader :is-business="false" />
+			<slot name="header" />
 
 
 			<Alert />

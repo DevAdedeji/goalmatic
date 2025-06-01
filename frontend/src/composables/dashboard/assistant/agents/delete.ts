@@ -29,7 +29,7 @@ export const useDeleteAgent = () => {
 			loading.value = false
 			useConfirmationModal().closeAlert()
 			useAlert().openAlert({ type: 'SUCCESS', msg: 'Agent Deleted successfully' })
-			useRouter().push('/agents/list')
+			useRouter().push('/agents/explore')
 		} catch (e: any) {
 			loading.value = false
 			useAlert().openAlert({ type: 'ERROR', msg: `Error: ${e.message}` })

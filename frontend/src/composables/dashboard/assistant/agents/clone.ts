@@ -113,7 +113,7 @@ export const useCloneAgent = () => {
             })
 
             // Navigate to the new agent's page
-            router.push(`/agents/list/${id}`)
+            router.push(`/agents/explore/${id}`)
             return true
         } catch (error: any) {
             useAlert().openAlert({

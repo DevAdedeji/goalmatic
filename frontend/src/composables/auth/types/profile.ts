@@ -11,4 +11,5 @@ export type ProfileType = {
 	created_at: string;
 	updated_at: string;
 	showLogs?: boolean;
+	selected_agent_id?: string | null;
 };
