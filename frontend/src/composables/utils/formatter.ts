@@ -60,12 +60,16 @@ export const formatDateTimeForInput = (date: Date): string => {
 	return `${year}-${month}-${day}T${hours}:${minutes}`
 }
 
-export const truncateString = (input: string, maxLength = 80): string => {
+export const truncateString = (input: string, maxChars = 80): string => {
   if (!input) return ''
-  if (input.length <= maxLength) {
+
+  // Convert to array of characters to handle Unicode properly
+  const chars = [...input]
+
+  if (chars.length <= maxChars) {
     return input
   } else {
-    return input.slice(0, maxLength) + '...'
+    return chars.slice(0, maxChars).join('') + '...'
   }
 }
 

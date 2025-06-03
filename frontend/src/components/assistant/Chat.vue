@@ -1,24 +1,33 @@
 <template>
-	<section id="main1" class="flex flex-col items-center gap-4 relative h-[calc(100vh-0px)] w-full  px-4 md:pt-8 pt-4 overflow-auto pb-20">
+	<section id="main1" class="flex flex-col items-center gap-4 relative h-[calc(100vh-0px)] w-full  px-4 md:pt-8 pt-4 overflow-auto pb-20 bg-[#F7F9FB]">
 		<section id="main2" class=" w-full md:max-w-[var(--mw)]  flex flex-col gap-6 items-start ">
-			<ClientOnly>
-				<div class="message-container">
-					<div class="header-container">
-						<div class="assistant-avatar">
-							<img class="size-5" src="/og.png" alt="goalmatic logo">
-						</div>
-
-						<p class="name-label">
-							Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
-						</p>
+			<!-- <div class="message-container">
+				<div class="header-container">
+					<div class="assistant-avatar">
+						<img class="size-5" src="/og.png" alt="goalmatic logo">
 					</div>
-					<article class="message-bubble">
-						<p class="message-text">
-							How can I help you today?
-						</p>
-					</article>
+
+					<p class="name-label">
+						Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
+					</p>
 				</div>
-			</ClientOnly>
+				<article class="message-bubble">
+					<p class="message-text">
+						How can I help you today?
+					</p>
+				</article>
+			</div> -->
+
+			<div class="flex flex-col  items-center justify-center absolute md:top-[40%] top-[30%] left-[50%] translate-x-[-50%] ">
+				<img class="size-7" src="/og.png" alt="goalmatic logo">
+				<p class="text-xl font-bold mt-4">
+					{{ selectedAgent.name }}
+				</p>
+				<p class="mt-2 text-sm  text-center">
+					{{ selectedAgent.description }}
+				</p>
+			</div>
+
 			<div v-for="(message, index) in conversationHistory" :key="index"
 				class="message-container"
 				:class="{'!items-end': message.role === 'user'}">
@@ -94,7 +103,7 @@
 		</section>
 
 		<!-- Use the MessageBox component instead of embedded form -->
-		<MessageBox />
+		<MessageBox :selected-agent="selectedAgent" />
 	</section>
 </template>
 
@@ -118,6 +127,7 @@ useHead({
 
 const { fetchSelectedAgent, selectedAgent } = useOnAssistantLoad()
 fetchSelectedAgent()
+
 
 const { conversationHistory, ai_loading, sessionId, loadConversationHistory, handleUrlChange } = useChatAssistant()
 

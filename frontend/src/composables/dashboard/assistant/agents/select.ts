@@ -36,7 +36,7 @@ export const useOnAssistantLoad = () => {
         if (import.meta.server) return
         await getSingleFirestoreDocument('users', user_id.value!, selectedUser)
         try {
-            if (selectedUser.value?.selected_agent_id) {
+            if (selectedUser.value?.selected_agent_id && selectedUser.value?.selected_agent_id !== '0') {
                 await getSingleFirestoreDocument('agents', selectedUser.value?.selected_agent_id, selectedAgentRef)
                 selectedAgent.value = selectedAgentRef.value
             } else {

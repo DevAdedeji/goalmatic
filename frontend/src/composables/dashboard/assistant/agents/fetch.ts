@@ -5,12 +5,12 @@ import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
 
 export const defaultGoalmaticAgent = {
-    id: 0,
+    id: '0',
     name: 'Goalmatic 1.0',
-    description: 'The Default plain agent for Goalmatic',
+    description: 'The Default agent for Goalmatic',
     public: true,
     user: {
-        name: 'goalmatic'
+        name: 'Goalmatic'
     },
     spec: {
         systemInfo: 'You are a helpful assistant',
@@ -79,12 +79,13 @@ export const fetchUserAgentsForIntegration = async () => {
  * Composable to check if user has any selected agents
  * Returns a computed property that checks the selected_agent_id in user profile
  */
-export const useHasSelectedAgent = () => {
-    const { userProfile } = useUser()
-
+export const useHasSelectedAgent = async () => {
+    const { fetchUserProfile, user } = useUser()
+    const userProfile = await fetchUserProfile()
     const hasSelectedAgent = computed(() => {
-        if (!userProfile.value) return false
-        return !!(userProfile.value.selected_agent_id)
+        if (!userProfile) return false
+        if (userProfile.selected_agent_id || userProfile.selected_agent_id === '0') return true
+        return false
     })
 
     return { hasSelectedAgent }

@@ -5,7 +5,7 @@
 		</span>
 
 		<div class="btn-group">
-			<button class="btn-primary gap-2 !px-4 md:!px-6">
+			<button class="btn-primary gap-2 !px-4 md:!px-6" @click="$router.push('/agents/explore')">
 				<Search :size="16" />
 				<span class="flex">Explore Agents</span>
 			</button>

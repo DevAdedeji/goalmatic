@@ -12,7 +12,7 @@ import { prepareChatHistoryForAI } from './aiMediaAccess';
 export const defaultGoalmaticAgent = {
     id: '0', 
     name: 'Goalmatic 1.0',
-    description: 'The Default plain agent for Goalmatic',
+    description: 'The Default agent for Goalmatic',
     published: true,
     user: {
         name: 'goalmatic'

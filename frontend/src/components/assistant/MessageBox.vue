@@ -24,15 +24,20 @@ import Spinner from '@/components/core/Spinner.vue'
 import { useChatAssistant } from '@/composables/dashboard/assistant/messaging'
 import { useOnAssistantLoad } from '@/composables/dashboard/assistant/agents/select'
 
+
 // Get the selected agent and assistant functionality
 const { fetchSelectedAgent, selectedAgent } = useOnAssistantLoad()
 const { userInput, sendMessage, ai_loading } = useChatAssistant()
 
+
+const props = defineProps<{
+	selectedAgent: Record<string, any>
+}>()
+
 // Template ref for textarea
 const textarea = ref()
 
-// Fetch the selected agent on component mount
-fetchSelectedAgent()
+
 
 // Function to adjust textarea height based on content
 const adjustTextareaHeight = () => {

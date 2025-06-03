@@ -12,7 +12,7 @@
 			</div>
 			<div class="field relative">
 				<label for="name">Description</label>
-				<textarea v-model="createAgentForm.description" required class="input-textarea !h-auto" rows="3" placeholder="What does this agent do?" />
+				<textarea v-model="createAgentForm.description" class="input-textarea !h-auto" rows="3" placeholder="What does this agent do?" />
 			</div>
 
 			<button class="btn-primary mt-4 w-full " :disabled="isDisabled || loading">
