@@ -2,13 +2,14 @@
 	<div class="relative w-full" @click.stop>
 		<ClientOnly>
 			<DropdownMenuRoot>
-				<DropdownMenuTrigger class="border border-[#BFA5F8] bg-tertiary rounded-3xl px-3.5 py-2 flex items-center gap-2">
-					<IconsStick />
-					<span class="text-xs font-semibold text-primary">{{ selectedAgent.name }}</span>
-					<ChevronDown class="size-3" />
+				<DropdownMenuTrigger class="dropdownBtn">
+					<img src="/og.png" alt="agent" class="size-3.5">
+					<span class="text-xs font-medium text-dark">{{ selectedAgent.name }}</span>
+					<ChevronDown class="size-4" />
 				</DropdownMenuTrigger>
+
 				<DropdownMenuPortal>
-					<DropdownMenuContent align="start" class="w-[247px] my-2 p-2 border border-[#BFA5F8]  rounded-2xl  bg-tertiary ">
+					<DropdownMenuContent align="start" class="dropdownBtnContent">
 						<DropdownMenuItem class="flex items-center gap-2 p-2  rounded-lg cursor-pointer hover:bg-[#601DED1A]">
 							<IconsStick />
 							<div class="flex flex-col">
@@ -39,7 +40,7 @@
 </template>
 
 <script setup>
-import { ChevronDown, Eye, Compass, ArrowRight } from 'lucide-vue-next'
+import { ChevronDown, Eye, ArrowRight, Compass } from 'lucide-vue-next'
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue'
 
 const props = defineProps({
@@ -51,7 +52,29 @@ const props = defineProps({
 </script>
 
 <style scoped>
-:deep(.DropdownMenuContent) {
-	@apply !z-[999] !opacity-100;
-}
+.dropdownBtn{
+display: flex;
+padding: 8px 12px;
+justify-content: center;
+align-items: center;
+gap: 4px;
+border-radius: 8px;
+border: 1px solid #E9E9E9;
+background:  #F7F8FA;
+box-shadow: 0px 1px 3px 0px rgba(25, 33, 61, 0.10);
+ }
+
+ :deep(.dropdownBtnContent){
+	display: flex;
+width: 580px;
+height: 443px;
+padding: 24px;
+flex-direction: column;
+align-items: flex-start;
+gap: 16px;
+border-radius: 16px;
+border: 2px solid #F9F8FB;
+background: #FFF;
+box-shadow: 0px 8px 15px 0px rgba(25, 33, 61, 0.10);
+ }
 </style>

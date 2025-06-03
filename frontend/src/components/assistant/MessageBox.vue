@@ -1,18 +1,20 @@
 <template>
-	<div class="fixed  bg-white pt-2.5 px-3 center z-20 md:w-[800px] w-full mx-auto bottom-20  md:bottom-4 ">
-		<form class="relative w-full md:max-w-[var(--mw)] flex flex-wrap mt-auto" @submit.prevent="sendMessage">
-			<AssistantDropDown class="-top-1.5 absolute" :selected-agent="selectedAgent" />
-			<textarea ref="textarea" v-model="userInput" class="input-field  shadow !pb-4 !pt-4 !pr-16 w-full resize-none overflow-hidden h-auto  transition-all duration-300 ease-in-out" placeholder="How can I help you?" rows="1" @input="adjustTextareaHeight"
-				@keydown="handleKeyDown" />
+	<div class="message-box ">
+		<form class="relative w-full md:max-w-[var(--mw)] flex flex-wrap mt-auto message-box-area input-field" @submit.prevent="sendMessage">
+			<textarea ref="textarea" v-model="userInput" class="input border-none" placeholder="Tell your agent what to do..."
+				@input="adjustTextareaHeight" @keydown="handleKeyDown" />
 
-			<button
-				:disabled="!userInput || ai_loading"
-				class="absolute bottom-2.5 right-4 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 md:py-2.5 rounded-lg bg-primary text-white text-sm center gap-2 border border-white font-semibold button_shadow"
-				type="submit"
-			>
-				<MoveRight v-if="!ai_loading" :stroke-width="2.5" :size="14" class="-rotate-90" />
-				<Spinner v-else size="14px" />
-			</button>
+			<div class="flex justify-between items-center  w-full ">
+				<AssistantDropDown class="" :selected-agent="selectedAgent" />
+				<button
+					:disabled="!userInput || ai_loading"
+					class="flex p-[10px] text-white flex-col justify-center items-center gap-[10px] rounded-[6px] bg-primary disabled:opacity-70 disabled:cursor-not-allowed"
+					type="submit"
+				>
+					<MoveRight v-if="!ai_loading" :stroke-width="2.5" :size="16" />
+					<Spinner v-else size="14px" />
+				</button>
+			</div>
 		</form>
 	</div>
 </template>
@@ -43,6 +45,7 @@ const textarea = ref()
 const adjustTextareaHeight = () => {
 	setTimeout(() => {
 		if (textarea.value) {
+			console.log(textarea.value)
 			textarea.value.style.height = 'auto'
 			textarea.value.style.height = textarea.value.scrollHeight + 'px'
 		}
@@ -64,7 +67,29 @@ watch(userInput, () => {
 </script>
 
 <style scoped>
-.shadow {
-	box-shadow: 0px 8px 24px 0px #959DA533;
+.message-box {
+	@apply fixed md:w-[800px] w-[94%] mx-auto bottom-24  md:bottom-4 md:p-4 p-2;
+	display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+gap: 16px;
+border-radius: 16px;
+background: #F1F5F8;
+}
+.message-box-area textarea {
+	@apply resize-none overflow-hidden h-auto p-0  transition-all duration-300 ease-in-out  w-full ;
+}
+.message-box-area {
+	@apply md:p-4;
+	display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: flex-start;
+align-self: stretch;
+border-radius: 12px;
+border: 0.8px solid #D6E0EB;
+background: var(--Form-Fill-Fill, #FCFCFD);
+box-shadow: 0px 30px 2px -30px rgba(0, 0, 0, 0.15);
 }
 </style>

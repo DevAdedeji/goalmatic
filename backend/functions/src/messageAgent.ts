@@ -19,8 +19,18 @@ export const messageAgent = onCall({
 
         if (!history) throw new Error('Missing required parameter: prompt');
 
-        // Use provided sessionId or generate a new one
         const conversationSessionId = sessionId || uuidv4();
+
+        if (agent.id !== '0' && agent.id !== 0) {
+            try {
+                goals_db.collection('agents').doc(agent.id).update({
+                    last_used: Timestamp.now()
+                });
+            } catch (error) {
+                // Don't fail the entire request if updating last_used fails
+                console.error('Error updating agent last_used timestamp:', error);
+            }
+        }
 
         // Ensure the chat session exists in Firestore before processing
         const chatSessionRef = goals_db.collection('users').doc(uid).collection('chatSessions').doc(conversationSessionId);

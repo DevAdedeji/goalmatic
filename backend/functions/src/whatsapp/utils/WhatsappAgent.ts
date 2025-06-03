@@ -22,6 +22,7 @@ export const defaultGoalmaticAgent = {
         tools: []
     },
     created_at: new Date('2025-01-01').toISOString()
+    // Note: last_used field is not tracked for the default agent
 };
 
 const updateChatSessionWithMessages = async (
