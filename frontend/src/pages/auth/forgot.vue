@@ -61,7 +61,7 @@ onMounted(() => {
 
 
 definePageMeta({
-	layout: 'auth2',
+	layout: 'auth',
 	middleware: 'is-not-authenticated'
 })
 </script>

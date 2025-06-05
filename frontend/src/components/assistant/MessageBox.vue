@@ -1,7 +1,7 @@
 <template>
 	<div class="message-box ">
 		<form class="relative w-full md:max-w-[var(--mw)] flex flex-wrap mt-auto message-box-area input-field" @submit.prevent="sendMessage">
-			<textarea ref="textarea" v-model="userInput" class="input border-none" placeholder="Tell your agent what to do..."
+			<textarea ref="textarea" v-model="userInput" class="input border-none !bg-transparent" placeholder="Tell your agent what to do..."
 				@input="adjustTextareaHeight" @keydown="handleKeyDown" />
 
 			<div class="flex justify-between items-center  w-full ">

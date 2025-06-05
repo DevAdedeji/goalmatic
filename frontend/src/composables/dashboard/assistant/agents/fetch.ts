@@ -62,7 +62,7 @@ export const useFetchUserAgents = () => {
         return fetchedUserAgents.value
     }
 
-    return { loading, fetchedUserAgents, fetchUserAgents }
+    return { loading, fetchedUserAgents, fetchUserAgents, user_id }
 }
 
 export const fetchUserAgentsForIntegration = async () => {
@@ -75,10 +75,7 @@ export const fetchUserAgentsForIntegration = async () => {
     }
 }
 
-/**
- * Composable to check if user has any selected agents
- * Returns a computed property that checks the selected_agent_id in user profile
- */
+
 export const useHasSelectedAgent = async () => {
     const { fetchUserProfile, user } = useUser()
     const userProfile = await fetchUserProfile()

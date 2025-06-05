@@ -69,7 +69,7 @@ import { windowHeight } from '@/composables/utils/window'
 const show = ref(false)
 
 definePageMeta({
-	layout: 'auth2',
+	layout: 'auth',
 	middleware: 'is-not-authenticated'
 })
 </script>

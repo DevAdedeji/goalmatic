@@ -1,7 +1,9 @@
 <template>
-	<div class="layout-body bg-[#e0e7ff] isolate">
-		<BG />
-		<section class="flex min-h-screen h-full w-full container items-center justify-center">
+	<div class=" !bg-[#FBFBFE] ">
+		<section class="flex flex-col min-h-screen h-full w-full container items-center justify-center">
+			<div class="bg-light h-[60px] flex items-center gap-4 px-5 md:px-14 border-b shrink-0 absolute top-0 left-0 right-0">
+				<img src="@/assets/img/logo.svg" alt="" class="h-7">
+			</div>
 			<slot />
 		</section>
 	</div>
@@ -14,12 +16,7 @@
 </script>
 
 <style scoped>
-.display_panel{
-	@apply w-5/12 inset-y-0;
-	background-repeat: no-repeat;
-	background-size: cover;
-	background-position: center;
-}
+
 
 
 </style>
