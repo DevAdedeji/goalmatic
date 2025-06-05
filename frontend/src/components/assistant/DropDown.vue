@@ -188,7 +188,7 @@ const props = defineProps({
 // Reactive data
 const searchQuery = ref('')
 const activeTab = ref('my')
-const isOpen = ref(true)
+const isOpen = ref(false)
 
 // Tabs configuration
 const tabs = [
