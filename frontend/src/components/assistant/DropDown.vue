@@ -59,7 +59,7 @@
 								<button class="btn-primary" @click="createNewAgent">
 									New Agent
 								</button>
-								<button class="btn-outline" @click="createNewAgent">
+								<button class="btn-outline" @click="discoverMoreAgents">
 									Agent Library
 								</button>
 							</div>
@@ -139,7 +139,7 @@
 						</div>
 						<footer class="md:hidden flex w-full bg-[#F5F7F9] absolute bottom-0 inset-x-0 p-4 pt-6">
 							<div class="options flex w-full justify-between gap-3">
-								<button class="btn-outline flex-1" @click="createNewAgent">
+								<button class="btn-outline flex-1" @click="discoverMoreAgents">
 									Agent Library
 								</button>
 								<button class="btn-primary flex-1" @click="createNewAgent">
