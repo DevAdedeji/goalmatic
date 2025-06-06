@@ -68,14 +68,20 @@
 								:data="session"
 								:children="[
 									{
+										name: 'Share Chat',
+										icon: Share2,
+										func: openShareModal,
+										class: '!text-primary hover:!bg-primary hover:!text-white'
+									},
+									{
 										name: 'Delete Chat',
 										icon: Trash2,
 										func: confirmDeleteSession,
-										class: 'text-danger hover:!bg-danger'
+										class: '!text-danger hover:!bg-danger hover:!text-white'
 									}
 								]"
 								btn-class="opacity-70 hover:opacity-100 transition-opacity duration-200"
-								class-name="w-40"
+								class-name="w-48"
 								:index="index"
 							/>
 						</div>
@@ -106,7 +112,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { SearchIcon, MessageSquareIcon, Trash2 } from 'lucide-vue-next'
+import { SearchIcon, MessageSquareIcon, Trash2, Share2 } from 'lucide-vue-next'
 import { useChatHistory } from '@/composables/dashboard/assistant/messaging/chatHistory'
 import IconDropdown from '@/components/core/IconDropdown.vue'
 
@@ -118,7 +124,8 @@ const {
 	getSessionSummary,
 	getAgentDisplayName,
 	formatSessionDate,
-	confirmDeleteSession
+	confirmDeleteSession,
+	openShareModal
 } = useChatHistory()
 
 // Search functionality

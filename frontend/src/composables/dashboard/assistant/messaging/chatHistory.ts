@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useConfirmationModal } from '@/composables/core/confirmation'
+import { useAssistantModal } from '@/composables/core/modals'
 import { getFirestoreSubCollection } from '@/firebase/firestore/fetch'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { useFetchAgents, useFetchUserAgents, defaultGoalmaticAgent } from '@/composables/dashboard/assistant/agents/fetch'
@@ -33,6 +34,7 @@ const agentsLoaded = ref(false)
 export const useChatHistory = () => {
   const { id: userId } = useUser()
   const router = useRouter()
+  const { openShareChat } = useAssistantModal()
 
   /**
    * Fetch all agents (both public and user agents) for name resolution
@@ -239,6 +241,13 @@ export const useChatHistory = () => {
     })
   }
 
+  /**
+   * Open share modal for a chat session
+   */
+  const openShareModal = (session: ChatSession) => {
+    openShareChat({ sessionId: session.id })
+  }
+
   return {
     chatSessions,
     loading,
@@ -250,6 +259,7 @@ export const useChatHistory = () => {
     formatSessionDate,
     deleteChatSession,
     confirmDeleteSession,
+    openShareModal,
     loadAgentsForNameResolution
   }
 }

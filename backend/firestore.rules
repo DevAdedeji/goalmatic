@@ -211,6 +211,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Public chats collection: shared chat sessions that are publicly accessible
+    match /publicChats/{publicChatId} {
+      // Allow anyone to read public chat sessions
+      allow read: if true;
+      
+      // Only Cloud Functions can create/update/delete public chats
+      allow create, update, delete: if false;
+    }
+
     // Deny access to any other documents not explicitly covered above.
     match /{document=**} {
       allow read, write: if false;

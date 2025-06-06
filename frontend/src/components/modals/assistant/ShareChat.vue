@@ -24,9 +24,9 @@
 			</div>
 
 			<!-- Share Link Generation -->
-			<div v-if="!shareLink" class="text-center py-4">
+			<div v-if="!shareLink" class="text-center py-4 w-full">
 				<button
-					class="btn-primary"
+					class="btn-primary w-full"
 					:disabled="loading"
 					@click="generateShareLink"
 				>
@@ -54,14 +54,14 @@
 				<!-- Action Buttons -->
 				<div class="flex space-x-2">
 					<button
-						class="btn-secondary flex-1"
+						class="btn-primary flex-1"
 						@click="copyToClipboard"
 					>
 						<CopyIcon class="w-4 h-4 mr-2" />
 						{{ copied ? 'Copied!' : 'Copy link' }}
 					</button>
 					<button
-						class="btn-secondary flex-1"
+						class="btn-outline flex-1"
 						@click="openInNewTab"
 					>
 						<ExternalLinkIcon class="w-4 h-4 mr-2" />
@@ -73,7 +73,7 @@
 			<!-- Actions -->
 			<div class="flex justify-end space-x-3 pt-4 border-t">
 				<button
-					class="btn-secondary"
+					class="btn-outline w-full"
 					@click="closeModal"
 				>
 					Cancel
@@ -87,6 +87,7 @@
 import { ref } from 'vue'
 import { InfoIcon, LinkIcon, CopyIcon, ExternalLinkIcon } from 'lucide-vue-next'
 import Modal from '@/components/core/modal/Modal.vue'
+import Spinner from '@/components/core/Spinner.vue'
 import { useAssistantModal } from '@/composables/core/modals'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { useAlert } from '@/composables/core/notification'
@@ -165,11 +166,5 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-.btn-primary {
-	@apply bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center;
-}
 
-.btn-secondary {
-	@apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center;
-}
 </style>
