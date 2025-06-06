@@ -10,10 +10,7 @@ export interface MediaContent {
   transcription?: string
 }
 
-/**
- * Gets Firebase Storage download URL using the SDK
- * This handles authentication automatically per Firebase docs
- */
+
 async function getStorageDownloadUrl(filePath: string): Promise<string> {
   try {
     // Create a reference to the file using the storage SDK
@@ -22,7 +19,6 @@ async function getStorageDownloadUrl(filePath: string): Promise<string> {
     // Get the download URL - this respects security rules and authentication
     const downloadUrl = await getDownloadURL(fileRef)
 
-    console.log(`Successfully generated download URL for: ${filePath}`)
     return downloadUrl
   } catch (error) {
     console.error(`Failed to get download URL for ${filePath}:`, error)
@@ -125,7 +121,7 @@ export async function generateMediaUrls(mediaParts: MediaContent[]): Promise<Med
     return mediaParts
   }
 
-  console.log(`Generating download URLs for ${mediaFilePaths.length} media files`)
+
 
   // Process each media part and generate download URLs
   const processedParts: MediaContent[] = []
@@ -133,8 +129,6 @@ export async function generateMediaUrls(mediaParts: MediaContent[]): Promise<Med
   for (const part of mediaParts) {
     if (part.filePath) {
       try {
-        console.log(`Getting download URL for: ${part.filePath}`)
-
         // Use Firebase Storage SDK to get download URL
         // This automatically handles authentication and respects security rules
         const downloadUrl = await getStorageDownloadUrl(part.filePath)
@@ -153,7 +147,6 @@ export async function generateMediaUrls(mediaParts: MediaContent[]): Promise<Med
     }
   }
 
-  console.log(`Successfully generated ${processedParts.filter((p) => p.signedUrl).length} download URLs`)
   return processedParts
 }
 

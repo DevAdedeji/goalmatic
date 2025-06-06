@@ -45,7 +45,6 @@ const textarea = ref()
 const adjustTextareaHeight = () => {
 	setTimeout(() => {
 		if (textarea.value) {
-			console.log(textarea.value)
 			textarea.value.style.height = 'auto'
 			textarea.value.style.height = textarea.value.scrollHeight + 'px'
 		}

@@ -92,7 +92,6 @@ export default {
 
     selectItem(groupIdx, childIdx) {
       const group = this.items[groupIdx]
-      console.log(group)
       if (!group) return
       const item = group.children[childIdx]
       if (item) {

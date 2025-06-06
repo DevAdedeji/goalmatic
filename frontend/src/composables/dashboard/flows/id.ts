@@ -12,7 +12,6 @@ export const useFetchFlowById = () => {
         try {
             const result = await callFirebaseFunction('getFlowDetails', { id: id as string }) as Record<string, any>
             flowDetails.value = result
-            console.log(result, 'result')
         } catch (e: any) {
             console.error('Error fetching flow details:', e)
             useAlert().openAlert({
