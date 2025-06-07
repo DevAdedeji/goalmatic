@@ -25,10 +25,6 @@ const fetchedUserAgents = ref([] as any[])
 export const useFetchAgents = () => {
     const loading = ref(false)
 
-    /**
-     * Fetch all public agents
-     * This function can be called by unauthenticated users
-     */
     const fetchAllAgents = async () => {
         loading.value = true
         fetchedAllAgents.value = []
@@ -41,7 +37,7 @@ export const useFetchAgents = () => {
             loading.value = false
         }
     }
-    return { loading, fetchedAllAgents, fetchedUserAgents, fetchAllAgents, defaultGoalmaticAgent }
+    return { loading, fetchedAllAgents, fetchAllAgents, defaultGoalmaticAgent }
 }
 
 
@@ -49,9 +45,12 @@ export const useFetchAgents = () => {
 export const useFetchUserAgents = () => {
     const { id: user_id } = useUser()
     const loading = ref(false)
-    fetchedUserAgents.value = []
+
+
 
     const fetchUserAgents = async () => {
+        loading.value = true
+        fetchedUserAgents.value = []
         try {
             await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'creator_id', operator: '==', value: user_id.value! })
             loading.value = false
@@ -65,15 +64,7 @@ export const useFetchUserAgents = () => {
     return { loading, fetchedUserAgents, fetchUserAgents, user_id }
 }
 
-export const fetchUserAgentsForIntegration = async () => {
-    try {
-        fetchedUserAgents.value = []
-        await getFirestoreCollectionWithWhereQuery('agents', fetchedUserAgents, { name: 'creator_id', operator: '==', value: useUser().id.value! })
-        return fetchedUserAgents.value
-    } catch (e: any) {
-        useAlert().openAlert({ type: 'ERROR', msg: `Error: ${e.message}` })
-    }
-}
+
 
 
 export const useHasSelectedAgent = async () => {

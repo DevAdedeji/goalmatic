@@ -39,7 +39,7 @@
 								v-model="searchQuery"
 								type="text"
 								placeholder="Search your agents"
-								class="input-field pl-10"
+								class="searchInput"
 							>
 						</div>
 
@@ -216,7 +216,7 @@ const communityAgents = computed(() => {
 const agentOnDisplay = computed(() => {
 	const returnedAgent = ref([])
 	if (activeTab.value === 'my') {
-		returnedAgent.value = fetchedUserAgents.value
+		returnedAgent.value = recentlyUsedAgents.value
 	} else if (activeTab.value === 'community') {
 		returnedAgent.value = communityAgents.value
 	}

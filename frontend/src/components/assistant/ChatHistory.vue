@@ -185,35 +185,9 @@ onMounted(() => {
 	transition: color 0.2s ease;
 }
 
-.searchInput {
-	width: 100%;
-	font-size: 14px;
-	transition: all 0.2s ease;
-	border-radius: 8px;
-	border: 1px solid #F0F2F5;
-	box-shadow: 0px 1px 3px 0px rgba(25, 33, 61, 0.10);
-display: flex;
-height: 42px;
-min-height: 39px;
-padding: 6px 12px 6px 36px;
-align-items: center;
-align-self: stretch;
-}
 
-.searchInput:focus {
-	outline: none;
-	border-color: #9A6BFF;
-	background-color: white;
-	box-shadow: 0 0 0 3px rgba(154, 107, 255, 0.1);
-}
 
-.searchInput:focus + .searchIcon {
-	color: #9A6BFF;
-}
 
-.searchInput::placeholder {
-	color: #9CA3AF;
-}
 
 .loadingContainer {
 	display: flex;
