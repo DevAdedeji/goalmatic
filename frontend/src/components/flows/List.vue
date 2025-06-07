@@ -7,7 +7,6 @@
 				:flow="flow"
 				@edit="emit('edit', flow)"
 				@delete="emit('delete', flow)"
-				@toggle-status="emit('toggle-status', flow)"
 			/>
 		</div>
 		<div v-else class="justify-center items-center flex flex-col text-center py-10 border border-dashed border-border rounded-lg">
@@ -46,7 +45,6 @@ defineProps<{
 
 const emit = defineEmits<{(e: 'edit', flow: any): void;
     (e: 'delete', flow: any): void;
-    (e: 'toggle-status', flow: any): void;
     (e: 'createNewFlow'): void;
     (e: 'currentTab', tab: string): void;
 }>()

@@ -39,6 +39,11 @@ const props = defineProps({
         default: () => [],
         required: true
     },
+    operationalRoutes: {
+        type: Array as PropType<RouteType>,
+        default: () => [],
+        required: false
+    },
     drawerFunction: {
         type: Function,
         default: () => { },

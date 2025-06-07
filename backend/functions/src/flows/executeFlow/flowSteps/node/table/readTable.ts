@@ -3,8 +3,7 @@ import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 
 const readTable = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('previousStepResult', previousStepResult);
-    console.log(step.name, step.propsData);
+
 
     try {
         // Extract user ID from the flow data
@@ -49,51 +48,23 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
             };
         }
 
-        // If a specific record ID is provided, return just that record
+        // Query records
+        let query = goals_db.collection('tables').doc(tableId).collection('records');
         if (recordId) {
-            const recordDoc = await goals_db.collection('tables').doc(tableId).collection('records').doc(recordId).get();
-
-            if (!recordDoc.exists) {
-                return {
-                    success: false,
-                    message: 'Record not found',
-                    records: []
-                };
-            }
-
-            return {
-                success: true,
-                message: 'Record retrieved successfully',
-                records: [recordDoc.data()]
-            };
+            query = query.where('id', '==', recordId) as any;
         }
-
-        // Otherwise, return all records (with optional limit)
-        let recordsSnapshot = await goals_db.collection('tables').doc(tableId).collection('records').get();
-        let records = recordsSnapshot.docs.map(doc => doc.data());
-
-        if (limit && records.length > limit) {
-            records = records.slice(0, limit);
-        }
+        const recordsSnap = await query.limit(limit).get();
+        const records = recordsSnap.docs.map(doc => doc.data());
 
         return {
             success: true,
-            message: 'Records retrieved successfully',
-            table: {
-                id: tableData.id,
-                name: tableData.name,
-                description: tableData.description,
-                fields: tableData.fields
-            },
-            count: records.length,
-            records: records
+            records,
         };
-    } catch (error) {
-        console.error('Error in readTable node:', error);
+    } catch (error: any) {
         return {
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
-            records: []
+            error: error?.message || error,
+            records: [],
         };
     }
 };

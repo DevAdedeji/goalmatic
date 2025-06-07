@@ -38,17 +38,17 @@ import { TwitterIcon, Instagram, Linkedin, MoveRight } from 'lucide-vue-next'
 const social = [
   {
     name: 'Twitter',
-    href: 'https://twitter.com/taaskly',
+    href: 'https://x.com/goalmatic_io',
     icon: TwitterIcon
   },
   {
     name: 'Instagram',
-    href: 'https://www.instagram.com/taaskly/',
+    href: 'https://www.instagram.com/goalmatic.io/',
     icon: Instagram
     },
     {
     name: 'LinkedIn',
-    href: 'https://www.linkedin.com/company/taaskly',
+    href: 'https://www.linkedin.com/company/goalmatic/',
     icon: Linkedin
   }
 ]

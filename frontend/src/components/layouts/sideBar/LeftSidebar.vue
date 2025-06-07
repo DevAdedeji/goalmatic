@@ -5,13 +5,30 @@
 				<img src="/lt.svg" alt="" class="w-[190px] pl-6">
 			</div>
 
-			<div class="flex flex-col gap-3 px-3">
-				<div class="flex flex-col gap-2">
+
+			<div class="flex flex-col gap-2  px-3">
+				<NuxtLink
+					v-for="n,i in routes"
+					:key="i"
+					:to="n?.route"
+					:class="['link', {
+						'link_active': isRouteActive(n)
+					}]">
+					<component :is="n.icon" class="w-5 h-5" />
+					<span class="text-sm">
+						{{ n.name }}
+					</span>
+				</NuxtLink>
+			</div>
+
+
+			<div class="border-t mt-auto py-3">
+				<div class="flex flex-col gap-2 px-2">
 					<NuxtLink
-						v-for="n,i in routes"
+						v-for="n,i in operationalRoutes"
 						:key="i"
 						:to="n?.route"
-						:class="['link', {
+						:class="['link', n.bg, n.color, {
 							'link_active': isRouteActive(n)
 						}]">
 						<component :is="n.icon" class="w-5 h-5" />
@@ -19,20 +36,17 @@
 							{{ n.name }}
 						</span>
 					</NuxtLink>
-				</div>
-			</div>
-
-			<div class="border-t mx-2 mt-auto p-4">
-				<div class="flex items-center gap-4 justify-between">
-					<div class="flex items-center gap-3">
-						<Avatar :src="user?.photoURL" :name="user?.displayName ?? userProfile?.name" :size="30" />
-						<p class="text-[#101928] text-sm font-medium">
-							{{ user?.displayName ?? userProfile?.name }}
-						</p>
+					<div class="link justify-between !px-3">
+						<div class="flex items-center gap-3">
+							<Avatar :src="user?.photoURL" :name="user?.displayName ?? userProfile?.name" :size="30" />
+							<p class="text-[#101928] text-sm font-medium">
+								{{ user?.displayName ?? userProfile?.name }}
+							</p>
+						</div>
+						<button @click="useAuthModal().openLogout()">
+							<IconsLogout />
+						</button>
 					</div>
-					<button @click="useAuthModal().openLogout()">
-						<IconsLogout />
-					</button>
 				</div>
 			</div>
 		</div>
@@ -40,6 +54,7 @@
 </template>
 
 <script lang="ts" setup>
+import { Headset } from 'lucide-vue-next'
 import { useUser } from '@/composables/auth/user'
 import { useAuthModal } from '@/composables/core/modals'
 
@@ -57,6 +72,11 @@ type RouteType = {
 
 defineProps({
 	routes: {
+		type: Array as PropType<RouteType[]>,
+		required: true,
+		default: () => []
+	},
+	operationalRoutes: {
 		type: Array as PropType<RouteType[]>,
 		required: true,
 		default: () => []
@@ -84,7 +104,7 @@ const isRouteActive = (menuItem: RouteType) => {
 
 <style scoped lang="scss">
 :deep(a) {
-	@apply text-grey_two w-full lg:h-11 h-10 lg:px-6 lg:pr-3 duration-75 rounded-md;
+	@apply  w-full lg:h-11 h-10 lg:px-6 lg:pr-3 duration-75 rounded-md;
 
 	&:hover.use-hover {
 		@apply bg-hover;
@@ -94,7 +114,7 @@ const isRouteActive = (menuItem: RouteType) => {
 
 /* exact link will show the primary color for only the exact matching link */
 :deep(a.router-link-exact-active.black) {
-	@apply text-dark font-semibold;
+	@apply  font-semibold;
 	// color: var(--primary);
 	border-color: var(--primary);
 	background-color: #F4F3FF;
@@ -115,7 +135,7 @@ const isRouteActive = (menuItem: RouteType) => {
 }
 
 .link {
-	@apply flex items-center gap-2.5 text-headline py-3 !px-4 rounded-lg hover:bg-tertiary
+	@apply flex items-center gap-2.5  py-3 px-4 rounded-lg hover:bg-tertiary
 }
 
 .link_active {

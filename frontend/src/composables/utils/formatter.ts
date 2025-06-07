@@ -140,7 +140,7 @@ export const isToday = (date: Date | string): boolean => {
 		dateObj.getFullYear() === today.getFullYear()
 }
 
-export const capitalize = (text: string) => (text[0] ?? '').toUpperCase() + text.slice(1)
+export const capitalize = (text: string) => (text[0] ?? '').toUpperCase() + text.slice(1).toLowerCase()
 
 export const formatTimeWithSeconds = (date: Date | string): string => {
   const dateObj = typeof date === 'string' ? new Date(date) : date
@@ -160,3 +160,4 @@ export const formatTimeWithSeconds = (date: Date | string): string => {
   // Format with padding for minutes and seconds
   return `${displayHours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${period}`
 }
+

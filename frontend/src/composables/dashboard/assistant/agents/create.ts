@@ -54,7 +54,7 @@ export const useCreateAgent = () => {
         loading.value = false
         useAssistantModal().closeCreateAgent()
         resetForm()
-        useRouter().push(`/agents/list/${id}`)
+        useRouter().push(`/agents/explore/${id}`)
     }
 
     return { createAgent, createAgentForm, loading, isDisabled }

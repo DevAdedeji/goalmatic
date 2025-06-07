@@ -24,7 +24,6 @@ export const failedScheduleTimeCallback = onRequest(
         return res.status(405).json({ error: 'Method not allowed' });
       }
         
-        console.log('req', req.body);
 
       // Extract failure data from QStash failure callback payload
       const {

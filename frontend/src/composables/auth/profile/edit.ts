@@ -1,4 +1,4 @@
-
+import { Timestamp } from 'firebase/firestore'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
@@ -13,8 +13,9 @@ const userProfileForm = {
     email: ref(''),
     phone: ref(''),
 	bio: ref(''),
-	photo_url: ref('')
-
+	photo_url: ref(''),
+    referral_code: ref(''),
+    showLogs: ref(false)
 }
 
 const populateData = () => {
@@ -26,6 +27,8 @@ const populateData = () => {
     userProfileForm.bio.value = userProfile.value!.bio
     userProfileForm.email.value = userProfile.value!.email
     userProfileForm.phone.value = userProfile.value!.phone
+    userProfileForm.referral_code.value = userProfile.value!.referral_code
+    userProfileForm.showLogs.value = userProfile.value!.showLogs ?? false
 }
 
 export const useUpdateUserProfile = () => {
@@ -37,11 +40,12 @@ export const useUpdateUserProfile = () => {
             name: userProfileForm.name.value,
             bio: userProfileForm.bio.value ?? null,
             photo_url: userProfileForm.photo_url.value ?? null,
-            updated_at: new Date().toISOString()
+            showLogs: userProfileForm.showLogs.value,
+            updated_at: Timestamp.fromDate(new Date())
         } as any
 
 
-        if (!validate_data(sentData, ['photo_url', 'bio'])) return
+        if (!validate_data(sentData, ['photo_url', 'bio', 'showLogs'])) return
         try {
             loading.value = true
             await updateFirestoreDocument('users', user_id.value!, sentData)

@@ -84,7 +84,6 @@ export const getOffsetMilliseconds = (dateObj: Date, timeZone: string): number =
         return -offset;
 
     } catch (e: any) {
-        console.error(`Error calculating offset for timezone "${timeZone}" with date ${dateObj.toISOString()}:`, e);
         // Check for specific Intl RangeError for invalid timezone
         if (e instanceof RangeError || (e.message && e.message.includes('Invalid time zone'))) {
              throw new HttpsError('invalid-argument', `Invalid timezone identifier provided: "${timeZone}"`);

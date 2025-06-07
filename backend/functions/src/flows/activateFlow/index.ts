@@ -11,7 +11,6 @@ export const activateFlow = onCall({cors: true, region: 'us-central1'}, async (r
         return await handleFlowTrigger(flowData, request.auth?.uid);
 
     } catch (error) {
-      console.error('Error in activateFlow:', error);
       throw new HttpsError('internal', `${error}`);
     }
   }

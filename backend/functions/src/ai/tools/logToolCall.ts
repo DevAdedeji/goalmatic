@@ -3,7 +3,7 @@ import { getUserUid, getWhatsAppPhone } from '../index';
 import { Timestamp } from 'firebase-admin/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { get_WA_TextMessageInput, send_WA_Message } from '../../whatsapp/utils/sendMessage';
-
+import { HttpsError } from 'firebase-functions/https';
 /**
  * Checks if a session ID is a WhatsApp session
  *
@@ -39,7 +39,7 @@ const sendToolCallToWhatsApp = async (uid: string, toolId: string, parameters: R
 
     // If no cached phone number, get it from Firestore
     if (!phoneNumber) {
-        console.error(`User ${uid} has no phone number set, something went wrong`);
+      throw new HttpsError('not-found', `User ${uid} has no phone number set, something went wrong`);
     }
 
     // Format the tool call message for WhatsApp
@@ -49,9 +49,9 @@ const sendToolCallToWhatsApp = async (uid: string, toolId: string, parameters: R
     const messageInput = get_WA_TextMessageInput(phoneNumber, message);
     await send_WA_Message(messageInput);
 
-    console.log(`Tool call message sent to WhatsApp user ${phoneNumber}`);
+
   } catch (error) {
-    console.error('Error sending tool call to WhatsApp:', error);
+    throw new HttpsError('internal', `${error}`);
   }
 };
 
@@ -66,7 +66,15 @@ export const logToolCall = async (sessionId: string, toolId: string, parameters:
   try {
     const uid = getUserUid();
     if (!uid || !sessionId) {
-      console.error('Cannot log tool call: Missing user ID or session ID');
+      throw new HttpsError('invalid-argument', 'Cannot log tool call: Missing user ID or session ID');
+    }
+
+    // Enforce showLogs setting
+    const userRef = goals_db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    const userData = userDoc.data();
+    if (!userData || userData.showLogs !== true) {
+      // Logging is disabled for this user
       return;
     }
 
@@ -74,14 +82,12 @@ export const logToolCall = async (sessionId: string, toolId: string, parameters:
     const chatSessionDoc = await chatSessionRef.get();
 
     if (!chatSessionDoc.exists) {
-      console.error(`Chat session ${sessionId} not found for user ${uid}`);
-      return;
+      throw new HttpsError('not-found', `Chat session ${sessionId} not found for user ${uid}`);
     }
 
     const chatSessionData = chatSessionDoc.data();
     if (!chatSessionData) {
-      console.error(`Chat session ${sessionId} data is empty`);
-      return;
+      throw new HttpsError('not-found', `Chat session ${sessionId} data is empty`)  ;
     }
 
     if (isWhatsAppSession(sessionId)) {
@@ -107,14 +113,10 @@ export const logToolCall = async (sessionId: string, toolId: string, parameters:
       updated_at: Timestamp.now()
     });
 
-    console.log(`Tool call logged for session ${sessionId}: ${toolId}`);
 
-    // If this is a WhatsApp session, send the tool call to the user via WhatsApp
-    console.log(sessionId);
-    console.log(isWhatsAppSession(sessionId));
 
 
   } catch (error) {
-    console.error('Error logging tool call:', error);
+    throw new HttpsError('internal', `${error}`);
   }
 };

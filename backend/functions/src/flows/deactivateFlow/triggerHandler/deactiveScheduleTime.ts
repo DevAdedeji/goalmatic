@@ -2,6 +2,7 @@ import { goals_db } from '../../../init';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Client } from "@upstash/qstash";
 
+
 const token = "eyJVc2VySUQiOiI4ZjU3MmQxZi02YjdlLTQ1MTktYWE5MS03YmMyYmFmYzkzZjYiLCJQYXNzd29yZCI6ImEyNzRhNzUwODdiNjRhNTQ4ZWI5ZDdiNzhiMjRmNTNhIn0="
 const UPSTASH_QSTASH_TOKEN = token;
 
@@ -20,7 +21,15 @@ export const handleDeactivateScheduleTimeTrigger = async (flowData: any, userId:
       // Cancel the scheduled message
       await qstashClient.messages.delete(messageId);
     } catch (qstashError: any) {
-      throw new Error(`Failed to cancel scheduled message: ${qstashError.message || 'Unknown QStash error'}`);
+      if (qstashError.status === 404) { 
+        await goals_db.collection('flows').doc(flowData.id).update({
+      status: 0,
+      schedule: null
+    });
+      }
+      else {
+        throw new Error(`Failed to cancel scheduled message: ${qstashError.message || 'Unknown QStash error'}`);
+      }
     }
 
     // Update the flow status to inactive and remove schedule information
@@ -35,7 +44,6 @@ export const handleDeactivateScheduleTimeTrigger = async (flowData: any, userId:
       deactivatedAt: new Date().toISOString()
     };
   } catch (error: any) {
-    console.error('Error in handleDeactivateScheduleTimeTrigger:', error);
     if (error instanceof HttpsError) {
       throw error;
     }

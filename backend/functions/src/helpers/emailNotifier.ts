@@ -45,14 +45,14 @@ export const notifyUser = async (msg: msgType) => {
     
     try {
         // Using SendGrid transition API endpoint
-        const response = await axios.post('https://api.zeptomail.com/v1.1/sg/email', config, {
+   await axios.post('https://api.zeptomail.com/v1.1/sg/email', config, {
             headers: {
                 'Authorization': ZEPTOMAIL_AUTH, 
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
         })
-        console.log('Email sent successfully:', response.status)
+
         return true;
     } catch (e: any) {
         console.error('Failed to send email:', e.response ? e.response.data : e.message);

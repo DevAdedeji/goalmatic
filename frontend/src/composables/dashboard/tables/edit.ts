@@ -20,7 +20,6 @@ export const useEditTable = () => {
   const updateTable = async (data: Record<string, any>) => {
     if (!user_id.value) return
 
-    // Check if user is authorized to edit this table
     if (data.creator_id !== user_id.value) {
       useAlert().openAlert({ type: 'ERROR', msg: 'You do not have permission to edit this table' })
       return
@@ -28,8 +27,9 @@ export const useEditTable = () => {
 
     loading.value = true
     try {
+      const { created_at, ...rest } = data
       const sent_data = {
-        ...data,
+        ...rest,
         updated_at: Timestamp.fromDate(new Date())
       } as Record<string, any>
 
@@ -85,7 +85,6 @@ export const useEditTable = () => {
   const updateFieldInTable = async (table: Record<string, any>, fieldId: string, updatedField: Record<string, any>) => {
     const fields = [...(table.fields || [])]
     const index = fields.findIndex((field) => field.id === fieldId)
-
     if (index === -1) {
       return false
     }
@@ -172,10 +171,7 @@ export const useEditTable = () => {
 
       // Update the record in the subcollection
       await updateFirestoreSubDocument('tables', table.id, 'records', recordId, updatedRecord)
-
-      // Update the table's updated_at timestamp
       await updateTable({
-        ...table,
         updated_at: Timestamp.fromDate(new Date())
       })
 
@@ -205,7 +201,6 @@ export const useEditTable = () => {
 
       // Update the table's updated_at timestamp
       await updateTable({
-        ...table,
         updated_at: Timestamp.fromDate(new Date())
       })
 

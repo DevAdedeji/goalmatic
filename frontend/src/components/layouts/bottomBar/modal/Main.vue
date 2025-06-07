@@ -4,12 +4,9 @@
 		type="bottom_bar"
 	>
 		<aside class="overflow-y-auto max-h-[70%]">
-			<div class="relative h-full flex flex-col gap-2 mb-16">
+			<div class="relative h-full flex flex-col gap-2 mb-8">
 				<span v-for="menu in dashboardRoutes()" :key="menu.name" class="w-full h-full">
-
-
 					<nuxt-link
-
 						:to="menu.route"
 						active-class="link_active" class="link"
 					>
@@ -19,14 +16,34 @@
 						</p>
 					</nuxt-link>
 				</span>
+
+				<!-- Operational Routes Section -->
+				<div v-if="operationalRoutes().length > 0" class="mt-4 pt-4 border-t border-gray-200">
+					<span v-for="menu in operationalRoutes()" :key="menu.name" class="w-full h-full">
+						<nuxt-link
+							:to="menu.route"
+							active-class="link_active"
+							:class="[
+								'link',
+								menu.bg || '',
+								menu.color || ''
+							]"
+						>
+							<component :is="menu.icon" class="mr-4 w-5" />
+							<p class="text-base">
+								{{ menu.name }}
+							</p>
+						</nuxt-link>
+					</span>
+				</div>
 			</div>
 		</aside>
 	</Modal>
 </template>
 
 <script setup lang="ts">
-import { dashboardRoutes } from '@/composables/utils/menu/dashboard'
-import { modal, closeModalType, closeAllExtremes } from '@/composables/core/modal'
+import { dashboardRoutes, operationalRoutes } from '@/composables/utils/menu/dashboard'
+import { modal, closeModalType } from '@/composables/core/modal'
 
 const { stack, close } = modal
 
@@ -42,10 +59,10 @@ watch(() => useRoute().path, () => {
 <style scoped lang="scss">
 
 :deep(a, a.mbtn, .mbtn) {
-	@apply text-dark w-full h-[51px] px-4 text-base duration-[10ms] rounded
+	@apply  w-full h-[51px] px-4 text-base duration-[10ms] rounded
 }
 a.mbtn, .mbtn {
-	@apply text-dark w-full h-[51px] px-4 text-base duration-[10ms] rounded
+	@apply  w-full h-[51px] px-4 text-base duration-[10ms] rounded
 }
 /* exact link will show the dark color for only the exact matching link */
 :deep(a.router-link-exact-active.black) {
@@ -59,7 +76,7 @@ a.mbtn, .mbtn {
 	// }
 }
 .link {
-	@apply flex items-center gap-2.5 text-headline py-3 !px-4 rounded-lg hover:text-primary hover:font-medium hover:border hover:bg-tertiary border-primary
+	@apply flex items-center gap-2.5  py-3 !px-4 rounded-lg hover:text-primary hover:font-medium hover:border hover:bg-tertiary border-primary
 }
 
 .link_active {

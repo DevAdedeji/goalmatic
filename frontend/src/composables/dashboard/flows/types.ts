@@ -55,6 +55,8 @@ export interface FlowNodeProp {
 	required: boolean;
 	value?: string | (() => string | undefined);
 	validate?: (value: any, formValues: Record<string, any>) => { valid: boolean; message?: string };
+	ai_enabled?: boolean;
+	cloneable?: boolean;
 }
 
 export type FlowStatus = 0 | 1 | 'archived' // 0: draft, 1: active

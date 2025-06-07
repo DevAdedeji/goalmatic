@@ -1,19 +1,80 @@
 import { Timestamp, collection, getDocs, orderBy, query } from 'firebase/firestore'
-import { useFetchUserFlows } from './fetch'
+import { v4 as uuidv4 } from 'uuid'
 import { useFlowRuns } from './runs'
+import { useFetchFlowById } from './id'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useFlowsModal } from '@/composables/core/modals'
+import { useConfirmationModal } from '@/composables/core/confirmation'
 
 export const useEditFlow = () => {
   const { id: user_id } = useUser()
   const loading = ref(false)
+  const toggleVisibilityLoading = ref(false)
 
   // Get flow runs functionality from the dedicated composable
   const { flowRuns, flowRunsLoading, fetchFlowRuns } = useFlowRuns()
 
-  const { flowData } = useFetchUserFlows()
+  const { flowDetails } = useFetchFlowById()
+
+  /**
+   * Open confirmation modal for visibility toggle
+   * @param flow The flow to toggle visibility for
+   */
+  const openVisibilityConfirmation = (flow: Record<string, any>) => {
+    const isPublic = flow.public === true
+    const newVisibility = isPublic ? 'private' : 'public'
+
+    useConfirmationModal().openAlert({
+      type: 'Alert',
+      title: `Make Flow ${newVisibility === 'public' ? 'Public' : 'Private'}`,
+      desc: `Are you sure you want to make "${flow.name}" ${newVisibility}? ${newVisibility === 'public' ? 'Anyone will be able to view and clone this flow.' : 'Only you will be able to view this flow.'}`,
+      call_function: () => toggleFlowVisibility(flow),
+      loading: toggleVisibilityLoading
+    })
+  }
+
+  /**
+   * Toggle flow visibility between public and private
+   * @param flow The flow to toggle visibility for
+   */
+  const toggleFlowVisibility = async (flow: Record<string, any>) => {
+    if (!flow || !flow.id) {
+      useAlert().openAlert({ type: 'ERROR', msg: 'Invalid flow data' })
+      return
+    }
+
+    toggleVisibilityLoading.value = true
+    try {
+      // Toggle the public flag
+      const isPublic = flow.public === true
+
+      await updateFirestoreDocument('flows', flow.id, {
+        public: !isPublic,
+        updated_at: Timestamp.fromDate(new Date())
+      })
+
+      // Update the local flow object to reflect the change
+      flow.public = !isPublic
+
+      // Also update the local flowDetails to reflect the change immediately
+      if (flowDetails.value && flowDetails.value.id === flow.id) {
+        flowDetails.value.public = !isPublic
+      }
+
+      useAlert().openAlert({
+        type: 'SUCCESS',
+        msg: `Flow is now ${!isPublic ? 'public' : 'private'}`
+      })
+    } catch (error) {
+      console.error('Error toggling flow visibility:', error)
+      useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+    } finally {
+      toggleVisibilityLoading.value = false
+      useConfirmationModal().closeAlert()
+    }
+  }
 
   const updateFlow = async (data: Record<string, any>) => {
     if (!user_id.value) return
@@ -31,11 +92,39 @@ export const useEditFlow = () => {
         updated_at: Timestamp.fromDate(new Date())
       } as Record<string, any>
 
-      sent_data.steps.forEach((step: Record<string, any>) => {
-        delete step.props
+      // Process steps to ensure proper data structure and clonable fields
+      sent_data.steps = (sent_data.steps || []).map((step: Record<string, any>) => {
+        const { props, ...rest } = step
+
+        // Ensure clonable data fields are properly structured
+        const processedStep = {
+          ...rest,
+          // Preserve propsData with all configured values
+          propsData: step.propsData || {},
+          // Preserve aiEnabledFields array for AI-enabled properties
+          ...(step.aiEnabledFields && step.aiEnabledFields.length > 0 && { aiEnabledFields: step.aiEnabledFields })
+        }
+
+        return processedStep
       })
-      delete sent_data.trigger.props
+
+      // Same for trigger - ensure proper data structure
+      if (sent_data.trigger) {
+        const { props, ...rest } = sent_data.trigger
+        sent_data.trigger = {
+          ...rest,
+          // Preserve propsData with all configured values
+          propsData: sent_data.trigger.propsData || {},
+          // Preserve aiEnabledFields array for AI-enabled properties
+          ...(sent_data.trigger.aiEnabledFields && sent_data.trigger.aiEnabledFields.length > 0 && { aiEnabledFields: sent_data.trigger.aiEnabledFields })
+        }
+      }
+
       await updateFirestoreDocument('flows', sent_data.id, sent_data)
+
+      // Update the local flowDetails to reflect changes immediately
+      flowDetails.value = { ...sent_data }
+
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow updated successfully' })
     } catch (error: any) {
       console.error('Error updating flow:', error)
@@ -75,41 +164,58 @@ export const useEditFlow = () => {
   }
 
   const isFlowValid = computed(() => {
-    const hasTrigger = flowData.value.trigger !== undefined && flowData.value.trigger !== null
-    const hasActionSteps = flowData.value.steps && flowData.value.steps.length > 0
+    const hasTrigger = flowDetails.value?.trigger !== undefined && flowDetails.value?.trigger !== null
+    const hasActionSteps = flowDetails.value?.steps && flowDetails.value?.steps.length > 0
     return hasTrigger && hasActionSteps
   })
 
   const saveFlow = async () => {
-    await updateFlow(flowData.value)
+    await updateFlow(flowDetails.value)
   }
 
   const addNode = (node: Record<string, any>, position: number | null) => {
     if (node.type === 'trigger') {
-      flowData.value.trigger = node
+      console.log(flowDetails.value)
+      flowDetails.value.trigger = node
       return
     }
 
     if (!position) {
-      flowData.value.steps.push({ position: flowData.value.steps.length + 1, ...node })
+      console.log(flowDetails.value)
+      flowDetails.value.steps.push({ position: flowDetails.value.steps.length + 1, ...node, id: uuidv4() })
       return
     }
 
-    flowData.value.steps.splice(position, 0, { position, ...node })
+    flowDetails.value.steps.splice(position, 0, { position, ...node, id: uuidv4() })
   }
 
-  const removeNode = (node: Record<string, any>, position?: number | null) => {
+  const removeNode = async (node: Record<string, any>, position?: number | null) => {
     if (node.type === 'trigger') {
-      flowData.value.trigger = null
+      flowDetails.value.trigger = null
       return
     }
 
     if (position !== undefined && position !== null) {
-      flowData.value.steps = flowData.value.steps.slice(0, position).concat(flowData.value.steps.slice(position + 1))
+      flowDetails.value.steps = flowDetails.value.steps.slice(0, position).concat(flowDetails.value.steps.slice(position + 1))
     } else {
-      flowData.value.steps = flowData.value.steps.filter((step: Record<string, any>) => step.id !== node.id)
+      flowDetails.value.steps = flowDetails.value.steps.filter((step: Record<string, any>) => step.id !== node.id)
     }
+    await updateFlow(flowDetails.value)
   }
+  const confirmRemoveNode = async (node, position?: number) => {
+	useConfirmationModal().openAlert({
+		type: 'Alert',
+		title: 'Delete Step',
+		desc: 'Are you sure you want to delete this step?',
+    call_function: async () => {
+      loading.value = true
+			await removeNode(node, position)
+      useConfirmationModal().closeAlert()
+      loading.value = false
+		},
+		loading
+	})
+}
 
   const editNode = (node: Record<string, any>) => {
     useFlowsModal().openEditNode(node)
@@ -117,33 +223,36 @@ export const useEditFlow = () => {
 
   // Update a node with new values
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
-    const updatedNode = { ...node, propsData: updatedValues }
+    // Extract aiEnabledFields from updatedValues if present
+    const { aiEnabledFields, nonCloneables, ...propsData } = updatedValues
+
+    const updatedNode = {
+      ...node,
+      propsData,
+      ...(aiEnabledFields && { aiEnabledFields }),
+      ...(nonCloneables && { nonCloneables })
+    }
+
+    console.log(updatedNode)
 
     // If it's a trigger node
     if (node.type === 'trigger') {
-      flowData.value.trigger = updatedNode
-      await updateFlow(flowData.value)
+      flowDetails.value.trigger = updatedNode
+      await updateFlow(flowDetails.value)
       return
     }
 
     // If it's an action node, find it in the steps and update it
-    const stepIndex = flowData.value.steps.findIndex((step: Record<string, any>) => {
-      // Compare by ID if available, otherwise fallback to a deeper comparison
+    const stepIndex = flowDetails.value.steps.findIndex((step: Record<string, any>) => {
       if (step.id && node.id) {
         return step.id === node.id
       }
-
-      // Fall back to node_id if no id is present
-      if (step.node_id && node.node_id) {
-        return step.node_id === node.node_id
-      }
-
       return false
     })
 
     if (stepIndex !== -1) {
-      flowData.value.steps[stepIndex] = updatedNode
-      await updateFlow(flowData.value)
+      flowDetails.value.steps[stepIndex] = updatedNode
+      await updateFlow(flowDetails.value)
     }
   }
 
@@ -172,6 +281,10 @@ export const useEditFlow = () => {
     removeNode,
     editNode,
     updateNode,
-    handleChangeNode
+    handleChangeNode,
+    confirmRemoveNode,
+    openVisibilityConfirmation,
+    toggleFlowVisibility,
+    toggleVisibilityLoading
   }
 }

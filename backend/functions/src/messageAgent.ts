@@ -49,7 +49,6 @@ export const messageAgent = onCall({
         };
 
     } catch (error) {
-        console.error('Error in messageAgent:', error);
         throw new HttpsError('internal', `${error}`);
     }
 });

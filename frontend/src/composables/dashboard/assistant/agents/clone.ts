@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { checkAgentToolRequirements, initializeToolConfigs } from './tools/approval'
@@ -9,6 +9,7 @@ import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useAssistantModal } from '@/composables/core/modals'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { db } from '@/firebase/init'
 
 export const useCloneAgent = () => {
     const { id: user_id, userProfile, isLoggedIn } = useUser()
@@ -18,6 +19,44 @@ export const useCloneAgent = () => {
     const canCloneAgent = (agent: Record<string, any>): boolean => {
         if (!isLoggedIn.value || !user_id.value || agent.creator_id === user_id.value) return false
         return true
+    }
+
+    /**
+     * Updates the leaderboard when an agent is cloned
+     * Increments the points for the original agent creator
+     */
+    const updateLeaderboard = async (originalCreatorId: string, creatorName: string, creatorPhotoUrl: string) => {
+        try {
+            // Reference to the creator's leaderboard document
+            const leaderboardRef = doc(db, 'leaderboard', originalCreatorId)
+
+            // Check if the creator already has a leaderboard entry
+            const leaderboardDoc = await getDoc(leaderboardRef)
+
+            if (leaderboardDoc.exists()) {
+                // Update existing leaderboard entry
+                await updateDoc(leaderboardRef, {
+                    points: increment(1),
+                    agents_cloned: increment(1),
+                    updated_at: Timestamp.fromDate(new Date())
+                })
+            } else {
+                // Create new leaderboard entry
+                await setDoc(leaderboardRef, {
+                    id: originalCreatorId,
+                    name: creatorName || 'Unknown User',
+                    photo_url: creatorPhotoUrl || '',
+                    points: 1,
+                    agents_cloned: 1,
+                    created_at: Timestamp.fromDate(new Date()),
+                    updated_at: Timestamp.fromDate(new Date())
+                })
+            }
+        } catch (error: any) {
+            console.error('Error updating leaderboard:', error)
+            // Don't throw the error - we don't want to fail the cloning process
+            // if the leaderboard update fails
+        }
     }
 
     // Function to perform the actual cloning
@@ -54,6 +93,19 @@ export const useCloneAgent = () => {
             // Save the cloned agent to Firestore
             await setFirestoreDocument('agents', id, clonedAgent)
 
+            // Update the leaderboard for the original creator
+            if (agentToClone.creator_id) {
+                // Get the original creator's name and photo URL
+                const creatorDoc = await getDoc(doc(db, 'users', agentToClone.creator_id))
+                const creatorData = creatorDoc.data()
+
+                await updateLeaderboard(
+                    agentToClone.creator_id,
+                    creatorData?.name || 'Unknown User',
+                    creatorData?.photo_url || ''
+                )
+            }
+
             // Show success message
             useAlert().openAlert({
                 type: 'SUCCESS',
@@ -61,7 +113,7 @@ export const useCloneAgent = () => {
             })
 
             // Navigate to the new agent's page
-            router.push(`/agents/list/${id}`)
+            router.push(`/agents/explore/${id}`)
             return true
         } catch (error: any) {
             useAlert().openAlert({

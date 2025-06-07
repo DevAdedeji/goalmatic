@@ -109,20 +109,31 @@ service cloud.firestore {
         request.resource.data.steps is list &&
         validTimestamp(request.resource.data.created_at);
 
-      allow read: if isSignedIn() && (
-        (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) ||
-        (!("visibility" in resource.data) || resource.data.visibility == "public") ||
-        (resource.data.visibility == "private" &&
-         resource.data.allowed_users != null &&
-         request.auth.uid in resource.data.allowed_users)
-      );
+      // Allow read access for public flows or if user is the creator
+      allow read: if (resource.data.public == true || (isSignedIn() && resource.data.creator_id == request.auth.uid));
 
       allow update, delete: if isSignedIn() &&
-        (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) &&
+        resource.data.creator_id == request.auth.uid &&
         (request.method != "update" ||
-          ((!("creator_id" in request.resource.data) && !("creator_id" in resource.data)) ||
-           request.resource.data.creator_id == resource.data.creator_id) &&
-          (!("updated_at" in request.resource.data) || validTimestamp(request.resource.data.updated_at)));
+          (request.resource.data.creator_id == resource.data.creator_id &&
+           validTimestamp(request.resource.data.updated_at)));
+
+      // Runs subcollection: stores individual flow runs
+      match /runs/{runId} {
+        allow create: if isSignedIn() && (
+          (!('creator_id' in request.resource.data) || request.resource.data.creator_id == request.auth.uid)
+        );
+        allow read: if isSignedIn() && (
+          (!('creator_id' in resource.data) || resource.data.creator_id == request.auth.uid) ||
+          (!('visibility' in resource.data) || resource.data.visibility == 'public') ||
+          (resource.data.visibility == 'private' &&
+            resource.data.allowed_users != null &&
+            request.auth.uid in resource.data.allowed_users)
+        );
+        allow update, delete: if isSignedIn() && (
+          (!('creator_id' in resource.data) || resource.data.creator_id == request.auth.uid)
+        );
+      }
     }
 
     // Tables collection: user-defined database tables with fields and records
@@ -135,13 +146,14 @@ service cloud.firestore {
         request.resource.data.fields is list &&
         validTimestamp(request.resource.data.created_at);
 
-      allow read: if isSignedIn() && (
+      allow read: if isSignedIn() && resource.data != null && (
         (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) ||
         (!("visibility" in resource.data) || resource.data.visibility == "public") ||
         (resource.data.visibility == "private" &&
          resource.data.allowed_users != null &&
          request.auth.uid in resource.data.allowed_users)
       );
+
 
       allow update, delete: if isSignedIn() &&
         (!("creator_id" in resource.data) || resource.data.creator_id == request.auth.uid) &&
@@ -153,23 +165,50 @@ service cloud.firestore {
       // Records subcollection: individual records for each table
       match /records/{recordId} {
         allow create: if isSignedIn() &&
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
           get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid &&
           request.resource.data.keys().hasAll(['id', 'created_at', 'updated_at']) &&
           validTimestamp(request.resource.data.created_at) &&
           validTimestamp(request.resource.data.updated_at);
 
         allow read: if isSignedIn() && (
-          get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid  ||
-          (get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "private" &&
-           get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users != null &&
-           request.auth.uid in get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users)
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
+          (
+            get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid  ||
+            (
+              get(/databases/$(database)/documents/tables/$(tableId)).data.visibility == "private" &&
+              get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users != null &&
+              request.auth.uid in get(/databases/$(database)/documents/tables/$(tableId)).data.allowed_users
+            )
+          )
         );
 
         allow update, delete: if isSignedIn() &&
+          get(/databases/$(database)/documents/tables/$(tableId)) != null &&
           get(/databases/$(database)/documents/tables/$(tableId)).data.creator_id == request.auth.uid &&
           (request.method != "update" ||
             validTimestamp(request.resource.data.updated_at));
       }
+    }
+
+    // Leaderboard collection: tracks user points for agent clones
+    match /leaderboard/{userId} {
+      // Allow read access to all authenticated users
+      allow read: if isSignedIn();
+
+      // Only allow create/update from the clone.ts function
+      // This is enforced by application logic, not by rules
+      allow create, update: if isSignedIn();
+
+      // Don't allow deletion of leaderboard entries
+      allow delete: if false;
+    }
+
+    // Processed messages collection: tracks WhatsApp message IDs to prevent duplicates
+    // Only accessible by Cloud Functions (admin privileges)
+    match /processed_messages/{messageId} {
+      // Deny all user access - this collection is managed only by Cloud Functions
+      allow read, write: if false;
     }
 
     // Deny access to any other documents not explicitly covered above.

@@ -8,6 +8,11 @@
 				<p class="text-textSecondary text-base font-semibold">
 					Create your free account
 				</p>
+				<div v-if="referralCode" class="bg-green-50 border border-green-200 rounded-lg p-3">
+					<p class="text-sm text-green-800">
+						🎉 You're signing up with a referral code: <strong>{{ referralCode }}</strong>
+					</p>
+				</div>
 			</div>
 
 			<form class="flex flex-col gap-6 mt-3" @submit.prevent="signUp">
@@ -71,7 +76,9 @@ import { windowHeight } from '@/composables/utils/window'
 import { useSignin, authCredentienalsForm } from '@/composables/auth/auth'
 import { usePasswordlessSignin } from '@/composables/auth/passwordless'
 import { useEmailAndPassword } from '@/composables/auth/email_password'
+import { isValidReferralCode } from '@/composables/utils/referral'
 
+const route = useRoute()
 const { googleSignin, loading } = useSignin()
 const { disabled, send_email, valid_email } = usePasswordlessSignin()
 const { signUp } = useEmailAndPassword()
@@ -83,6 +90,20 @@ const toggleShow = () => showPassword.value = !showPassword.value
 
 const show = ref(false)
 const isEmail = ref(true)
+
+// Capture referral code from URL parameters
+const referralCode = ref('')
+
+onMounted(() => {
+  const refParam = route.query.ref as string
+  if (refParam && isValidReferralCode(refParam)) {
+    referralCode.value = refParam
+    // Store in localStorage for use during user creation
+    if (process.client) {
+      localStorage.setItem('signup_referral_code', refParam)
+    }
+  }
+})
 
 definePageMeta({
 	layout: 'auth2',

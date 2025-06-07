@@ -7,7 +7,7 @@ import LoginAlert from '@/components/modals/auth/loginAlert.vue'
 // ==================== CORE ===============================
 import Confirmation from '@/components/modals/core/Confirmation.vue'
 import LoadingVerification from '@/components/modals/core/loading.vue'
-
+import OtpVerificationModal from '@/components/modals/core/OtpVerificationModal.vue'
 
 // ==================== BOTTOMBAR ===============================
 import BottomMenu from '@/components/layouts/bottomBar/modal/Main.vue'
@@ -34,7 +34,7 @@ type OptionalPayload = Record<string, any> | null;
 
 // Update type definitions to include optional payload parameter
 type AuthTypes = 'Logout' | 'LoginAlert'
-type CoreTypes = 'Confirmation' | 'LoadingVerification'
+type CoreTypes = 'Confirmation' | 'LoadingVerification' | 'OtpVerificationModal'
 type BottombarTypes = 'BottomMenu'
 type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
@@ -51,7 +51,7 @@ type ModalHelpers<Keys extends string> = Record<
 > & { closeAll: () => void };
 
 const AuthModals = { Logout, LoginAlert } as Record<AuthTypes, any>
-const CoreModals = { Confirmation, LoadingVerification } as Record<CoreTypes, any>
+const CoreModals = { Confirmation, LoadingVerification, OtpVerificationModal } as Record<CoreTypes, any>
 const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
 const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>

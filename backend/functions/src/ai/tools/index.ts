@@ -16,8 +16,6 @@ const createLoggingToolWrapper = (toolId: string, originalTool: any, sessionId: 
                 }
                 return await originalTool.execute(params);
             } catch (error) {
-                // Log errors but still throw them to be handled by the caller
-                console.error(`Error executing tool ${toolId}:`, error);
                 throw error;
             }
         }

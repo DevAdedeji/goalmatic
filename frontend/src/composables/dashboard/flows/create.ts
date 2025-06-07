@@ -18,7 +18,7 @@ const createFlowForm = reactive({
 })
 
 export const useCreateFlow = () => {
-  const { id: user_id } = useUser()
+const { id: user_id, userProfile } = useUser()
   const loading = ref(false)
 
   const resetForm = () => {
@@ -39,6 +39,10 @@ export const useCreateFlow = () => {
       const flow_data = {
         ...createFlowForm,
         id,
+            user: {
+                id: user_id.value!,
+                name: userProfile.value?.name
+            },
         creator_id: user_id.value,
         created_at: Timestamp.fromDate(new Date()),
         updated_at: Timestamp.fromDate(new Date())

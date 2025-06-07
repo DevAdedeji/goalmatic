@@ -5,7 +5,7 @@
 		:is-full-height="false"
 		:props-modal="propsModal"
 	>
-		<form @submit.prevent="onSave">
+		<form @submit.prevent="payload.onSave()">
 			<div class="space-y-4">
 				<!-- Field Name -->
 				<div>
@@ -147,19 +147,14 @@ const props = defineProps({
 // Extract data from payload
 const fieldForm = computed(() => props.payload?.fieldForm || {})
 const editingFieldIndex = computed(() => props.payload?.editingFieldIndex || -1)
-const onSaveCallback = computed(() => props.payload?.onSave)
+
 
 // Close the modal
 const closeModal = () => {
 	useTablesModal().closeFieldModal()
 }
 
-// Handle save
-const onSave = async () => {
-	if (onSaveCallback.value && typeof onSaveCallback.value === 'function') {
-		await onSaveCallback.value()
-	}
-}
+
 
 const isFormValid = computed(() => {
 	if (!fieldForm.value.name?.trim()) return false

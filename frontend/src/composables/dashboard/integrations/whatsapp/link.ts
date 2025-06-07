@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
 import { useUser } from '@/composables/auth/user'
-import { useAlert } from '~/src/composables/core/notification'
-import { callFirebaseFunction } from '~/src/firebase/functions'
-import { getSingleFirestoreDocument } from '~/src/firebase/firestore/fetch'
+import { useAlert } from '@/composables/core/notification'
+import { callFirebaseFunction } from '@/firebase/functions'
+import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
 import { setFirestoreSubDocument } from '@/firebase/firestore/create'
-import { useIntegrationsModal } from '~/src/composables/core/modals'
+import { useIntegrationsModal } from '@/composables/core/modals'
 
 const loading = ref(false)
 const step = ref(1)
@@ -37,6 +37,7 @@ export const useLinkWhatsapp = () => {
     }
 
     const confirmOTP = async () => {
+        if (import.meta.server) return
         const otpCode = otp.value.join('')
         const userRef = ref()
         await getSingleFirestoreDocument('users', user_id.value!, userRef)

@@ -32,8 +32,8 @@ export const getDefaultDateValue = (): string => {
 // Get a default time value that's 30 minutes in the future
 export const getDefaultTimeValue = (): string => {
   const now = new Date()
-  // Add 30 minutes to current time
-  const thirtyMinutesLater = new Date(now.getTime() + 30 * 60 * 1000)
+  // Add 1 minutes to current time
+  const thirtyMinutesLater = new Date(now.getTime() + 1 * 60 * 1000)
 
   // Format as HH:MM
   const hours = thirtyMinutesLater.getHours().toString().padStart(2, '0')

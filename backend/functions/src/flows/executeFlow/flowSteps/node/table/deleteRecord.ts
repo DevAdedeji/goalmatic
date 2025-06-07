@@ -3,8 +3,6 @@ import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 
 const deleteRecord = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('previousStepResult', previousStepResult);
-    console.log(step.name, step.propsData);
 
     try {
         // Extract user ID from the flow data

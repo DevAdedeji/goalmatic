@@ -3,8 +3,7 @@ import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
 
 const updateRecord = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('previousStepResult', previousStepResult);
-    console.log(step.name, step.propsData);
+
 
     try {
         // Extract user ID from the flow data
@@ -114,13 +113,13 @@ const updateRecord = async (context: WorkflowContext, step: FlowNode, previousSt
         return {
             success: true,
             message: 'Record updated successfully',
-            record: updatedRecord
+            record: updatedRecord,
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error in updateRecord node:', error);
         return {
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error?.message || error,
         };
     }
 };

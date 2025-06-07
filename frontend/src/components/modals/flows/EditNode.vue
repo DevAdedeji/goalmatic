@@ -21,7 +21,6 @@
 
 			<div class="border-t border-border my-4" />
 
-			<!-- Dynamic component for node configuration -->
 			<component
 				:is="nodeConfigComponent"
 				:payload="payload"
@@ -29,6 +28,7 @@
 				:form-values="formValues"
 				:has-props="hasProps"
 				:loading="loading"
+				:previous-node-outputs="previousNodeOutputs"
 				@save="saveChanges"
 				@cancel="closeModal"
 			/>
@@ -43,7 +43,9 @@ import { useEditNodeLogic } from '@/composables/dashboard/flows/nodes/nodeOperat
 
 // Default to GenericConfig
 const configComponents = {
-	generic: GenericConfig
+	generic: GenericConfig,
+	SEND_WHATSAPP_MESSAGE: defineAsyncComponent(() => import('./nodeConfig/WhatsAppMessage.vue')),
+	SCHEDULE_INTERVAL: defineAsyncComponent(() => import('./nodeConfig/ScheduleInterval.vue'))
 	// Add node-specific components here as needed
 	// For example:
 	// 'GOOGLECALENDAR_CREATE_EVENT': defineAsyncComponent(() => import('./nodeConfig/GoogleCalendarCreateEvent.vue')),
@@ -69,7 +71,6 @@ const nodeConfigComponent = computed(() => {
 		return configComponents[props.payload.node_id]
 	}
 
-	// Otherwise fall back to the generic component
 	return configComponents.generic
 })
 
@@ -80,10 +81,23 @@ const {
 	nodeProps,
 	hasProps,
 	saveChanges,
-	closeModal
+	closeModal,
+	previousNodeOutputs
 } = useEditNodeLogic(props)
 </script>
 
 <style scoped>
-/* Add your styles here */
+/* AI mode styling for input fields */
+:deep(.ai-mode-input) {
+	background-color: rgb(250 245 255); /* bg-purple-50 */
+	border-color: var(--primary);
+}
+
+:deep(.ai-mode-input:focus) {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 1px var(--primary);
+}
+:deep(.ai_selector) {
+	@apply text-xs border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-primary outline-none w-auto min-w-20
+}
 </style>

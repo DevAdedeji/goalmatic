@@ -2,6 +2,7 @@ import {  InvalidPromptError, generateText } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { generateAgentTools } from './tools';
 import { setUserToolConfig } from ".";
+import { HttpsError } from "firebase-functions/https";
 
 /**
  * Initialize AI chat with conversation history and agent configuration
@@ -43,8 +44,8 @@ export const initialiseAIChat = async (
         const agentTools = generateAgentTools(agent.spec.tools, sessionId);
         const agentSystemInfo = customSystemInfo(agent.spec.tools, agent.spec.systemInfo);
         const result = await generateText({
-            model: google("gemini-2.5-flash-preview-04-17"),
-            maxSteps: 5,
+            model: google("gemini-2.5-flash-preview-05-20"),
+            maxSteps: 25,
             messages: conversationHistory,
             tools: agentTools,
             system: agentSystemInfo,
@@ -53,7 +54,7 @@ export const initialiseAIChat = async (
         return result.text;
     } catch (error) {
         if (InvalidPromptError.isInstance(error)) {
-            console.error('Error initializing AI chat:', error.message, error.cause);
+            throw new HttpsError('invalid-argument', error.message);
         }
         throw error;
     }

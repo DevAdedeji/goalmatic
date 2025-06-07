@@ -30,6 +30,7 @@ module.exports = {
 				light_grey: 'var(--light_grey)',
 				grey_one: 'var(--grey_one)',
 				grey_two: 'var(--grey_two)',
+				grey_three: 'var(--grey_three)',
 				grey_four: 'var(--grey_four)',
 				grey_six: 'var(--grey_six)',
 				grey_eight: 'var(--grey_eight)',
@@ -47,7 +48,10 @@ module.exports = {
 			},
 			borderColor: {
 				DEFAULT: '#D0D5DD'
-			  }
+			  },
+			  fontWeight: {
+				'450': '450',
+			  },  
 		}
 	},
 	plugins: [

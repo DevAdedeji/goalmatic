@@ -27,29 +27,30 @@
 				@changed="currentTab = $event"
 			/>
 
-			<FlowsList :current-tab="currentTab" :active-flows="activeFlows" :draft-flows="draftFlows" @edit="$router.push(`/flows/${$event.id}`)" @delete="setDeleteFlowData" @toggle-status="toggleFlowStatus" @createNewFlow="createNewFlow" @currentTab="currentTab = $event" />
+			<FlowsList :current-tab="currentTab" :active-flows="activeFlows" :draft-flows="draftFlows" @edit="useRouter().push(`/flows/${$event.id}`)" @delete="setDeleteFlowData" @createNewFlow="createNewFlow" @currentTab="currentTab = $event" />
 		</div>
 	</main>
 </template>
 
 <script setup lang="ts">
 import { Activity, FileEdit, Construction } from 'lucide-vue-next'
+
 import { usePageHeader } from '@/composables/utils/header'
 import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
-import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
 import { useCreateFlow } from '@/composables/dashboard/flows/create'
 import TabComponents from '@/components/core/Tabs.vue'
+import { is_dev } from '@/composables/utils/system'
+
 
 
 // --- Add this ref to toggle the Coming Soon section ---
 // Set to `true` to display the "Coming Soon" message, `false` to show the normal content.
-const showComingSoon = ref(true)
+const showComingSoon = ref(false)
 // -------------------------------------------------------
 
 
 const { userFlows, loading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
-const { toggleFlowStatus } = useToggleFlow()
 const { setDeleteFlowData } = useDeleteFlow()
 const { loading: createLoading, createNewFlow } = useCreateFlow()
 

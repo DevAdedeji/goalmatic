@@ -21,7 +21,9 @@
     "@firebasegen/default-connector": "link:dataconnect-generated/js/default-connector",
     "@genkit-ai/googleai": "^0.9.12",
     "@google/generative-ai": "^0.21.0",
+    "@headlessui/vue": "^1.7.23",
     "@iconify/vue": "^4.3.0",
+    "@nuxt/kit": "^3.17.2",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.7",
     "@tiptap/extension-color": "^2.7.4",
@@ -33,6 +35,8 @@
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^9.3.1",
     "ai": "^4.3.9",
+    "cron-parser": "^5.2.0",
+    "cronstrue": "^2.61.0",
     "firebase": "^9.12.1",
     "firebase-admin": "^11.2.1",
     "firebase-functions": "^4.1.0",
@@ -58,7 +62,9 @@
     "vue-datepicker-next": "^1.0.3",
     "vue-draggable-next": "^2.2.1",
     "vue-gtag-next": "^1.14.0",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "@tiptap/suggestion": "^2.0.0-beta.75",
+    "tippy.js": "^6.3.7"
   },
   "devDependencies": {
     "@inspira-ui/plugins": "^0.0.1",

@@ -1,8 +1,9 @@
-import { ref } from 'vue'
 import { useEditTable } from '@/composables/dashboard/tables/edit'
 import { useTablesModal } from '@/composables/core/modals'
 import { useConfirmationModal } from '@/composables/core/confirmation'
-import type { Field, TableData } from '@/composables/dashboard/tables/types'
+import type { Field } from '@/composables/dashboard/tables/types'
+import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
+
 
 // Define field form interface
 interface FieldForm extends Omit<Field, 'options'> {
@@ -10,7 +11,8 @@ interface FieldForm extends Omit<Field, 'options'> {
   optionsText: string;
 }
 
-export const useTableStructureSection = (tableData: TableData) => {
+export const useTableStructureSection = () => {
+  const { tableData } = useFetchUserTables()
   const { updateFieldInTable, removeFieldFromTable, addFieldToTable } = useEditTable()
   const localLoading = ref(false)
 
@@ -40,10 +42,8 @@ export const useTableStructureSection = (tableData: TableData) => {
   }
 
   const addNewField = () => {
-    // Reset form
     resetFieldForm()
 
-    // Open the field modal with the current form data and editing index
     useTablesModal().openFieldModal({
       fieldForm: fieldForm.value,
       editingFieldIndex: editingFieldIndex.value,
@@ -52,9 +52,9 @@ export const useTableStructureSection = (tableData: TableData) => {
   }
 
   const editField = (index: number) => {
-    if (!tableData.fields) return
+    if (!tableData.value.fields) return
 
-    const field = tableData.fields[index]
+    const field = tableData.value.fields[index]
     if (!field) return
 
     // Clone the field to avoid direct mutation
@@ -84,12 +84,12 @@ export const useTableStructureSection = (tableData: TableData) => {
     // Check if we're adding a new field or updating an existing one
     if (editingFieldIndex.value === -1) {
       // Add new field
-      await addFieldToTable(tableData, fieldForm.value)
-    } else if (tableData.fields && tableData.fields[editingFieldIndex.value]) {
+      await addFieldToTable(tableData.value, fieldForm.value)
+    } else if (tableData.value.fields && tableData.value.fields[editingFieldIndex.value]) {
       // Update existing field
       await updateFieldInTable(
-        tableData,
-        tableData.fields[editingFieldIndex.value].id,
+        tableData.value,
+        tableData.value.fields[editingFieldIndex.value].id,
         fieldForm.value
       )
     }
@@ -99,20 +99,21 @@ export const useTableStructureSection = (tableData: TableData) => {
   }
 
   const deleteField = async (index: number) => {
-    if (!tableData.fields || !tableData.fields[index]) return
+    if (!tableData.value.fields || !tableData.value.fields[index]) return
 
     useConfirmationModal().openAlert({
       type: 'Alert',
       title: 'Delete Field',
       desc: 'Are you sure you want to delete this field? This will also remove this field from all records.',
       call_function: async () => {
-        if (!tableData.fields || !tableData.fields[index]) {
+        if (!tableData.value.fields || !tableData.value.fields[index]) {
           console.error('Field not found at the time of deletion.')
           return
         }
         localLoading.value = true
         try {
-          await removeFieldFromTable(tableData, tableData.fields[index].id)
+          await removeFieldFromTable(tableData.value, tableData.value.fields[index].id)
+          useConfirmationModal().closeAlert()
         } catch (error) {
           console.error('Error deleting field:', error)
         } finally {
@@ -129,6 +130,7 @@ export const useTableStructureSection = (tableData: TableData) => {
     addNewField,
     editField,
     saveField,
-    deleteField
+    deleteField,
+    tableData
   }
 }

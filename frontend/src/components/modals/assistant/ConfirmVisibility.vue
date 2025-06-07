@@ -60,7 +60,6 @@ const loading = ref(false)
 const isPublic = computed(() => props.payload.agent?.public === true)
 
 const confirmToggle = async () => {
-	console.log(props.payload)
 	loading.value = true
 	try {
 		await props.payload.onConfirm()
