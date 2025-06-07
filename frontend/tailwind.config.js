@@ -48,7 +48,10 @@ module.exports = {
 			},
 			borderColor: {
 				DEFAULT: '#D0D5DD'
-			  }
+			  },
+			  fontWeight: {
+				'450': '450',
+			  },  
 		}
 	},
 	plugins: [
