@@ -281,8 +281,17 @@ const {
 const { editToolConfig } = useEditToolConfig()
 
 const { id } = useRoute().params
-
 await fetchAgentsById(id as string)
+
+watch(() => useRoute().params.id, async (newId) => {
+	await fetchAgentsById(newId as string)
+	await useCustomHead({
+	title: `${agentDetails.value?.name || 'Agent'} | Agent Details`,
+	desc: agentDetails.value?.description || 'View agent details and capabilities',
+	img: 'https://www.goalmatic.io/og2.png'
+})
+}, { immediate: true })
+
 
 // Add null checks before using agentDetails in useCustomHead
 await useCustomHead({

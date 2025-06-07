@@ -8,7 +8,7 @@ export const agentDetails = ref({} as Record<string, any>)
 const loading = ref(false)
 
 export const useFetchAgentsById = () => {
-    const fetchAgentsById = async (id: string) => {
+  const fetchAgentsById = async (id: string) => {
   loading.value = true
 
   if (id === '0') {
@@ -16,7 +16,7 @@ export const useFetchAgentsById = () => {
     loading.value = false
     return
   }
-
+  if (!id) return
   try {
     const result = await callFirebaseFunction('getAgentDetails', { id: id as string }) as Record<string, any>
 	  agentDetails.value = result

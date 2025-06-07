@@ -1,7 +1,14 @@
 <template>
 	<header class=" flex items-center justify-between py-4 md:px-5 px-4 bg-transparent border-b border-[#E9E9E9]">
-		<span class="hidden md:flex" />
-		<img src="/lt.svg" alt="" class="w-[130px] md:hidden">
+		<div class="flex items-center gap-4">
+			<span class="hidden md:flex" />
+			<!-- <img src="/lt.svg" alt="" class="w-[130px] md:hidden"> -->
+			<ClientOnly>
+				<h1 v-if="title" class="text-lg font-semibold text-gray-900  block">
+					{{ title }}
+				</h1>
+			</ClientOnly>
+		</div>
 
 		<div class="flex items-center gap-4">
 			<div class="relative" @click.stop>
@@ -39,7 +46,7 @@
 			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn" @click="saveCurrentUrl">
 				Login
 			</nuxt-link>
-			<AvatarDropdown v-if="isLoggedIn" class="md:hidden" />
+			<!-- <AvatarDropdown v-if="isLoggedIn" class="md:hidden" /> -->
 		</div>
 	</header>
 </template>
@@ -51,9 +58,11 @@ import { Mail, MessageSquare, Copy } from 'lucide-vue-next'
 import AvatarDropdown from '@/components/core/AvatarDropdown.vue'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 
 
 const { isLoggedIn } = useUser()
+const { title } = useHeaderTitle()
 
 
 const saveCurrentUrl = () => {
