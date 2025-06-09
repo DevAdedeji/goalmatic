@@ -112,7 +112,7 @@ const faqs = [
     },
     {
         question: 'Do I need to know how to code?',
-        answer: 'No, Goalmatic is designed to be user-friendly and requires no coding knowledge. Our intuitive interface allows you to build agents and workflows through simple drag-and-drop actions and configurations.'
+        answer: 'No, Goalmatic is designed to be user-friendly and requires no coding knowledge. Our intuitive interface allows you to build agents and workflows through simple actions and configurations.'
     },
     {
         question: 'What kind of tasks can I automate?',

@@ -1,5 +1,5 @@
 <template>
-	<footer class="md:hidden fixed h-20 bottom-0   bg-light  inset-x-0 flex items-center justify-between px-5 z-[90] text-dark">
+	<footer class="md:hidden fixed h-20 bottom-0   bg-light  inset-x-0 flex items-center justify-between px-5 z-[0] text-dark">
 		<nuxt-link v-for="n in routes" :key="n.name" :to="n.route" class="flex flex-col justify-center items-center">
 			<component :is="n.icon" class="w-5 icon" />
 			<p class="text-xs  block truncate w-auto mt-1">
@@ -76,3 +76,5 @@ a.router-link-exact-active {
 	outline: none;
 }
 </style>
+
+

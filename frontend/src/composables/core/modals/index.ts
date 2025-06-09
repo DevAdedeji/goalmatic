@@ -17,6 +17,7 @@ import CreateAgent from '@/components/modals/assistant/CreateAgent.vue'
 import EditToolConfig from '@/components/modals/assistant/EditToolConfig.vue'
 import ConfirmVisibility from '@/components/modals/assistant/ConfirmVisibility.vue'
 import ToolApprovalModal from '@/components/modals/assistant/ToolApprovalModal.vue'
+import ShareChat from '@/components/modals/assistant/ShareChat.vue'
 
 // ==================== INTEGRATIONS ===============================
 import ConnectWhatsapp from '@/components/modals/integrations/ConnectWhatsapp.vue'
@@ -36,7 +37,7 @@ type OptionalPayload = Record<string, any> | null;
 type AuthTypes = 'Logout' | 'LoginAlert'
 type CoreTypes = 'Confirmation' | 'LoadingVerification' | 'OtpVerificationModal'
 type BottombarTypes = 'BottomMenu'
-type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal'
+type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal' | 'ShareChat'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
 type FlowsTypes = 'SelectNode' | 'EditNode'
 type TablesTypes = 'FieldModal' | 'RecordModal'
@@ -53,7 +54,7 @@ type ModalHelpers<Keys extends string> = Record<
 const AuthModals = { Logout, LoginAlert } as Record<AuthTypes, any>
 const CoreModals = { Confirmation, LoadingVerification, OtpVerificationModal } as Record<CoreTypes, any>
 const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
-const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal } as Record<AssistantTypes, any>
+const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal, ShareChat } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>
 const FlowsModals = { SelectNode, EditNode } as Record<FlowsTypes, any>
 const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal } as Record<TablesTypes, any>

@@ -3,6 +3,7 @@ import { watch, onMounted } from 'vue'
 import { userInput, sendMessage as originalSendMessage } from './sendMessage'
 import { loadConversationHistory, handleUrlChange } from './loadMessages'
 import { conversationHistory, ai_loading, history_loading, sessionId, rawConversationData } from './state'
+import { useChatHistory } from './chatHistory'
 
 /**
  * Composable for chat assistant functionality
@@ -10,6 +11,7 @@ import { conversationHistory, ai_loading, history_loading, sessionId, rawConvers
 export const useChatAssistant = () => {
   const route = useRoute()
   const router = useRouter()
+  const { fetchChatSessions } = useChatHistory()
 
   // Wrap the sendMessage function to pass the current route
   const sendMessage = () => originalSendMessage(route)
@@ -47,6 +49,10 @@ export const useChatAssistant = () => {
     rawConversationData.value = { messages: [] }
     sessionId.value = null
     router.push('/agents')
+    // Refresh chat history to show the new session
+    setTimeout(() => {
+      fetchChatSessions()
+    }, 1000)
   }
 
   return {

@@ -1,24 +1,16 @@
 <template>
-	<section id="main1" class="flex flex-col items-center gap-4 relative h-[calc(100vh-0px)] w-full  px-4 md:pt-8 pt-4 overflow-auto pb-20">
-		<section id="main2" class=" w-full md:max-w-[var(--mw)]  flex flex-col gap-6 items-start ">
-			<ClientOnly>
-				<div class="message-container">
-					<div class="header-container">
-						<div class="assistant-avatar">
-							<img class="size-5" src="/og.png" alt="goalmatic logo">
-						</div>
+	<section id="main1" class="flex flex-col items-center gap-4 relative h-[calc(100vh-140px)] w-full px-4 md:pt-8 pt-4 overflow-y-auto">
+		<section id="main2" class="w-full md:max-w-[var(--mw)] flex flex-col gap-6 items-start">
+			<div v-if="!conversationHistory.length" class="flex flex-col items-center justify-center absolute md:top-[40%] top-[30%] left-[50%] translate-x-[-50%]">
+				<img class="size-7" src="/og.png" alt="goalmatic logo">
+				<p class="text-xl font-bold mt-4">
+					{{ selectedAgent.name }}
+				</p>
+				<p class="mt-2 text-sm text-center text-subText">
+					{{ selectedAgent.description }}
+				</p>
+			</div>
 
-						<p class="name-label">
-							Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}
-						</p>
-					</div>
-					<article class="message-bubble">
-						<p class="message-text">
-							How can I help you today?
-						</p>
-					</article>
-				</div>
-			</ClientOnly>
 			<div v-for="(message, index) in conversationHistory" :key="index"
 				class="message-container"
 				:class="{'!items-end': message.role === 'user'}">
@@ -91,10 +83,13 @@
 					</div>
 				</article>
 			</div>
+
+			<!-- Add padding at the bottom to ensure content is visible above MessageBox -->
+			<div class="h-32" />
 		</section>
 
 		<!-- Use the MessageBox component instead of embedded form -->
-		<MessageBox />
+		<MessageBox :selected-agent="selectedAgent" />
 	</section>
 </template>
 
@@ -118,6 +113,7 @@ useHead({
 
 const { fetchSelectedAgent, selectedAgent } = useOnAssistantLoad()
 fetchSelectedAgent()
+
 
 const { conversationHistory, ai_loading, sessionId, loadConversationHistory, handleUrlChange } = useChatAssistant()
 
@@ -170,17 +166,12 @@ onUnmounted(() => {
 watch(conversationHistory, () => {
 	nextTick(() => {
 		const main1 = document.getElementById('main1')!
-		const main2 = document.getElementById('main2')!
 
-    main1.scrollTo({
-      top: document.documentElement.scrollHeight,
-      behavior: 'smooth'
+		main1.scrollTo({
+			top: main1.scrollHeight,
+			behavior: 'smooth'
+		})
 	})
-	main2.scrollTo({
-		top: document.documentElement.scrollHeight,
-		behavior: 'smooth'
-	})
-  })
 }, { deep: true })
 
 // Check if a message is still being processed
@@ -199,9 +190,11 @@ const isMessageProcessing = (index: number) => {
 .shadow{
 	box-shadow: 0px 8px 24px 0px #959DA533;
 }
-#main1, #main2 {
-	scroll-padding: 10rem;
+
+#main1 {
+	scroll-padding-bottom: 8rem;
 }
+
 .message-container {
   @apply flex flex-col gap-2 w-full items-start;
 }

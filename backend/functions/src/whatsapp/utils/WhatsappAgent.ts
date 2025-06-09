@@ -12,7 +12,7 @@ import { prepareChatHistoryForAI } from './aiMediaAccess';
 export const defaultGoalmaticAgent = {
     id: '0', 
     name: 'Goalmatic 1.0',
-    description: 'The Default plain agent for Goalmatic',
+    description: 'The Default agent for Goalmatic',
     published: true,
     user: {
         name: 'goalmatic'
@@ -22,6 +22,7 @@ export const defaultGoalmaticAgent = {
         tools: []
     },
     created_at: new Date('2025-01-01').toISOString()
+    // Note: last_used field is not tracked for the default agent
 };
 
 const updateChatSessionWithMessages = async (

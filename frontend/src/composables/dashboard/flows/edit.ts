@@ -175,13 +175,11 @@ export const useEditFlow = () => {
 
   const addNode = (node: Record<string, any>, position: number | null) => {
     if (node.type === 'trigger') {
-      console.log(flowDetails.value)
       flowDetails.value.trigger = node
       return
     }
 
     if (!position) {
-      console.log(flowDetails.value)
       flowDetails.value.steps.push({ position: flowDetails.value.steps.length + 1, ...node, id: uuidv4() })
       return
     }
@@ -233,7 +231,6 @@ export const useEditFlow = () => {
       ...(nonCloneables && { nonCloneables })
     }
 
-    console.log(updatedNode)
 
     // If it's a trigger node
     if (node.type === 'trigger') {

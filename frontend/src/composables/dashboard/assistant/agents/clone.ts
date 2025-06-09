@@ -66,9 +66,12 @@ export const useCloneAgent = () => {
             // Generate a new ID for the cloned agent
             const id = uuidv4()
 
+            // Create a copy of the agent and exclude the last_used field
+            const { last_used, ...agentDataWithoutLastUsed } = agentToClone
+
             // Create the cloned agent data with proper type assertion
             const clonedAgent = {
-                ...agentToClone,
+                ...agentDataWithoutLastUsed,
                 id,
                 name: `Copy of ${agentToClone.name}`,
                 user: {
@@ -90,7 +93,7 @@ export const useCloneAgent = () => {
                 }
             }
 
-            // Save the cloned agent to Firestore
+
             await setFirestoreDocument('agents', id, clonedAgent)
 
             // Update the leaderboard for the original creator

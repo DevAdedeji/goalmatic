@@ -86,7 +86,7 @@
 		@apply rounded-lg px-4 py-1.5 flex justify-center items-center font-medium disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed  box-border  border border-secondary hover:shadow-[4px_3.5px_0px_0px_#000] transite;
 	}
 	.btn {
-		@apply center px-6 py-[11px]  rounded-[10px] text-sm   font-semibold button_shadow disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
+		@apply center px-6 py-[11px]  rounded-[10px] text-sm   font-semibold  disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
 	}
 	.btn2 {
 
@@ -214,5 +214,28 @@
 	textarea:disabled,
 	select:disabled {
 		@apply bg-[#e3e3e352];
+	}
+	.searchInput {
+		@apply w-full text-sm transition-all duration-200 ease-in border border-[#F0F2F5] shadow-sm rounded-lg outline-none;
+		display: flex;
+		height: 42px;
+		min-height: 39px;
+		padding: 6px 12px 6px 36px;
+		align-items: center;
+		align-self: stretch;
+	}
+	.searchInput:focus {
+		outline: none;
+		border-color: #9a6bff;
+		background-color: white;
+		box-shadow: 0 0 0 3px rgba(154, 107, 255, 0.1);
+	}
+
+	.searchInput:focus + .searchIcon {
+		color: #9a6bff;
+	}
+
+	.searchInput::placeholder {
+		color: #9ca3af;
 	}
 }
