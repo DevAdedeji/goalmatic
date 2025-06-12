@@ -1,6 +1,7 @@
 <template>
 	<PagesBusinessHero />
 	<PagesBusinessUsecase />
+	<PagesBusinessGetStarted />
 	<PagesLandingFAQ />
 	<PagesLandingFooter />
 </template>
