@@ -49,3 +49,5 @@ background-clip: text;
  border-white/10 shadow-[0px_-20px_70px_0px_rgba(140,69,255,0.25),_0px_-19px_70px_0px_rgba(140,69,255,0.40)];
 }
 </style>
+
+

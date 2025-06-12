@@ -1,9 +1,8 @@
 <template>
 	<PagesBusinessHero />
-	<!-- <PagesLandingFeature />
-	<PagesLandingUsecase />
+	<PagesBusinessUsecase />
 	<PagesLandingFAQ />
-	<PagesLandingFooter /> -->
+	<PagesLandingFooter />
 </template>
 
 <script setup lang="ts">
