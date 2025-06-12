@@ -2,6 +2,7 @@
 	<PagesBusinessHero />
 	<PagesBusinessUsecase />
 	<PagesBusinessGetStarted />
+	<PagesBusinessCTA />
 	<PagesLandingFAQ />
 	<PagesLandingFooter />
 </template>
