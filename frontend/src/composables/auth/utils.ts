@@ -46,7 +46,7 @@ export const afterAuthCheck = async (user: User | null) => {
          useUser().redirectUrl.value = null
 
          // Use the saved URL or the redirectUrl from the user composable, or default to /agents
-         useRouter().push(savedRedirectUrl || redirectUrl || '/agents')
+         useRouter().replace(savedRedirectUrl || redirectUrl || '/agents')
         }
     } catch (error) {
         console.error(error)
