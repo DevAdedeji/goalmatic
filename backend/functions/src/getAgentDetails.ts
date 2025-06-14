@@ -48,7 +48,8 @@ export const getAgentDetails = onCall({
         }
         return {
             ...agentData,
-            created_at: new Date(agentData.created_at._seconds * 1000).toISOString()
+            created_at: new Date(agentData.created_at._seconds * 1000).toISOString(),
+            updated_at: new Date(agentData.updated_at._seconds * 1000).toISOString()
         }
 
     } catch (error: any) {

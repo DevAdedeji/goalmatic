@@ -1,4 +1,7 @@
 <template>
+	<!-- =====================
+    Loading State Section
+====================== -->
 	<div v-if="loading" class="p-4 sm:p-6">
 		<div class="flex flex-col gap-4 center pt-10 px-4 animate-pulse">
 			<div class="h-20 bg-gray-200 rounded-lg w-full" />
@@ -7,80 +10,88 @@
 		</div>
 	</div>
 
+	<!-- =====================
+    Error State Section
+  ====================== -->
 	<AgentsIdErrorState v-else-if="!agentDetails || Object.keys(agentDetails).length === 0" />
 
+	<!-- =====================
+    Main Agent Details Section
+  ====================== -->
 	<div v-else class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
-		<section id="header" class="card">
-			<div class="flex flex-col md:flex-row gap-4 md:items-center">
-				<div class="flex items-center gap-2">
-					<img src="/bot.png" alt="agent" class="size-14">
-				</div>
+		<!-- ===== Header: Agent Title, Owner, Actions ===== -->
 
-				<div class="flex flex-col gap-2 items-start">
-					<div class="flex items-center gap-2">
-						<Popover align="start" :open="titlePopoverOpen" :modal="true" @update:open="titlePopoverOpen = $event">
-							<template #trigger>
-								<button :disabled="!isOwner(agentDetails)" class="flex items-center gap-2 cursor-pointer" @click="openTitlePopover(agentDetails)">
-									<h2 class="text-sm font-semibold text-headline">
-										{{ agentDetails?.name || 'Unnamed Agent' }}
-									</h2>
-									<Edit2 v-if="isOwner(agentDetails)" :size="14" class="text-primary hover:text-primary-dark" />
-								</button>
-							</template>
-							<template #content>
-								<div class="min-w-[300px] p-1">
-									<input ref="titleInputRef" v-model="currentTitle" type="text" placeholder="Agent Name" class="input-field w-full mb-2" @keydown.enter.prevent="saveTitle(id as string, updateName)">
-									<div class="flex justify-end gap-2">
-										<button class="btn-outline flex-1" @click="titlePopoverOpen = false">
-											Cancel
-										</button>
-										<button class="btn-primary flex-1" :disabled="!currentTitle.trim() || updateNameLoading" @click="saveTitle(id as string, updateName)">
-											<span v-if="!updateNameLoading">Save</span>
-											<Spinner v-else size="14px" />
-										</button>
-									</div>
-								</div>
-							</template>
-						</Popover>
-					</div>
-					<div class="info">
-						{{ agentDetails?.user?.name || 'Unknown User' }} <span class="dot" />
-						{{
-							agentDetails?.created_at ? formatDateString(agentDetails.created_at, {
-								month: 'short',
-								day: 'numeric',
-								year: 'numeric'
-							}) : 'Unknown date'
-						}}
+		<section id="header" class="flex md:flex-row flex-col items-center justify-between w-full">
+			<div class="flex flex-col w-full items-center md:items-start">
+				<img src="/bot.png" alt="agent" class="size-[64px] rounded-full">
 
-						<span class="dot" />
-						<div class="flex items-center gap-1.5 bg-[#EFE8FD] border border-[#CFBBFA] text-[#601DED] px-2 py-1 rounded-lg text-sm font-semibold" :class="{ 'cursor-pointer hover:bg-[#E5DBFA] transition-colors': isOwner(agentDetails) }"
-							:title="isOwner(agentDetails) ? 'Click to change visibility' : ''" @click="isOwner(agentDetails) && openVisibilityConfirmation(agentDetails)">
-							<span>{{ agentDetails?.public ? 'Public' : 'Private' }}</span>
-							<EyeClosed v-if="!agentDetails?.public" :size="16" />
-							<Eye v-else :size="16" />
-						</div>
-					</div>
-				</div>
-
-				<div class="flex md:ml-auto gap-2">
+				<h1 class="text-headline text-2xl font-bold mt-5">
+					{{ agentDetails?.name || 'Unnamed Agent' }}
+				</h1>
+				<p class="text-[#37363D] text-[14px] mt-2">
+					Created at: {{
+						agentDetails?.created_at ? formatDateString(agentDetails.created_at, {
+							month: 'short',
+							day: 'numeric',
+							year: 'numeric'
+						}) : 'Unknown date'
+					}}
+				</p>
+				<div class="flex mt-5 gap-2">
 					<button v-if="isOwner(agentDetails) || agentDetails?.id === '0'" class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
 						Use agent
 						<MoveUpRight :size="16" />
 					</button>
-					<button v-if="id !== '0'" class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="!canCloneAgent(agentDetails) ? (agentDetails?.creator_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
+					<button v-if="id !== '0' && !isOwner(agentDetails)" class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="!canCloneAgent(agentDetails) ? (agentDetails?.creator_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
 						@click="cloneAgent(agentDetails)">
 						Clone
 						<Copy :size="16" color="#601DED" />
 					</button>
-					<!-- Only show delete button if user is the owner -->
-					<button v-if="isOwner(agentDetails)" class="btn-icon gap-2" @click="setDeleteAgentData(agentDetails)">
-						<Trash :size="16" color="#601DED" />
-					</button>
+
+					<IconDropdown
+						v-if="isOwner(agentDetails)"
+						:data="agentDetails"
+						:children="[
+							{
+								name: agentDetails?.public ? 'Make Private' : 'Make Public',
+								icon: agentDetails?.public ? EyeClosed : Eye,
+								func: openVisibilityConfirmation,
+								class: '!text-primary hover:!bg-primary hover:!text-white'
+							},
+							{
+								name: 'Delete Agent',
+								icon: Trash,
+								func: setDeleteAgentData,
+								class: '!text-danger hover:!bg-danger hover:!text-white'
+							}
+						]"
+						btn-class="icon-btn gap-2"
+						class-name="w-40"
+						:index="0"
+					/>
 				</div>
 			</div>
+
+			<article class="flex flex-col gap-3.5 mt-8 md:mt-0 w-full">
+				<h2 class="font-medium">
+					Details
+				</h2>
+				<p class="text-subText text-[14px] text-[#7A797E]">
+					By {{ agentDetails?.user?.name || 'Unknown User' }}
+				</p>
+
+				<p class="text-subText text-[14px] text-[#7A797E]">
+					Last Updated: {{ agentDetails?.updated_at ? formatDateString(agentDetails.updated_at, {
+						month: 'short',
+						day: 'numeric',
+						year: 'numeric'
+					}) : 'Unknown date' }}
+				</p>
+			</article>
 		</section>
 
+
+		<!-- ===== About Section: Description ===== -->
 		<section id="about" class="card md:mt-8 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
@@ -106,7 +117,7 @@
 			<div v-else class="text-sm text-subText prose max-w-none" v-html="descriptionModel || '<p>No description provided.</p>'" />
 		</section>
 
-		<!-- Only show editable system info if user is the owner -->
+		<!-- ===== System Information Section ===== -->
 		<section id="system-info" class="card md:mt-10 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
@@ -126,13 +137,14 @@
 				</div>
 			</div>
 
+			<!-- System Info Editor (Editable or View Only) -->
 			<Editor v-model="systemInfoModel" :editable="isEditingSystemInfo && isOwner(agentDetails)" :class="{
 				'bg-white rounded-lg border': isEditingSystemInfo && isOwner(agentDetails),
 				'view-only': !isEditingSystemInfo || !isOwner(agentDetails),
 			}" />
 		</section>
 
-		<!-- Only show editable tools if user is the owner -->
+		<!-- ===== Tools Section: Agent Tool Library ===== -->
 		<section id="tools" class="card border md:mt-10 mt-4 gap-2">
 			<div class="flex justify-between items-center">
 				<h1 class="text-headline text-base font-semibold">
@@ -152,7 +164,7 @@
 				</div>
 			</div>
 
-
+			<!-- Tools List (View Mode) -->
 			<div v-if="!isEditingTools" class="text-subText md:text-[15px] text-xs">
 				<div v-if="!agentDetails?.spec?.tools?.length" class="flex flex-col items-center gap-2 ">
 					<PencilRuler :size="24" color="#601DED" />
@@ -171,7 +183,7 @@
 				</div>
 			</div>
 
-
+			<!-- Tools List (Edit Mode) -->
 			<div v-else class="mt-4">
 				<section v-if="toolsModel.length" class="flex flex-wrap p-3 rounded-md border border-primary my-3 gap-2">
 					<div v-for="tool in toolsModel" :key="tool.id" class="card2">
@@ -191,7 +203,7 @@
 						<Search class="absolute left-3 top-1/2 -translate-y-1/2" :size="18" color="#8F95B2" />
 					</div>
 
-
+					<!-- Filtered Tools List for Selection -->
 					<div class="flex flex-col gap-4">
 						<div v-for="tool in filteredTools" :key="tool.id" class="bg-white rounded-lg p-4 border">
 							<div class="flex gap-4 w-full">
@@ -238,9 +250,15 @@
 	</div>
 </template>
 
+<!-- =====================
+  Script Setup Section
+====================== -->
+
 <script setup lang="ts">
+// ===== Imports =====
 import { EyeClosed, MoveUpRight, Trash, Eye, PencilRuler, Search, XCircle, Copy, Edit2 } from 'lucide-vue-next'
 import { ref } from 'vue'
+import IconDropdown from '@/components/core/IconDropdown.vue'
 import DashboardLayout from '@/layouts/Dashboard.vue'
 import Editor from '@/components/core/Editor.vue'
 import Popover from '@/components/core/Popover.vue'
@@ -259,6 +277,10 @@ import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useCustomHead } from '@/composables/core/head'
 import { useAgentDetails, isEditingSystemInfo, isEditingTools, toolsModel, toolSearch, filteredTools } from '@/composables/dashboard/assistant/agents/details'
+import { useHeaderTitle } from '@/composables/core/headerTitle'
+
+// ===== State and Composables =====
+useHeaderTitle().setTitle('Agents')
 
 const loading = ref(false)
 
@@ -280,6 +302,7 @@ const {
 
 const { editToolConfig } = useEditToolConfig()
 
+// ===== Route and Data Fetching =====
 const { id } = useRoute().params
 await fetchAgentsById(id as string)
 
@@ -300,7 +323,7 @@ await useCustomHead({
 	img: 'https://www.goalmatic.io/og2.png'
 })
 
-// Use the agent details composable
+// ===== Agent Details Composable Setup =====
 const {
  titleInputRef, titlePopoverOpen, currentTitle, isEditingDescription, descriptionModel, setupWatchers,
 	systemInfoModel, removeTool, openTitlePopover, saveTitle, editDescription, cancelEditDescription,
@@ -311,13 +334,28 @@ const {
 setupWatchers(agentDetails)
 
 
+// ===== Page Meta =====
 definePageMeta({
 	layout: 'dashboard'
 })
 
 </script>
 
+<!-- =====================
+  Style Section
+====================== -->
+
 <style scoped lang="scss">
+:deep(.icon-btn) {
+	@apply size-10 rounded-md p-2 border border-[#E1E6EC] bg-[#F7F9FB];
+
+
+
+
+
+
+
+}
 .card {
 	@apply bg-[#f6f5ffa3] rounded-lg py-4 px-3.5 w-full flex flex-col;
 

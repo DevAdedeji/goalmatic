@@ -14,7 +14,7 @@
 				</button>
 			</DropdownMenuTrigger>
 
-			<DropdownMenuContent class="z-10  absolute -right-4 ">
+			<DropdownMenuContent class="z-10  absolute -left-5 ">
 				<div
 					class="start-0 z-10 mt-1 rounded-md border border-line bg-white shadow-lg"
 					:class="[className, index > 1 ? 'bottom-8' : '']" role="menu"
