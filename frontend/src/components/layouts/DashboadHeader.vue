@@ -43,7 +43,7 @@
 					</DropdownMenuPortal>
 				</DropdownMenuRoot>
 			</div>
-			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="btn-outline btn" @click="saveCurrentUrl">
+			<nuxt-link v-if="!isLoggedIn" to="/auth/login" class="landing-btn scale-100 btn" @click="saveCurrentUrl">
 				Login
 			</nuxt-link>
 			<!-- <AvatarDropdown v-if="isLoggedIn" class="md:hidden" /> -->

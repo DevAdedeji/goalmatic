@@ -25,9 +25,33 @@
 			<div class="flex flex-col w-full items-center md:items-start">
 				<img src="/bot.png" alt="agent" class="size-[64px] rounded-full">
 
-				<h1 class="text-headline text-2xl font-bold mt-5">
-					{{ agentDetails?.name || 'Unnamed Agent' }}
-				</h1>
+				<!-- Agent Name (Editable Popover) -->
+				<div class="flex items-center gap-2 mt-5">
+					<h1 class="text-headline text-2xl font-bold">
+						{{ agentDetails?.name || 'Unnamed Agent' }}
+					</h1>
+					<Popover v-if="isOwner(agentDetails)" align="start" :open="titlePopoverOpen" :modal="true" @update:open="titlePopoverOpen = $event">
+						<template #trigger>
+							<button class="flex items-center gap-1 cursor-pointer" @click="openTitlePopover(agentDetails)">
+								<Edit2 :size="16" class="text-primary hover:text-primary-dark" />
+							</button>
+						</template>
+						<template #content>
+							<div class="min-w-[300px] p-1">
+								<input ref="titleInputRef" v-model="currentTitle" type="text" placeholder="Agent Name" class="input-field w-full mb-2" @keydown.enter.prevent="saveTitle(id as string, updateName)">
+								<div class="flex justify-end gap-2">
+									<button class="btn-outline flex-1" @click="titlePopoverOpen = false">
+										Cancel
+									</button>
+									<button class="btn-primary flex-1" :disabled="!currentTitle.trim() || updateNameLoading" @click="saveTitle(id as string, updateName)">
+										<span v-if="!updateNameLoading">Save</span>
+										<Spinner v-else size="14px" />
+									</button>
+								</div>
+							</div>
+						</template>
+					</Popover>
+				</div>
 				<p class="text-[#37363D] text-[14px] mt-2">
 					Created at: {{
 						agentDetails?.created_at ? formatDateString(agentDetails.created_at, {
@@ -40,7 +64,7 @@
 				<div class="flex mt-5 gap-2">
 					<button v-if="isOwner(agentDetails) || agentDetails?.id === '0'" class="btn-primary gap-2 w-full md:w-auto" @click="selectAgent(agentDetails)">
 						Use agent
-						<MoveUpRight :size="16" />
+						<Sparkles :size="15" />
 					</button>
 					<button v-if="id !== '0' && !isOwner(agentDetails)" class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="!canCloneAgent(agentDetails) ? (agentDetails?.creator_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
 						@click="cloneAgent(agentDetails)">
@@ -72,7 +96,7 @@
 				</div>
 			</div>
 
-			<article class="flex flex-col gap-3.5 mt-8 md:mt-0 w-full md:w-auto">
+			<article class="flex flex-col gap-3.5 mt-8 md:mt-0 w-full md:w-auto md:min-w-[200px]">
 				<h2 class="font-medium">
 					Details
 				</h2>
@@ -92,9 +116,9 @@
 
 
 		<!-- ===== About Section: Description ===== -->
-		<section id="about" class="card md:mt-8 mt-4 gap-2">
-			<div class="flex justify-between items-center">
-				<h1 class="text-headline text-base font-semibold">
+		<section id="about" class="card mt-10 gap-2">
+			<div class="flex justify-between items-center mb-2">
+				<h1 class="section-title">
 					About
 				</h1>
 				<button v-if="!isEditingDescription && isOwner(agentDetails)" class="btn-text" @click="editDescription(agentDetails)">
@@ -111,16 +135,14 @@
 				</div>
 			</div>
 
-			<!-- Use textarea for editing description -->
 			<textarea v-if="isEditingDescription && isOwner(agentDetails)" v-model="descriptionModel" class="input-textarea w-full min-h-[150px] text-sm text-subText" placeholder="Enter agent description..." />
-			<!-- Display description text when not editing -->
 			<div v-else class="text-sm text-subText prose max-w-none" v-html="descriptionModel || '<p>No description provided.</p>'" />
 		</section>
 
 		<!-- ===== System Information Section ===== -->
-		<section id="system-info" class="card md:mt-10 mt-4 gap-2">
-			<div class="flex justify-between items-center">
-				<h1 class="text-headline text-base font-semibold">
+		<section id="system-info" class="card mt-6 gap-2">
+			<div class="flex justify-between items-center mb-2">
+				<h1 class="section-title">
 					System Information
 				</h1>
 				<button v-if="!isEditingSystemInfo && isOwner(agentDetails)" class="btn-text" @click="editSystemInfo(agentDetails)">
@@ -136,19 +158,29 @@
 					</button>
 				</div>
 			</div>
+			<section class="flex flex-col">
+				<div :class="[( systemInfoExpanded || isEditingSystemInfo) ? '!max-h-[none] overflow-visible' : '!max-h-[200px] overflow-hidden']">
+					<Editor v-model="systemInfoModel" :editable="isEditingSystemInfo && isOwner(agentDetails)" :class="{
+						'bg-white rounded-lg border p-4 ': isEditingSystemInfo && isOwner(agentDetails),
+						'view-only': !isEditingSystemInfo || !isOwner(agentDetails),
+					}" />
+				</div>
 
-			<!-- System Info Editor (Editable or View Only) -->
-			<Editor v-model="systemInfoModel" :editable="isEditingSystemInfo && isOwner(agentDetails)" :class="{
-				'bg-white rounded-lg border': isEditingSystemInfo && isOwner(agentDetails),
-				'view-only': !isEditingSystemInfo || !isOwner(agentDetails),
-			}" />
+				<button
+					v-if="!isEditingSystemInfo"
+					class="ml-auto btn-text italic shadow "
+					@click="systemInfoExpanded = !systemInfoExpanded"
+				>
+					{{ systemInfoExpanded ? 'View Less' : 'View More' }}
+				</button>
+			</section>
 		</section>
 
 		<!-- ===== Tools Section: Agent Tool Library ===== -->
-		<section id="tools" class="card border md:mt-10 mt-4 gap-2">
-			<div class="flex justify-between items-center">
-				<h1 class="text-headline text-base font-semibold">
-					Agent Tool Library
+		<section id="tools" class="card  md:mt-10 mt-4 gap-2">
+			<div class="flex justify-between items-center mb-2">
+				<h1 class="section-title">
+					Tools & Abilities
 				</h1>
 				<button v-if="!isEditingTools && isOwner(agentDetails)" class="btn-text" @click="editTools(agentDetails)">
 					Edit
@@ -166,14 +198,18 @@
 
 			<!-- Tools List (View Mode) -->
 			<div v-if="!isEditingTools" class="text-subText md:text-[15px] text-xs">
-				<div v-if="!agentDetails?.spec?.tools?.length" class="flex flex-col items-center gap-2 ">
-					<PencilRuler :size="24" color="#601DED" />
-					<span class="text-headline text-lg font-semibold">No tools added</span>
+				<div v-if="!agentDetails?.spec?.tools?.length" class="flex flex-col items-center gap-2 max-w-[480px] mt-10 justify-center mx-auto text-center">
+					<p class="text-headline text-lg font-semibold">
+						You haven't added any tools
+					</p>
+					<p class="text-subText text-sm">
+						Tools are the building blocks of your agent's capabilities. Add tools to your agent to enable it to perform tasks and interact with the world.
+					</p>
 				</div>
 				<div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
-					<div v-for="tool in agentDetails.spec.tools" :key="tool.id" class="bg-white rounded-lg p-4 border">
+					<div v-for="tool in agentDetails.spec.tools" :key="tool.id" class="card2">
 						<div class="flex items-center gap-2">
-							<img :src="tool.icon" alt="google calendar" class="size-7">
+							<img :src="tool.icon" alt="google calendar" class="size-8">
 							<div class="flex flex-col">
 								<span class="text-headline text-sm font-bold">{{ tool.name }}</span>
 								<span class="text-subText text-[10px]  font-semibold">{{ tool.id.split('_')[0] }}</span>
@@ -185,59 +221,74 @@
 
 			<!-- Tools List (Edit Mode) -->
 			<div v-else class="mt-4">
-				<section v-if="toolsModel.length" class="flex flex-wrap p-3 rounded-md border border-primary my-3 gap-2">
-					<div v-for="tool in toolsModel" :key="tool.id" class="card2">
-						<img :src="tool.icon" alt="google calendar" class="size-7">
-						<div class="flex flex-col">
-							<span class="text-headline text-sm font-bold">{{ tool.name }}</span>
-							<span class="text-subText text-xs  font-normal">{{ tool.id.split('_')[0] }}</span>
+				<section v-if="toolsModel.length" class="flex flex-wrap p-3 rounded-md border border-line my-3 gap-2">
+					<div v-for="tool in toolsModel" :key="tool.id" class="card2 gap-5">
+						<div class="flex items-center gap-2">
+							<img :src="tool.icon" alt="google calendar" class="size-8">
+							<div class="flex flex-col">
+								<span class="text-headline text-sm font-bold">{{ tool.name }}</span>
+								<span class="text-subText text-xs  font-normal">{{ tool.id.split('_')[0] }}</span>
+							</div>
 						</div>
-						<button class="gap-2 ml-4" @click="removeTool(toolsModel, tool)">
-							<XCircle :size="16" color="#601DED" />
+
+						<button @click="removeTool(toolsModel, tool)">
+							<X :size="16" />
 						</button>
 					</div>
 				</section>
 				<div class="flex flex-col gap-4">
 					<div class="relative">
-						<input v-model="toolSearch" type="text" class="input-field w-full !pl-10" placeholder="Search for a Tool">
+						<input v-model="toolSearch" type="text" class="searchInput w-full " placeholder="Search for a Tool">
 						<Search class="absolute left-3 top-1/2 -translate-y-1/2" :size="18" color="#8F95B2" />
 					</div>
 
 					<!-- Filtered Tools List for Selection -->
 					<div class="flex flex-col gap-4">
-						<div v-for="tool in filteredTools" :key="tool.id" class="bg-white rounded-lg p-4 border">
+						<div v-for="tool in filteredTools" :key="tool.id" class="bg-white rounded-xl p-4 border border-[#EDEDED]">
 							<div class="flex gap-4 w-full">
-								<img :src="tool.icon" :alt="tool.name" class="w-8 h-8">
 								<div class="flex flex-col gap-2 w-full">
-									<div class="flex justify-between items-center w-full">
-										<h3 class="text-sm font-semibold text-headline">
-											{{ tool.name }}
-										</h3>
+									<div class="flex justify-between md:items-center items-start w-full">
+										<div class="flex md:flex-row flex-col items-start gap-2">
+											<img :src="tool.icon" :alt="tool.name" class="size-8">
+											<div class="flex flex-col gap-1">
+												<h3 class="text-sm font-bold text-headline">
+													{{ tool.name }}
+												</h3>
+												<p class="text-xs text-subText font-medium">
+													{{ tool.description }}
+												</p>
+											</div>
+										</div>
+
+
 										<div class="flex items-center gap-1 text-xs">
 											<button v-if="tool.config && tool.status" class="btn-text" @click="editToolConfig(tool)">
 												Edit config
 											</button>
-											<span class="btn-status" :class="{ 'bg-[#EFE8FD] text-primary': tool.status, 'bg-line text-secondary': !tool.status }">{{ tool.status ? 'Connected' : 'Not Connected' }}</span>
-											<button v-if="!tool.status" class="btn-text btn !bg-primary text-light" @click="connectIntegration(tool.id)">
+											<span class="btn-status" :class="{ 'bg-[#D2FAD1] text-greenx': tool.status, 'bg-line text-secondary': !tool.status }">{{ tool.status ? 'Connected' : 'Not Connected' }}</span>
+											<button v-if="!tool.status" class="btn-text hover:scale-95 transition-all duration-200" @click="connectIntegration(tool.id)">
 												Connect
 											</button>
 										</div>
 									</div>
-									<p class="text-xs text-subText">
-										{{ tool.description }}
-									</p>
 
-									<div class="flex flex-wrap gap-2 mt-1">
+
+									<div class="flex flex-wrap gap-2 mt-2.5">
 										<div v-if="tool.config && !isConfigSet(tool)" class="w-full mb-2">
 											<p class="text-danger text-xs">
-												Please set required configuration before using this tool
+												Click the edit config button to set the required configuration before using this tool
 											</p>
 										</div>
-										<label v-for="ability in tool.abilities" :key="ability.name" class="flex items-center gap-2 bg-[#EFE8FD] border border-[#CFBBFA] text-[#601DED] px-2 py-1 rounded-lg text-xs" :class="{ 'opacity-50': !tool.status || (tool.config && !isConfigSet(tool)) }">
-											<input v-model="toolsModel" type="checkbox" :value="ability" :disabled="!tool.status || (tool.config && !isConfigSet(tool))" class="form-checkbox h-3 w-3 text-primary rounded border-primary focus:ring-primary">
-											<div class="flex items-center gap-1.5">
-												<span>{{ ability.name }}</span>
-											</div>
+										<label v-for="ability in tool.abilities" :key="ability.name"
+											:class="[
+												'flex items-center gap-2 border border-[#D3D2D4] px-3.5 py-1.5 rounded-full text-xs',
+												isAbilitySelected(ability) ? 'bg-[#5f1ded52] text-dark' : 'bg-[#F9F8FB] text-[#4D4D53]',
+												{ 'opacity-50': !tool.status || (tool.config && !isConfigSet(tool)) }
+											]"
+										>
+											<span>{{ ability.name }}</span>
+											<input v-model="toolsModel" type="checkbox" :value="ability" :disabled="!tool.status || (tool.config && !isConfigSet(tool))" class="form-checkbox checkbox size-3 text-dark  border-dark border !outline-none !ring-0">
+
 										</label>
 									</div>
 								</div>
@@ -256,10 +307,9 @@
 
 <script setup lang="ts">
 // ===== Imports =====
-import { EyeClosed, MoveUpRight, Trash, Eye, PencilRuler, Search, XCircle, Copy, Edit2 } from 'lucide-vue-next'
-import { ref } from 'vue'
+import { EyeClosed, Sparkles, Trash, Eye, Search, X, Copy, Edit2 } from 'lucide-vue-next'
+
 import IconDropdown from '@/components/core/IconDropdown.vue'
-import DashboardLayout from '@/layouts/Dashboard.vue'
 import Editor from '@/components/core/Editor.vue'
 import Popover from '@/components/core/Popover.vue'
 import { useFetchAgentsById } from '@/composables/dashboard/assistant/agents/id'
@@ -333,31 +383,32 @@ const {
 // Setup watchers for agent details
 setupWatchers(agentDetails)
 
+const systemInfoExpanded = ref(false)
+const showSystemInfoToggle = ref(false)
 
-// ===== Page Meta =====
+// Helper to check if an ability is selected
+function isAbilitySelected(ability: any) {
+	return toolsModel.value.some((a: any) => a.id === ability.id)
+}
+
 definePageMeta({
 	layout: 'dashboard'
 })
 
 </script>
 
-<!-- =====================
-  Style Section
-====================== -->
 
-<style scoped lang="scss">
+
+<style scoped lang="postcss">
+.section-title{
+	@apply  text-base md:text-xl font-semibold;
+}
 :deep(.icon-btn) {
 	@apply size-10 rounded-md p-2 border border-[#E1E6EC] bg-[#F7F9FB];
-
-
-
-
-
-
-
 }
+
 .card {
-	@apply bg-[#f6f5ffa3] rounded-lg py-4 px-3.5 w-full flex flex-col;
+	@apply w-full flex flex-col;
 
 	h2 {
 		@apply text-headline text-2xl font-semibold;
@@ -373,7 +424,8 @@ definePageMeta({
 }
 
 .card2 {
-	@apply bg-[#EFE8FD] border border-[#CFBBFA] text-primary flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium;
+	@apply bg-[#F9FAFA] border border-[#EDEDED]  flex items-start gap-2 p-3 rounded-xl;
+
 }
 
 .input-text {
@@ -381,15 +433,16 @@ definePageMeta({
 }
 
 .btn-status {
-	@apply border border-[#CFBBFA] px-2 py-1 rounded-lg text-xs font-medium;
+	@apply border border-[#E9E9E9] px-2 py-1 rounded-md text-xs;
+box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.02);
 }
 
-.form-checkbox {
-	@apply rounded border-primary text-primary focus:ring-primary;
+.checkbox {
+	@apply !outline-none !ring-0 !shadow-none rounded;
 
 	&:checked {
-		background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
-		@apply bg-primary;
+		background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='dark' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+		@apply bg-light;
 	}
 }
 
@@ -418,4 +471,6 @@ definePageMeta({
 		}
 	}
 }
+
+
 </style>

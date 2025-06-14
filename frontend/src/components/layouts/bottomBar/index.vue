@@ -55,6 +55,10 @@ const props = defineProps({
 
 
 <style scoped lang="scss">
+footer{
+    @apply border-t border-hover;
+    box-shadow: 0px 7px 29px 0px rgba(100, 100, 111, 0.20);
+}
 .icon{
 	@apply border border-tertiary bg-[#FCFAFF] rounded-lg p-1.5 size-9;
 }
