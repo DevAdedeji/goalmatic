@@ -8,13 +8,16 @@
 </template>
 
 <script setup lang="ts">
-import section1 from './consultingpages.vue/section1.vue'
-import HeroHeader from '@/components/layouts/landing/HeroHeader.vue'
+import { watchUserStateChange } from '@/firebase/auth'
+
+onMounted(() => watchUserStateChange())
+
+definePageMeta({
+	layout: 'landing'
+})
+
 </script>
 
 <style scoped>
-* {
-	margin: 0px !important;
-	padding: 0px !important;
-}
+
 </style>
