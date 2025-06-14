@@ -72,7 +72,7 @@
 				</div>
 			</div>
 
-			<article class="flex flex-col gap-3.5 mt-8 md:mt-0 w-full">
+			<article class="flex flex-col gap-3.5 mt-8 md:mt-0 w-full md:w-auto">
 				<h2 class="font-medium">
 					Details
 				</h2>
