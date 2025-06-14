@@ -86,7 +86,7 @@
 		@apply rounded-lg px-4 py-1.5 flex justify-center items-center font-medium disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed  box-border  border border-secondary hover:shadow-[4px_3.5px_0px_0px_#000] transite;
 	}
 	.btn {
-		@apply center px-6 py-[11px]  rounded-md text-sm   font-semibold  disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
+		@apply center px-6 py-[11px]  rounded-[10px] text-sm   font-semibold  disabled:bg-gray-500 disabled:text-dark disabled:cursor-not-allowed transite;
 	}
 	.btn2 {
 		@apply center px-6 py-[11px] rounded-[10px] text-sm font-semibold  border-[3px] border-[#E9E9E9] disabled:text-dark disabled:cursor-not-allowed transite;
@@ -236,5 +236,42 @@
 
 	.searchInput::placeholder {
 		color: #9ca3af;
+	}
+	.landing-btn {
+		@apply bg-primary text-light btn-primary;
+		border-radius: 8px !important;
+		box-shadow: 0px 2px 5px 0px rgba(98, 20, 201, 0.22);
+		position: relative;
+	}
+
+	.landing-btn::before {
+		content: '';
+		position: absolute;
+		top: -4px;
+		left: -4px;
+		right: -4px;
+		bottom: -4px;
+		border: 2px solid var(--primary);
+		border-radius: 12px;
+		z-index: -1;
+	}
+
+	.landing-btn-secondary {
+		@apply bg-light text-dark btn-primary;
+		border-radius: 8px !important;
+		box-shadow: 0px 2px 5px 0px rgba(98, 20, 201, 0.22);
+		position: relative;
+	}
+
+	.landing-btn-secondary::before {
+		content: '';
+		position: absolute;
+		top: -4px;
+		left: -4px;
+		right: -4px;
+		bottom: -4px;
+		border: 2px solid var(--line);
+		border-radius: 12px;
+		z-index: -1;
 	}
 }

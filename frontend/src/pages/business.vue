@@ -1,8 +1,10 @@
 <template>
-	<div class="mt-20">
-		<!-- <HeroHeader></HeroHeader> -->
-		<section1 />
-	</div>
+	<PagesBusinessHero />
+	<PagesBusinessUsecase />
+	<PagesBusinessGetStarted />
+	<PagesBusinessCTA />
+	<PagesLandingFAQ />
+	<PagesLandingFooter />
 </template>
 
 <script setup lang="ts">

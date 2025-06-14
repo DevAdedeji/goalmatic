@@ -1,19 +1,22 @@
 <template>
-	<main
-		class="container max-w-[100vw] md:px-9 px-4 relative overflow-hidden flex flex-col items-center  bg-holder pt-[70px]">
+	<main class="container max-w-[100vw] md:px-9 px-4 relative overflow-hidden flex flex-col items-center  bg-holder pt-[70px]">
 		<div class="flex flex-col items-center md:gap-4 gap-4 z-30  mt-[153px] relative">
-			<h1 ref="headline"
-				class="textHero text-headline font-bold text-[40px] md:text-[72px] lg:max-w-[960px] text-center leading-[45px] md:leading-[80px] md:px-4">
+			<h1 ref="headline" class="textHero text-headline font-bold text-[40px] md:text-[72px] lg:max-w-[960px] text-center leading-[45px] md:leading-[80px] md:px-4">
 				AI Agents & Workflows Built for Business Growth
 			</h1>
-			<p ref="paragraph"
-				class="text-sm md:text-[20px] text-dark text-center  md:max-w-[760px] leading-[25px] md:leading-[30px] md:px-4">
+			<p ref="paragraph" class="text-sm md:text-[20px] text-dark text-center  md:max-w-[760px] leading-[25px] md:leading-[30px] md:px-4">
 				Empower your teams—sales, marketing, customer service, IT—with intelligent automation that works 24/7.
 				We provide both the software and the strategic guidance.
 			</p>
-			<nuxt-link ref="ctaButton" to="/auth/login" class="btn-primary mt-6">
-				Get Started for Free
-			</nuxt-link>
+			<div class="flex flex-col md:flex-row gap-2 space-y-3 md:space-y-0 md:space-x-3 mt-6">
+				<nuxt-link ref="ctaButton" to="/auth/login" class="landing-btn  w-full md:w-auto">
+					Get Started for Free
+				</nuxt-link>
+				<a href="https://cal.com/kromate/goalmatic-demo" target="_blank" class="landing-btn-secondary w-full md:w-auto">
+					Book a Demo
+				</a>
+			</div>
+
 			<div class="flex flex-col items-center md:gap-4 gap-4 z-30  container">
 				<img src="/flow.png" alt="hero-bg" class=" mt-24 hidden md:block">
 				<img src="/flow-mobile.png" alt="hero-bg" class=" mt-8 md:hidden">
@@ -45,6 +48,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
+
 .bg-holder {
 	background-image: url('/background.svg');
 	background-size: cover;
