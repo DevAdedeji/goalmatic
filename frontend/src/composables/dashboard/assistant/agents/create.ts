@@ -9,6 +9,7 @@ type AgentStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED'
 const createAgentForm = reactive({
     name: '',
     description: '',
+    avatar: '/avatars/0.png', // Default avatar
     public: false,
     status: 'DRAFT' as AgentStatus,
     spec: {
@@ -31,6 +32,7 @@ export const useCreateAgent = () => {
     const resetForm = () => {
         createAgentForm.name = ''
         createAgentForm.description = ''
+        createAgentForm.avatar = '/avatars/0.png' // Reset to default avatar
     }
 
     const createAgent = async () => {

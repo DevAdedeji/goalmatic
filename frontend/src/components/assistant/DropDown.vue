@@ -6,7 +6,7 @@
 					class="dropdownBtn"
 					:class="{'!border-primary': open}"
 				>
-					<img src="/og.png" alt="agent" class="size-3.5">
+					<img :src="selectedAgent.avatar || '/og.png'" alt="agent" class="size-3.5 rounded-full">
 					<span class="text-xs font-medium text-dark">{{
 						selectedAgent.name
 					}}</span>
@@ -118,7 +118,7 @@
 										<img
 											:src="agent.avatar || '/og.png'"
 											:alt="agent.name"
-											class="size-5"
+											class="size-5 rounded-full"
 										>
 									</div>
 									<div class="flex-1 min-w-0">

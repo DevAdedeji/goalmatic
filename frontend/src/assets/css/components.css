@@ -20,16 +20,13 @@
 
 	label,
 	.label {
-		line-height: 19.6px;
-		letter-spacing: -0.5px;
 		text-underline-position: from-font;
 		text-decoration-skip-ink: none;
 		@apply font-medium text-sm text-headline text-left;
 	}
 
 	.input {
-		border-width: var(--border);
-		@apply w-full text-dark  px-2.5 py-[9px] rounded-md outline-none  border border-[#0000001A] focus:border-[#7F4AF1] 
+		@apply w-full text-dark text-sm px-3 py-2 rounded-lg outline-none  border border-[#EBEEF2] focus:border-[#7F4AF1] 
         bg-light transition-all duration-200 ease-in disabled:bg-[#f1f2f5b4] disabled:text-gray-500;
 	}
 
@@ -42,7 +39,7 @@
 	}
 
 	.input-textarea {
-		@apply input py-4 min-h-[200px];
+		@apply input py-4;
 	}
 
 	.main-layout {
@@ -147,14 +144,12 @@
 	}
 
 	.modal-title {
-		background: linear-gradient(90deg, #f5f0ff 0%, #e2d3ff 100%);
-		@apply font-medium border md:text-lg text-start w-full text-dark px-3 py-2 rounded-lg;
+		@apply font-medium md:text-lg text-start w-full text-dark p-5 pb-0;
 	}
 
 	.modal {
 		box-shadow: 0px 1px 2px 0px #0000000d;
-		border: 1px solid #e9e9e9;
-		@apply bg-light flex flex-col items-start gap-4 p-5 max-h-screen rounded-lg sm:w-[470px] max-w-[100%] overflow-y-auto  transite;
+		@apply bg-light flex flex-col items-start gap-4  max-h-screen rounded-2xl sm:w-[470px] max-w-[100%] overflow-y-auto  transite;
 	}
 
 	.modal-btn {

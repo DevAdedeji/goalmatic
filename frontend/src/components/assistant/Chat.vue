@@ -21,7 +21,7 @@
 							<UserAvatar :size="30" />
 						</div>
 						<div v-else class="assistant-avatar">
-							<img class="size-5" src="/og.png" alt="goalmatic logo">
+							<img class="size-5" :src="selectedAgent.avatar || '/og.png'" alt="goalmatic logo">
 						</div>
 						<p class="name-label" :class="{ 'text-right': message.role === 'user' }">
 							{{ message.role === 'user' ? 'You' : `Goalmatic  ${selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)'}` }}
@@ -50,7 +50,7 @@
 				<template v-else-if="message.toolId">
 					<div class="header-container">
 						<div class="assistant-avatar">
-							<img class="size-5" src="/og.png" alt="goalmatic logo">
+							<img class="size-5" :src="selectedAgent.avatar || '/og.png'" alt="goalmatic logo">
 						</div>
 						<p class="name-label">
 							Tool Call: {{ message.toolId }}
@@ -71,7 +71,7 @@
 			<div v-if="ai_loading && (conversationHistory.length === 0 || conversationHistory[conversationHistory.length - 1].role === 'user')" class="message-container">
 				<div class="header-container">
 					<div class="assistant-avatar">
-						<img class="size-5" src="/og.png" alt="goalmatic logo">
+						<img class="size-5" :src="selectedAgent.avatar || '/og.png'" alt="goalmatic logo">
 					</div>
 					<p class="name-label">
 						Goalmatic {{ selectedAgent.id != 0 ? `(${selectedAgent.name})` : '(Default)' }}

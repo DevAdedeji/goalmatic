@@ -23,7 +23,7 @@
 
 		<section id="header" class="flex md:flex-row flex-col items-center justify-between w-full">
 			<div class="flex flex-col w-full items-center md:items-start">
-				<img src="/bot.png" alt="agent" class="size-[64px] rounded-full">
+				<img :src="agentDetails?.avatar || '/bot.png'" alt="agent" class="size-[64px] rounded-full">
 
 				<!-- Agent Name (Editable Popover) -->
 				<div class="flex items-center gap-2 mt-5">
@@ -221,7 +221,7 @@
 
 			<!-- Tools List (Edit Mode) -->
 			<div v-else class="mt-4">
-				<section v-if="toolsModel.length" class="flex flex-wrap p-3 rounded-md border border-line my-3 gap-2">
+				<section v-if="toolsModel.length" class="flex flex-wrap p-3 rounded-md my-3 gap-2">
 					<div v-for="tool in toolsModel" :key="tool.id" class="card2 gap-5">
 						<div class="flex items-center gap-2">
 							<img :src="tool.icon" alt="google calendar" class="size-8">

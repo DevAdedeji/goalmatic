@@ -11,29 +11,34 @@
 			<transition name="modal" appear @after-leave="handleAfterLeave">
 				<div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']">
 					<header class="modal-title flex justify-between w-full items-center">
-						<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
-						<X
-							v-if="!noClose"
-							name="close"
-							class="text-dark w-5 cursor-pointer  rounded-md"
-							@click="closeModal"
-						/>
+						<slot name="header">
+							<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
+							<X
+								v-if="!noClose"
+								name="close"
+								class="text-dark w-5 cursor-pointer  rounded-md"
+								@click="closeModal"
+							/>
+						</slot>
 					</header>
-					<div class="w-full relative">
+					<div :class="[modalContentClass, 'w-full relative']">
 						<slot />
 					</div>
 				</div>
 			</transition>
+
 			<transition name="slide" appear @after-leave="handleAfterLeave">
 				<div v-if="type == 'sidebar' && show" class="sidebar">
 					<header class="modal-title flex justify-between w-full items-center">
-						<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
-						<X
-							v-if="!noClose"
-							name="close"
-							class="text-dark w-5 cursor-pointer  rounded-md"
-							@click="closeModal"
-						/>
+						<slot name="header">
+							<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
+							<X
+								v-if="!noClose"
+								name="close"
+								class="text-dark w-5 cursor-pointer  rounded-md"
+								@click="closeModal"
+							/>
+						</slot>
 					</header>
 					<slot />
 				</div>
@@ -114,6 +119,11 @@ const props = defineProps({
 		type: Boolean,
 		required: false
 	},
+	modalContentClass: {
+		default: 'p-5',
+		type: String,
+		required: false
+	},
 	type: {
 		default: 'popup',
 		type: String as PropType<modalTypes>,
@@ -156,7 +166,7 @@ const handleAfterLeave = () => {
 	}
 }
     .bottombar {
-        @apply bg-light rounded-t-xl flex flex-col gap-2 sm:hidden fixed inset-x-0 bottom-[54px] w-full border border-dark p-4 pb-0 pt-6;
+        @apply bg-light rounded-t-2xl flex flex-col gap-2 sm:hidden fixed inset-x-0 bottom-0 w-full border border-dark p-4 pb-0 pt-6;
     }
 .generator_tw{
 	@apply sm:w-[700px] sm:w-[400px]
@@ -165,8 +175,7 @@ const handleAfterLeave = () => {
 	@apply h-screen sm:h-auto
 }
 .isNotFullHeight{
-	@apply h-auto w-[90vw] sm:w-[470px] rounded-sm;
-	border-radius: 0.375rem;
+	@apply h-auto w-full sm:w-[470px] rounded-b-none md:rounded-b-2xl bottom-0 md:bottom-auto absolute md:relative;
 	height: auto !important;
 }
 

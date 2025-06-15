@@ -4,7 +4,7 @@
 		type="bottom_bar"
 	>
 		<aside class="overflow-y-auto max-h-[70%]">
-			<div class="relative h-full flex flex-col gap-2 mb-8">
+			<div class="relative h-full flex flex-col gap-2 mb-4">
 				<span v-for="menu in dashboardRoutes()" :key="menu.name" class="w-full h-full">
 					<nuxt-link
 						:to="menu.route"

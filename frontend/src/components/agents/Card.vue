@@ -2,7 +2,7 @@
 	<article class="card">
 		<div class="body">
 			<header class="flex justify-between items-center">
-				<img src="/bot.png" alt="" class="flex w-[34px] h-[34px] flex-shrink-0 aspect-square rounded-full border border-white">
+				<img :src="agent.avatar || '/bot.png'" alt="" class="flex w-[34px] h-[34px] flex-shrink-0 aspect-square rounded-full border border-white">
 				<div class="flex gap-2">
 					<nuxt-link :to="`/agents/explore/${agent.id}`" class="btn">
 						View
