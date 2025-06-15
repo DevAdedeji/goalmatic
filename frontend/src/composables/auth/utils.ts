@@ -11,7 +11,6 @@ export const afterAuthCheck = async (user: User | null) => {
             const isEmailPasswordAuth = user.providerData.some((provider) => provider.providerId === 'password')
 
             if (isEmailPasswordAuth && !user.emailVerified) {
-                // Redirect to email verification page
                 useRouter().replace('/auth/verify-email')
                 return
             }

@@ -1,6 +1,7 @@
 import { sendEmailVerification, reload } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { useUser } from './user'
+import { afterAuthCheck } from './utils'
 import { authRef } from '@/firebase/auth'
 import { useAlert } from '@/composables/core/notification'
 import { firebaseErrorMessage } from '@/firebase/utils'
@@ -46,7 +47,10 @@ export const useEmailVerification = () => {
         loading.value = true
         try {
             await reload(authRef.currentUser as User)
-            await useUser().setUser(authRef.currentUser as User)
+            if (authRef.currentUser?.emailVerified) {
+                await useUser().setUser(authRef.currentUser as User)
+                await afterAuthCheck(authRef.currentUser)
+            }
             return authRef.currentUser?.emailVerified || false
         } catch (error: any) {
             console.error('Error checking verification status:', error)

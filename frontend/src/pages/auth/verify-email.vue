@@ -93,8 +93,6 @@ const {
 const checkAndProceed = async () => {
 	const verified = await checkVerificationStatus()
 	if (verified) {
-		console.log(verified)
-		// Redirect to dashboard or intended page
 		await navigateTo('/agents')
 	} else {
 		useAlert().openAlert({
