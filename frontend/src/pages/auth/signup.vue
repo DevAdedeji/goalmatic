@@ -42,8 +42,8 @@
 					</p>
 				</div>
 
-				<button type="submit" class="btn-primary" :disabled="loading">
-					<Spinner v-if="loading" />
+				<button type="submit" class="btn-primary" :disabled="authCredentienalsForm.loading.value">
+					<Spinner v-if="authCredentienalsForm.loading.value" />
 					<span v-else>Get Started</span>
 				</button>
 			</form>
