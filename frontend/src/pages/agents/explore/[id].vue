@@ -23,7 +23,38 @@
 
 		<section id="header" class="flex md:flex-row flex-col items-center justify-between w-full">
 			<div class="flex flex-col w-full items-center md:items-start">
-				<img :src="agentDetails?.avatar || '/bot.png'" alt="agent" class="size-[64px] rounded-full">
+				<!-- Avatar with Edit Functionality -->
+				<div class="relative">
+					<img :src="agentDetails?.avatar || '/bot.png'" alt="agent" class="size-[64px] rounded-full">
+					<Popover v-if="isOwner(agentDetails)" align="start" :open="avatarPopoverOpen" :modal="true" @update:open="avatarPopoverOpen = $event">
+						<template #trigger>
+							<button class="absolute -bottom-1 -right-1 size-6 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary-dark transition-colors" :disabled="updateAvatarLoading" @click="openAvatarPopover">
+								<Edit2 v-if="!updateAvatarLoading" :size="12" class="text-white" />
+								<Spinner v-else size="12px" />
+							</button>
+						</template>
+						<template #content>
+							<div class="min-w-[400px] p-4">
+								<h3 class="text-lg font-semibold mb-4">
+									Update Avatar
+								</h3>
+								<AvatarSelector
+									:selected-avatar="currentAvatar"
+									@update:avatar="currentAvatar = $event"
+								/>
+								<div class="flex justify-end gap-2 mt-4">
+									<button class="btn-outline flex-1" @click="avatarPopoverOpen = false">
+										Cancel
+									</button>
+									<button class="btn-primary flex-1" :disabled="updateAvatarLoading" @click="saveAvatar">
+										<span v-if="!updateAvatarLoading">Save</span>
+										<Spinner v-else size="14px" />
+									</button>
+								</div>
+							</div>
+						</template>
+					</Popover>
+				</div>
 
 				<!-- Agent Name (Editable Popover) -->
 				<div class="flex items-center gap-2 mt-5">
@@ -328,6 +359,7 @@ import Spinner from '@/components/core/Spinner.vue'
 import { useCustomHead } from '@/composables/core/head'
 import { useAgentDetails, isEditingSystemInfo, isEditingTools, toolsModel, toolSearch, filteredTools } from '@/composables/dashboard/assistant/agents/details'
 import { useHeaderTitle } from '@/composables/core/headerTitle'
+import AvatarSelector from '@/components/modals/assistant/AvatarSelector.vue'
 
 // ===== State and Composables =====
 useHeaderTitle().setTitle('Agents')
@@ -346,6 +378,7 @@ const { fetchAgentsById, agentDetails } = useFetchAgentsById()
 const {
 	updateSystemInfoLoading, updateSystemInfo,
 	updateToolsLoading, updateTools,
+	updateAvatarLoading, updateAvatar,
 	openVisibilityConfirmation, updateName, updateNameLoading, updateDescription, updateDescriptionLoading
 } = useEditAgent()
 
@@ -389,6 +422,28 @@ const showSystemInfoToggle = ref(false)
 // Helper to check if an ability is selected
 function isAbilitySelected(ability: any) {
 	return toolsModel.value.some((a: any) => a.id === ability.id)
+}
+
+const avatarPopoverOpen = ref(false)
+const currentAvatar = ref(agentDetails.value?.avatar || '/bot.png')
+
+// Watch for agentDetails changes to update currentAvatar
+watch(agentDetails, (newAgentDetails) => {
+	if (newAgentDetails?.avatar) {
+		currentAvatar.value = newAgentDetails.avatar
+	}
+}, { immediate: true })
+
+function openAvatarPopover() {
+	currentAvatar.value = agentDetails.value?.avatar || '/bot.png'
+	avatarPopoverOpen.value = true
+}
+
+async function saveAvatar() {
+	if (currentAvatar.value) {
+		await updateAvatar(id as string, currentAvatar.value)
+		avatarPopoverOpen.value = false
+	}
 }
 
 definePageMeta({

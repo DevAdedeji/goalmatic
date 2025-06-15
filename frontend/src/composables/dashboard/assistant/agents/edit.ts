@@ -21,6 +21,7 @@ export const useEditAgent = () => {
     const updateDescriptionLoading = ref(false)
     const updateSystemInfoLoading = ref(false)
     const updateToolsLoading = ref(false)
+    const updateAvatarLoading = ref(false)
     const toggleVisibilityLoading = ref(false)
     const { getConfiguredTools } = useEditToolConfig()
 
@@ -149,6 +150,24 @@ export const useEditAgent = () => {
         }
     }
 
+    const updateAvatar = async (id: string, avatar: string) => {
+        try {
+            updateAvatarLoading.value = true
+
+            await updateFirestoreDocument('agents', id, {
+                avatar,
+                updated_at: Timestamp.fromDate(new Date())
+            })
+
+            updateAvatarLoading.value = false
+            agentDetailsRef.value.avatar = avatar
+            useAlert().openAlert({ type: 'SUCCESS', msg: 'Agent avatar updated successfully' })
+        } catch (error) {
+            updateAvatarLoading.value = false
+            useAlert().openAlert({ type: 'ERROR', msg: `Error: ${error}` })
+        }
+    }
+
     const openVisibilityConfirmation = (agent: Record<string, any>) => {
         useAssistantModal().openConfirmVisibility({
             agent,
@@ -158,9 +177,9 @@ export const useEditAgent = () => {
 
     return {
         // Loading states
-        updateSystemInfoLoading, updateToolsLoading, updateNameLoading, updateDescriptionLoading, toggleVisibilityLoading,
+        updateSystemInfoLoading, updateToolsLoading, updateNameLoading, updateDescriptionLoading, updateAvatarLoading, toggleVisibilityLoading,
 
         // Functions
-        updateSystemInfo, updateTools, updateName, updateDescription, toggleAgentVisibility, openVisibilityConfirmation
+        updateSystemInfo, updateTools, updateName, updateDescription, updateAvatar, toggleAgentVisibility, openVisibilityConfirmation
     }
 }
