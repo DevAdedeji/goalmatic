@@ -1,14 +1,13 @@
 import { google } from 'googleapis';
 import { verifyGoogleCalendarAccess } from "./verify";
-import { getUserUid } from "../../index";
-import { tool } from 'ai';
-import { z } from 'zod';
+import { getUserUid } from "../../ai";
 
-const createGoogleCalendarEvent = async (params: {
-    summary: string;
+export const updateGoogleCalendarEvent = async (params: {
+    eventId: string;
+    summary?: string;
     description?: string; 
-    startDateTime: string;
-    endDateTime: string;
+    startDateTime?: string;
+    endDateTime?: string;
 }) => {
     const uid = getUserUid();
     // Verify access and get credentials
@@ -34,6 +33,7 @@ const createGoogleCalendarEvent = async (params: {
             credentials.access_token = newCredentials.access_token;
             credentials.expiry_date = newCredentials.expiry_date;
         } catch (error) {
+            console.error('Error refreshing access token:', error);
             throw new Error('Failed to refresh Google Calendar access');
         }
     }
@@ -42,50 +42,47 @@ const createGoogleCalendarEvent = async (params: {
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
     try {
-        const event = {
-            summary: params.summary,
-            description: params.description,
-            start: {
+        // First, get the existing event to preserve fields that aren't being updated
+         await calendar.events.get({
+            calendarId: 'primary',
+            eventId: params.eventId,
+        });
+
+        // Build the update object with only provided fields
+        const eventUpdate: any = {};
+        
+        if (params.summary !== undefined) {
+            eventUpdate.summary = params.summary;
+        }
+        
+        if (params.description !== undefined) {
+            eventUpdate.description = params.description;
+        }
+        
+        if (params.startDateTime !== undefined) {
+            eventUpdate.start = {
                 dateTime: new Date(params.startDateTime).toISOString().replace(/\.000Z/i, ''),
                 timeZone: 'Africa/Lagos'
-            },
-            end: {
+            };
+        }
+        
+        if (params.endDateTime !== undefined) {
+            eventUpdate.end = {
                 dateTime: new Date(params.endDateTime).toISOString().replace(/\.000Z/i, ''),
                 timeZone: 'Africa/Lagos'
-            },
-        };
+            };
+        }
 
-        console.log('createGoogleCalendarEvent', event);
-        const response = await calendar.events.insert({
+    
+        const response = await calendar.events.patch({
             calendarId: 'primary',
-            requestBody: event,
+            eventId: params.eventId,
+            requestBody: eventUpdate,
         });
 
         return response.data;
     } catch (error) {
-        throw new Error('Failed to create calendar event');
+        console.error('Error updating Google Calendar event:', error);
+        throw new Error('Failed to update calendar event');
     }
-};
-
-const createGoogleCalendarEventTool = tool({
-    description: "Creates a new event on the user's Google Calendar",
-    parameters: z.object({
-        summary: z.string().describe("Title of the event"),
-        description: z.string().optional().describe("Description of the event"),
-        startDateTime: z.string().describe("Start datetime in RFC3339 format"),
-        endDateTime: z.string().describe("End datetime in RFC3339 format"),
-    }),
-    execute: async (input: any) => {
-        try {
-            const event = await createGoogleCalendarEvent(input);
-            return event;
-        } catch (error) {
-            throw new Error('Failed to create calendar event');
-        }
-    }
-});
-
-export const GOOGLECALENDAR_CREATE_EVENT = {
-    id: "GOOGLECALENDAR_CREATE_EVENT",
-    tool: createGoogleCalendarEventTool
-};
+}; 

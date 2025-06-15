@@ -18,7 +18,6 @@ export default defineNuxtRouteMiddleware((to) => {
 	if (isLoggedIn.value && user.value) {
 		// Check if this is an email/password auth user (not Google OAuth)
 		const isEmailPasswordAuth = user.value.providerData.some((provider) => provider.providerId === 'password')
-console.log(user.value.emailVerified)
 		// Only require email verification for email/password auth users
 		if (isEmailPasswordAuth && !user.value.emailVerified) {
 			return navigateTo('/auth/verify-email')

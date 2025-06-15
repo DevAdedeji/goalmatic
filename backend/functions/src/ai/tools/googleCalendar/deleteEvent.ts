@@ -4,11 +4,8 @@ import { getUserUid } from "../../index";
 import { tool } from 'ai';
 import { z } from 'zod';
 
-const createGoogleCalendarEvent = async (params: {
-    summary: string;
-    description?: string; 
-    startDateTime: string;
-    endDateTime: string;
+const deleteGoogleCalendarEvent = async (params: {
+    eventId: string;
 }) => {
     const uid = getUserUid();
     // Verify access and get credentials
@@ -42,50 +39,33 @@ const createGoogleCalendarEvent = async (params: {
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
     try {
-        const event = {
-            summary: params.summary,
-            description: params.description,
-            start: {
-                dateTime: new Date(params.startDateTime).toISOString().replace(/\.000Z/i, ''),
-                timeZone: 'Africa/Lagos'
-            },
-            end: {
-                dateTime: new Date(params.endDateTime).toISOString().replace(/\.000Z/i, ''),
-                timeZone: 'Africa/Lagos'
-            },
-        };
-
-        console.log('createGoogleCalendarEvent', event);
-        const response = await calendar.events.insert({
+        await calendar.events.delete({
             calendarId: 'primary',
-            requestBody: event,
+            eventId: params.eventId,
         });
 
-        return response.data;
+        return { success: true, message: 'Event deleted successfully' };
     } catch (error) {
-        throw new Error('Failed to create calendar event');
+        throw new Error('Failed to delete calendar event');
     }
 };
 
-const createGoogleCalendarEventTool = tool({
-    description: "Creates a new event on the user's Google Calendar",
+const deleteGoogleCalendarEventTool = tool({
+    description: "Deletes an existing event from the user's Google Calendar",
     parameters: z.object({
-        summary: z.string().describe("Title of the event"),
-        description: z.string().optional().describe("Description of the event"),
-        startDateTime: z.string().describe("Start datetime in RFC3339 format"),
-        endDateTime: z.string().describe("End datetime in RFC3339 format"),
+        eventId: z.string().describe("ID of the event to delete"),
     }),
     execute: async (input: any) => {
         try {
-            const event = await createGoogleCalendarEvent(input);
-            return event;
+            const result = await deleteGoogleCalendarEvent(input);
+            return result;
         } catch (error) {
-            throw new Error('Failed to create calendar event');
+            throw new Error('Failed to delete calendar event');
         }
     }
 });
 
-export const GOOGLECALENDAR_CREATE_EVENT = {
-    id: "GOOGLECALENDAR_CREATE_EVENT",
-    tool: createGoogleCalendarEventTool
-};
+export const GOOGLECALENDAR_DELETE_EVENT = {
+    id: "GOOGLECALENDAR_DELETE_EVENT",
+    tool: deleteGoogleCalendarEventTool
+}; 

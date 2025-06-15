@@ -26,9 +26,9 @@ export const availableTools = ref([
 		checkStatus: true,
 		abilities: [
 			{ name: 'Create Events', id: 'GOOGLECALENDAR_CREATE_EVENT', icon: '/icons/googleCalendar.svg', primary_id: 'GOOGLECALENDAR' },
-			{ name: 'Read Events', id: 'GOOGLECALENDAR_READ_EVENT', icon: '/icons/googleCalendar.svg', primary_id: 'GOOGLECALENDAR' }
-			// { name: 'Update Events', id: 'GOOGLECALENDAR_UPDATE_EVENT', icon: '/icons/googleCalendar.svg' },
-			// { name: 'Delete Events', id: 'GOOGLECALENDAR_DELETE_EVENT', icon: '/icons/googleCalendar.svg' }
+			{ name: 'Read Events', id: 'GOOGLECALENDAR_READ_EVENT', icon: '/icons/googleCalendar.svg', primary_id: 'GOOGLECALENDAR' },
+			{ name: 'Update Events', id: 'GOOGLECALENDAR_UPDATE_EVENT', icon: '/icons/googleCalendar.svg', primary_id: 'GOOGLECALENDAR' },
+			{ name: 'Delete Events', id: 'GOOGLECALENDAR_DELETE_EVENT', icon: '/icons/googleCalendar.svg', primary_id: 'GOOGLECALENDAR' }
 		]
 	},
 
