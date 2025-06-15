@@ -4,13 +4,13 @@
 			<img class="mx-auto h-10 w-auto sm:h-20" src="/lt.svg" alt="Taaskly Logo">
 			<div class="mx-auto mt-10 max-w-2xl text-center sm:mt-12">
 				<p class="text-base font-semibold leading-8 text-dark">
-					404
+					{{ error.statusCode || 'Error' }}
 				</p>
 				<h1 class="mt-4 text-3xl font-bold tracking-tight text-dark sm:text-5xl">
-					This page does not exist
+					{{ error.statusMessage || 'This page does not exist' }}
 				</h1>
 				<p class="mt-4 text-base leading-7 text-grey_two sm:mt-6 sm:text-lg sm:leading-8">
-					Sorry, we couldn’t find the page you’re looking for.
+					{{ error.message || "Sorry, we couldn't find the page you're looking for." }}
 				</p>
 			</div>
 			<div class="mt-10 flex justify-center gap-4">
@@ -39,8 +39,37 @@
 <script setup>
 import { TwitterIcon, Instagram, Linkedin } from 'lucide-vue-next'
 
+// Define props to receive error information from Nuxt
+const props = defineProps({
+  error: {
+    type: Object,
+    default: () => ({})
+  }
+})
 
+// Console log the error details
+console.error('Error page loaded with details:', {
+  statusCode: props.error.statusCode,
+  statusMessage: props.error.statusMessage,
+  message: props.error.message,
+  stack: props.error.stack,
+  url: props.error.url,
+  fullError: props.error
+})
 
+// Also log to help with debugging
+if (process.client) {
+  console.group('🚨 Error Page Debug Info')
+  console.log('Error Status Code:', props.error.statusCode)
+  console.log('Error Status Message:', props.error.statusMessage)
+  console.log('Error Message:', props.error.message)
+  console.log('Error URL:', props.error.url)
+  console.log('Full Error Object:', props.error)
+  if (props.error.stack) {
+    console.log('Error Stack Trace:', props.error.stack)
+  }
+  console.groupEnd()
+}
 
 const social = [
   {

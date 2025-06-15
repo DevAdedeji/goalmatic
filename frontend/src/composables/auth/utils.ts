@@ -6,6 +6,16 @@ import { setFirestoreDocument } from '@/firebase/firestore/create'
 export const afterAuthCheck = async (user: User | null) => {
     try {
         if (user) {
+            // Check email verification for email/password accounts
+            // Google OAuth users typically have verified emails already
+            const isEmailPasswordAuth = user.providerData.some((provider) => provider.providerId === 'password')
+
+            if (isEmailPasswordAuth && !user.emailVerified) {
+                // Redirect to email verification page
+                useRouter().replace('/auth/verify-email')
+                return
+            }
+
             const { fetchUserProfile } = useUser()
             const userProfile = await fetchUserProfile(user.uid) as any
             if (!userProfile?.value?.name) {
