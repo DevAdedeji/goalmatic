@@ -29,13 +29,17 @@ export const afterAuthCheck = async (user: User | null) => {
                     }
                 }
 
+                // Generate fallback name and username from email if displayName is null
+                const fallbackName = user.displayName || (user.email ? user.email.split('@')[0] : 'User')
+                const fallbackUsername = user.displayName || (user.email ? user.email.split('@')[0] : 'user')
+
                 await setFirestoreDocument('users', user.uid, {
                     id: user.uid,
-                    name: user.displayName,
+                    name: fallbackName,
                     photo_url: user.photoURL,
                     email: user.email,
                     phone: user.phoneNumber,
-                    username: user.displayName,
+                    username: fallbackUsername,
                     referred_by: referredBy,
                     created_at: Timestamp.fromDate(new Date()),
                     updated_at: Timestamp.fromDate(new Date()),
