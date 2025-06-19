@@ -28,6 +28,10 @@ export const goals_WA_message_webhook = onRequest({
         try {
             const { message, phone_number_id, from } = parseWebhookEvent(req);
 
+            console.log('message', message);
+            console.log('phone_number_id', phone_number_id);
+            console.log('from', from);
+
             if (!message) {
                 console.log("Webhook received non-message event or malformed body:", JSON.stringify(req.body));
                 res.sendStatus(200);

@@ -1,0 +1,430 @@
+{
+    "version": "7.1",
+    "data_api_version": "3.0",
+    "data_channel_uri": "https://us-central1-goalmatic.cloudfunctions.net/whatsappFlowDataExchange",
+    "routing_model": {
+        "SIGN_UP": [
+            "VERIFY"
+        ],
+        "VERIFY": [
+            "COMPLETE"
+        ],
+        "COMPLETE": []
+    },
+    "screens": [
+        {
+            "id": "SIGN_UP",
+            "title": "Create a Goalmatic Account",
+            "data": {
+                "greeting": {
+                    "type": "string",
+                    "__example__": "Welcome to Goalmatic! 👋"
+                },
+                "subtitle": {
+                    "type": "string",
+                    "__example__": "Create your account to get started"
+                },
+                "error": {
+                    "type": "object",
+                    "optional": true,
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "message": {
+                            "type": "string"
+                        },
+                        "error_messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": {
+                        "type": "validation_error",
+                        "message": "Please fix the following issues:",
+                        "error_messages": [
+                            "Password must be at least 6 characters long",
+                            "Email format is invalid",
+                            "You must accept the terms and conditions"
+                        ]
+                    },
+                    "__additional_examples__": {
+                        "account_exists": {
+                            "type": "account_exists",
+                            "message": "Account already exists with this email address"
+                        },
+                        "weak_password": {
+                            "type": "validation_error",
+                            "message": "Please fix the following issues:",
+                            "error_messages": [
+                                "Password must be at least 6 characters long"
+                            ]
+                        },
+                        "invalid_email": {
+                            "type": "validation_error",
+                            "message": "Please fix the following issues:",
+                            "error_messages": [
+                                "Please enter a valid email address"
+                            ]
+                        },
+                        "terms_not_accepted": {
+                            "type": "validation_error",
+                            "message": "Please fix the following issues:",
+                            "error_messages": [
+                                "You must accept the terms and conditions to continue"
+                            ]
+                        }
+                    }
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "signup_form",
+                        "children": [
+                            {
+                                "type": "Image",
+                                "src": "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",
+                                "height": 80,
+                                "scale-type": "contain"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "${data.greeting}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.subtitle}"
+                            },
+                            {
+                                "type": "If",
+                                "condition": "${data.error} != null",
+                                "then": [
+                                    {
+                                        "type": "If",
+                                        "condition": "${data.error.type} == 'account_exists'",
+                                        "then": [
+                                            {
+                                                "type": "TextBody",
+                                                "text": "⚠️ Account Already Exists",
+                                                "font-weight": "bold"
+                                            },
+                                            {
+                                                "type": "TextBody",
+                                                "text": "An account with this email already exists. Try logging in instead or use a different email address."
+                                            }
+                                        ],
+                                        "else": [
+                                            {
+                                                "type": "If",
+                                                "condition": "${data.error.type} == 'validation_error'",
+                                                "then": [
+                                                    {
+                                                        "type": "TextBody",
+                                                        "text": "❌ Please fix the following issues:",
+                                                        "font-weight": "bold"
+                                                    },
+                                                    {
+                                                        "type": "TextBody",
+                                                        "text": "• ${data.error.error_messages[0]}"
+                                                    },
+                                                    {
+                                                        "type": "If",
+                                                        "condition": "${data.error.error_messages[1]} != null",
+                                                        "then": [
+                                                            {
+                                                                "type": "TextBody",
+                                                                "text": "• ${data.error.error_messages[1]}"
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "type": "If",
+                                                        "condition": "${data.error.error_messages[2]} != null",
+                                                        "then": [
+                                                            {
+                                                                "type": "TextBody",
+                                                                "text": "• ${data.error.error_messages[2]}"
+                                                            }
+                                                        ]
+                                                    }
+                                                ],
+                                                "else": [
+                                                    {
+                                                        "type": "TextBody",
+                                                        "text": "❌ ${data.error.message}",
+                                                        "font-weight": "bold"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "TextInput",
+                                "label": "Email Address",
+                                "name": "email",
+                                "required": true,
+                                "input-type": "email",
+                                "helper-text": "Enter your email address"
+                            },
+                            {
+                                "type": "TextInput",
+                                "label": "Password",
+                                "name": "password",
+                                "required": true,
+                                "input-type": "password",
+                                "helper-text": "Enter your password (minimum 6 characters)"
+                            },
+                            {
+                                "type": "OptIn",
+                                "label": "I consent to Goalmatic's Privacy Policy and Terms of Service",
+                                "name": "accept_terms",
+                                "required": true
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Get Started",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "email": "${form.email}",
+                                        "password": "${form.password}",
+                                        "accept_terms": "${form.accept_terms}"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "VERIFY",
+            "title": "Verify Your Email",
+            "data": {
+                "user_email": {
+                    "type": "string",
+                    "__example__": "user@example.com"
+                },
+                "user_id": {
+                    "type": "string",
+                    "__example__": "abc123"
+                },
+                "verification_sent": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "message": {
+                    "type": "string",
+                    "__example__": "Account created successfully! Please check your email to verify your account."
+                },
+                "verified": {
+                    "type": "boolean",
+                    "__example__": false
+                },
+                "reminder": {
+                    "type": "string",
+                    "__example__": "Don't forget to check your spam folder!"
+                },
+                "error": {
+                    "type": "object",
+                    "optional": true,
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "error_messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": {
+                        "message": "Verification check failed",
+                        "error_messages": [
+                            "Please try again"
+                        ]
+                    }
+                }
+            },
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "verification_form",
+                        "children": [
+                            {
+                                "type": "Image",
+                                "src": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                "height": 64,
+                                "scale-type": "contain"
+                            },
+                            {
+                                "type": "TextSubheading",
+                                "text": "Verify Your Email"
+                            },
+                            {
+                                "type": "If",
+                                "condition": "${data.error} != null",
+                                "then": [
+                                    {
+                                        "type": "TextBody",
+                                        "text": "❌ ${data.error.message}",
+                                        "font-weight": "bold"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.message}"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "${data.user_email}",
+                                "font-weight": "bold"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "Follow these steps:",
+                                "font-weight": "bold"
+                            },
+                            {
+                                "type": "TextBody",
+                                "text": "1. Check your inbox for an email from Goalmatic\n2. Click the verification link in the email\n3. Return here and click 'I've verified my email'"
+                            },
+                            {
+                                "type": "If",
+                                "condition": "${data.reminder} != null",
+                                "then": [
+                                    {
+                                        "type": "TextCaption",
+                                        "text": "${data.reminder}"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "I've verified my email",
+                                "on-click-action": {
+                                    "name": "data_exchange",
+                                    "payload": {
+                                        "user_id": "${data.user_id}",
+                                        "email": "${data.user_email}"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "id": "COMPLETE",
+            "title": "Welcome to Goalmatic!",
+            "data": {
+                "user_id": {
+                    "type": "string",
+                    "__example__": "abc123"
+                },
+                "email": {
+                    "type": "string",
+                    "__example__": "user@example.com"
+                },
+                "verified": {
+                    "type": "boolean",
+                    "__example__": true
+                },
+                "message": {
+                    "type": "string",
+                    "__example__": "Email verified successfully!"
+                },
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "error_messages": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "__example__": {
+                        "message": "Completion failed",
+                        "error_messages": [
+                            "Please try again"
+                        ]
+                    }
+                }
+            },
+            "terminal": true,
+            "success": true,
+            "layout": {
+                "type": "SingleColumnLayout",
+                "children": [
+                    {
+                        "type": "Form",
+                        "name": "completion_form",
+                        "children": [
+                            {
+                                "type": "Image",
+                                "src": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                                "height": 84,
+                                "scale-type": "contain"
+                            },
+                            {
+                                "type": "If",
+                                "condition": "${data.error} != null",
+                                "then": [
+                                    {
+                                        "type": "TextBody",
+                                        "text": "❌ ${data.error.message}",
+                                        "font-weight": "bold"
+                                    }
+                                ],
+                                "else": [
+                                    {
+                                        "type": "TextSubheading",
+                                        "text": "Account Created Successfully!"
+                                    },
+                                    {
+                                        "type": "TextBody",
+                                        "text": "Welcome to Goalmatic! Your email has been verified and your account is now active. You can start building workflows and automating your tasks."
+                                    },
+                                    {
+                                        "type": "TextBody",
+                                        "text": "🎉 Ready to get started?",
+                                        "font-weight": "bold"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "Footer",
+                                "label": "Go to Dashboard",
+                                "on-click-action": {
+                                    "name": "complete",
+                                    "payload": {
+                                        "status": "success",
+                                        "action": "redirect_to_dashboard",
+                                        "user_id": "${data.user_id}",
+                                        "user_email": "${data.email}"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

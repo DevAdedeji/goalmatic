@@ -16,23 +16,32 @@
 			</div>
 
 			<form class="flex flex-col gap-6 mt-3" @submit.prevent="signUp">
-				<div class="flex flex-col gap-0.5">
+				<div v-if="isEmail || (!isEmail && step === 1)" class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-4 justify-between">
 						<label class="label">{{ isEmail ? 'Email Address' : 'Phone Number' }}</label>
-						<!-- <button type="button" class="text-sm font-semibold text-grey_four" @click="isEmail = !isEmail">
+						<button type="button" class="text-sm font-semibold text-grey_four" @click="isEmail = !isEmail">
 							{{ isEmail ? 'Use Phone Number' : 'Use Email' }}
-						</button> -->
+						</button>
 					</div>
 					<input v-if="isEmail" v-model.trim="authCredentienalsForm.email.value" type="email" required class="input-field" placeholder="Enter email">
-					<!-- <NewPhoneInput v-else />  -->
+					<PhoneInput v-else v-model="authCredentienalsForm.phone.value" />
 				</div>
 
-				<div class="flex flex-col gap-0.5">
+				<div v-if="isEmail" class="flex flex-col gap-0.5">
 					<label class="label">Password</label>
 					<div class="w-full h-fit relative">
 						<input v-model.trim="authCredentienalsForm.passord.value" :type="show ? 'text' : 'password'" required class="input-field" placeholder="Enter password">
 						<component :is="!show ? EyeOff : Eye" class="text-grey_six absolute top-1/2 -translate-y-1/2 right-4 w-5 cursor-pointer" @click="show = !show" />
 					</div>
+				</div>
+
+				<div v-if="!isEmail && step === 1" class="flex flex-col gap-0.5">
+					<label class="label">Full Name</label>
+					<input v-model.trim="fullName" type="text" required class="input-field" placeholder="Enter your full name">
+				</div>
+
+				<div v-if="!isEmail && step === 2" class="flex flex-col gap-0.5">
+					<OTPInput v-model="otp" :length="4" />
 				</div>
 
 				<div class="flex items-center gap-1">
@@ -42,9 +51,9 @@
 					</p>
 				</div>
 
-				<button type="submit" class="btn-primary" :disabled="authCredentienalsForm.loading.value">
+				<button type="submit" class="btn-primary" :disabled="authCredentienalsForm.loading.value || (!isEmail && step === 1 && (!authCredentienalsForm.phone.value || !fullName))">
 					<Spinner v-if="authCredentienalsForm.loading.value" />
-					<span v-else>Get Started</span>
+					<span v-else>{{ !isEmail && step === 1 ? 'Send OTP' : (step === 2 ? 'Verify & Sign Up' : 'Get Started') }}</span>
 				</button>
 			</form>
 
@@ -76,12 +85,14 @@ import { windowHeight } from '@/composables/utils/window'
 import { useSignin, authCredentienalsForm } from '@/composables/auth/auth'
 import { usePasswordlessSignin } from '@/composables/auth/passwordless'
 import { useEmailAndPassword } from '@/composables/auth/email_password'
+import { useWhatsAppAuth } from '@/composables/auth/whatsapp'
 import { isValidReferralCode } from '@/composables/utils/referral'
 
 const route = useRoute()
 const { googleSignin, loading } = useSignin()
 const { disabled, send_email, valid_email } = usePasswordlessSignin()
-const { signUp } = useEmailAndPassword()
+const { signUp: emailSignUp } = useEmailAndPassword()
+const { sendSignupOTP, confirmOTP, step, otp } = useWhatsAppAuth()
 
 const accepetedTerms = ref(false)
 const authType = ref('email')
@@ -90,19 +101,43 @@ const toggleShow = () => showPassword.value = !showPassword.value
 
 const show = ref(false)
 const isEmail = ref(true)
+const fullName = ref('')
+
+// Reset phone auth when switching between email and phone
+watch(isEmail, (newVal) => {
+	if (newVal) {
+		// Reset phone auth state when switching to email
+		step.value = 1
+		otp.value = ['', '', '', '']
+		fullName.value = ''
+	}
+})
 
 // Capture referral code from URL parameters
 const referralCode = ref('')
 
-onMounted(() => {
-  const refParam = route.query.ref as string
-  if (refParam && isValidReferralCode(refParam)) {
-    referralCode.value = refParam
-    // Store in localStorage for use during user creation
-    if (process.client) {
-      localStorage.setItem('signup_referral_code', refParam)
-    }
+const signUp = async () => {
+	if (isEmail.value) {
+		// Email signup
+		await emailSignUp()
+	} else if (step.value === 1) {
+		// Phone signup - send OTP
+		await sendSignupOTP()
+	  } else {
+    // Phone signup - verify OTP
+    await confirmOTP(fullName.value)
   }
+}
+
+onMounted(() => {
+	const refParam = route.query.ref as string
+	if (refParam && isValidReferralCode(refParam)) {
+		referralCode.value = refParam
+		// Store in localStorage for use during user creation
+		if (process.client) {
+			localStorage.setItem('signup_referral_code', refParam)
+		}
+	}
 })
 
 definePageMeta({

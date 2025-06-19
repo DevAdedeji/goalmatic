@@ -11,18 +11,18 @@
 			</div>
 
 			<form class="flex flex-col gap-6 mt-3" @submit.prevent="signIn">
-				<div class="flex flex-col gap-0.5">
+				<div v-if="isEmail || (!isEmail && step === 1)" class="flex flex-col gap-0.5">
 					<div class="flex items-center gap-4 justify-between">
 						<label class="label">{{ isEmail ? 'Email Address' : 'Phone Number' }}</label>
-						<!-- <button type="button" class="text-sm font-semibold text-grey_four" @click="isEmail = !isEmail">
+						<button type="button" class="text-sm font-semibold text-grey_four" @click="isEmail = !isEmail">
 							{{ isEmail ? 'Use Phone Number' : 'Use Email' }}
-						</button> -->
+						</button>
 					</div>
 					<input v-if="isEmail" v-model.trim="authCredentienalsForm.email.value" required type="email" class="input-field" placeholder="Enter email">
-					<PhoneInput v-else />
+					<PhoneInput v-else v-model="authCredentienalsForm.phone.value" />
 				</div>
 
-				<div class="flex flex-col gap-0.5">
+				<div v-if="isEmail" class="flex flex-col gap-0.5">
 					<label class="label">Password</label>
 					<div class="w-full h-fit relative">
 						<input v-model.trim="authCredentienalsForm.passord.value" :type="show ? 'text' : 'password'" required class="input-field" placeholder="Enter password">
@@ -35,9 +35,13 @@
 					</div>
 				</div>
 
-				<button :disabled="authCredentienalsForm.loading.value" class="btn-primary" type="submit">
+				<div v-if="!isEmail && step === 2" class="flex flex-col gap-0.5">
+					<OTPInput v-model="otp" :length="4" />
+				</div>
+
+				<button :disabled="authCredentienalsForm.loading.value || (!isEmail && step === 1 && !authCredentienalsForm.phone.value)" class="btn-primary" type="submit">
 					<Spinner v-if="authCredentienalsForm.loading.value" />
-					<span v-else>Login</span>
+					<span v-else>{{ !isEmail && step === 1 ? 'Send OTP' : (step === 2 ? 'Verify & Login' : 'Login') }}</span>
 				</button>
 			</form>
 
@@ -72,15 +76,37 @@ import { windowHeight } from '@/composables/utils/window'
 import { useSignin, authCredentienalsForm } from '@/composables/auth/auth'
 import { usePasswordlessSignin } from '@/composables/auth/passwordless'
 import { useEmailAndPassword } from '@/composables/auth/email_password'
-
+import { useWhatsAppAuth } from '@/composables/auth/whatsapp'
 
 const { googleSignin, loading } = useSignin()
 const { disabled, send_email, valid_email } = usePasswordlessSignin()
-
-const { signIn } = useEmailAndPassword()
+const { signIn: emailSignIn } = useEmailAndPassword()
+const { sendLoginOTP, loginWithOTP, step, otp } = useWhatsAppAuth()
 
 const show = ref(false)
 const isEmail = ref(true)
+
+// Reset phone auth when switching between email and phone
+watch(isEmail, (newVal) => {
+	if (newVal) {
+		// Reset phone auth state when switching to email
+		step.value = 1
+		otp.value = ['', '', '', '']
+	}
+})
+
+const signIn = async () => {
+	if (isEmail.value) {
+		// Email login
+		await emailSignIn()
+	} else if (step.value === 1) {
+		// Phone login - send OTP
+		await sendLoginOTP()
+	} else {
+		// Phone login - verify OTP
+		await loginWithOTP()
+	}
+}
 
 definePageMeta({
 	layout: 'auth',

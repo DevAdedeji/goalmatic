@@ -21,12 +21,7 @@ export const goalmatic_whatsapp_integration_otp = (data: dataType) => {
             {
               'type': 'text',
               'text': data.otp,
-            },
-            {
-              'type': 'text',
-              'text': '+2348146923944',
-            },
-        
+            },        
           ],
           },
             {

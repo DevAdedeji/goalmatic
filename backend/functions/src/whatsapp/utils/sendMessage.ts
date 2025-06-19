@@ -1,10 +1,11 @@
 import axios from 'axios'
 
 export const send_WA_Message = (data, phone_number_id?: string) => {
-  phone_number_id = '479033418637760'
+  phone_number_id = '613700238502517'
+  // phone_number_id = '479033418637760'
   const config = {
     method: 'post',
-    url: `https://graph.facebook.com/v22.0/${phone_number_id || process.env.PHONE_NUMBER_ID}/messages`,
+    url: `https://graph.facebook.com/v22.0/${process.env.PHONE_NUMBER_ID || phone_number_id}/messages`,
     headers: {
       'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
       'Content-Type': 'application/json',
@@ -14,6 +15,8 @@ export const send_WA_Message = (data, phone_number_id?: string) => {
 
   return axios(config)
 }
+
+
 
 
 export const get_WA_TextMessageInput = (recipient, text)=> {

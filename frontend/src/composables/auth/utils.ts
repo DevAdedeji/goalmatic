@@ -9,6 +9,9 @@ export const afterAuthCheck = async (user: User | null) => {
             // Check email verification for email/password accounts
             // Google OAuth users typically have verified emails already
             const isEmailPasswordAuth = user.providerData.some((provider) => provider.providerId === 'password')
+            const isPhoneAuth = user.providerData.some((provider) => provider.providerId === 'phone') ||
+                               user.phoneNumber ||
+                               !user.email // Custom token users from phone auth typically won't have email
 
             if (isEmailPasswordAuth && !user.emailVerified) {
                 useRouter().replace('/auth/verify-email')
@@ -17,7 +20,10 @@ export const afterAuthCheck = async (user: User | null) => {
 
             const { fetchUserProfile } = useUser()
             const userProfile = await fetchUserProfile(user.uid) as any
-            if (!userProfile?.value?.name) {
+
+            // Only create fallback user document if user doesn't exist AND it's not a phone auth user
+            // Phone auth users should already have their documents created by backend functions
+            if (!userProfile?.value?.name && !isPhoneAuth) {
                 // Check for referral code in localStorage
                 let referredBy: string | null = null
                 if (process.client) {
