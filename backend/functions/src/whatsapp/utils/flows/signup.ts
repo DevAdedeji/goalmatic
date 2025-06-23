@@ -6,6 +6,8 @@
  */
 
 import { getAuth } from 'firebase-admin/auth'
+import { Timestamp } from 'firebase-admin/firestore'
+import { v4 as uuidv4 } from 'uuid'
 import { goals_db } from '../../../init'
 import firebaseServer from '../../../init'
 
@@ -18,13 +20,124 @@ interface FlowRequest {
   version?: string;
   action: string;
   flow_token: string;
+  flow_id?: string;
 }
 
-export const getNextScreen = async (decryptedBody: FlowRequest) => {
-  const { screen, data, action, flow_token } = decryptedBody;
+// Helper function to extract phone number from WhatsApp context
+const extractPhoneFromContext = (flow_token: string): string | null => {
+  try {
+    // First, try to decode the flow_token if it's base64 encoded JSON
+    let decodedData: any = null;
+    
+    try {
+      // Try to parse as JSON first
+      decodedData = JSON.parse(flow_token);
+    } catch {
+      try {
+        // Try to decode as base64 then parse as JSON
+        const decoded = Buffer.from(flow_token, 'base64').toString('utf-8');
+        decodedData = JSON.parse(decoded);
+      } catch {
+        // If decoding fails, treat as plain text
+        decodedData = { text: flow_token };
+      }
+    }
+    
+    // Extract phone number from structured data
+    if (decodedData && typeof decodedData === 'object') {
+      // Common field names where phone number might be stored
+      const phoneFields = ['phone', 'phone_number', 'phoneNumber', 'from', 'sender', 'user_phone'];
+      
+      for (const field of phoneFields) {
+        if (decodedData[field]) {
+          const extractedPhone = extractPhoneNumber(decodedData[field]);
+          if (extractedPhone) return extractedPhone;
+        }
+      }
+      
+      // Check nested objects
+      for (const key in decodedData) {
+        if (typeof decodedData[key] === 'object' && decodedData[key] !== null) {
+          for (const field of phoneFields) {
+            if (decodedData[key][field]) {
+              const extractedPhone = extractPhoneNumber(decodedData[key][field]);
+              if (extractedPhone) return extractedPhone;
+            }
+          }
+        }
+      }
+    }
+    
+    // Fallback: use regex to extract phone number from the entire token
+    const phoneFromToken = extractPhoneNumber(flow_token);
+    if (phoneFromToken) return phoneFromToken;
+    
+    // If structured data exists, try to extract from any string values
+    if (decodedData && typeof decodedData === 'object') {
+      const searchText = JSON.stringify(decodedData);
+      return extractPhoneNumber(searchText);
+    }
+    
+    return null;
+  } catch (error) {
+    console.warn('Error extracting phone from context:', error);
+    // Final fallback: try regex on the raw token
+    return extractPhoneNumber(flow_token);
+  }
+}
+
+// Helper function to extract phone number using regex
+const extractPhoneNumber = (text: string): string | null => {
+  if (!text || typeof text !== 'string') return null;
+  
+  // Comprehensive regex pattern for international phone numbers
+  // This pattern matches various formats including:
+  // +1234567890, +32 484 48 76 94, 0484487694, (123) 456-7890, etc.
+  const phoneRegex = /(\+?\d{1,4}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9})/g;
+  
+  const matches = text.match(phoneRegex);
+  
+  if (matches && matches.length > 0) {
+    // Return the first valid phone number found
+    for (const match of matches) {
+      const cleaned = match.replace(/[-.\s()]/g, '');
+      
+      // Basic validation: phone number should be 7-15 digits
+      if (cleaned.length >= 7 && cleaned.length <= 15) {
+        // Ensure it starts with + for international format
+        if (cleaned.startsWith('+')) {
+          return cleaned;
+        } else if (cleaned.match(/^\d+$/)) {
+          // If it's all digits, add + prefix
+          return `+${cleaned}`;
+        }
+      }
+    }
+  }
+  
+  return null;
+}
+
+// Helper function to create SIGN_UP screen response
+const createSignUpScreen = (phoneNumber: string, error?: { message: string; error_messages: string[] }) => {
+  return {
+    screen: "SIGN_UP",
+    data: {
+      greeting: "Welcome to Goalmatic! 👋",
+      img: "https://goalmatic.io/mail.png",
+      subtitle: "Complete your account setup",
+      phone_number: phoneNumber,
+      ...(error && { error })
+    }
+  };
+}
+
+export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone_number?: string }) => {
+  const { screen, data, action, flow_token, webhook_phone_number } = decryptedBody;
   
   // handle health check request
   if (action === "ping") {
+    console.log("📱 Ping request received");
     return {
       data: {
         status: "active",
@@ -44,13 +157,25 @@ export const getNextScreen = async (decryptedBody: FlowRequest) => {
 
   // handle initial request when opening the flow
   if (action === "INIT") {
-    return {
-      screen: "SIGN_UP",
-      data: {
-        greeting: "Welcome to Goalmatic! 👋",
-        subtitle: "Create your account to get started"
-      },
-    };
+    // Use phone number from webhook context first, then try extracting from flow_token as fallback
+    const userPhoneNumber = webhook_phone_number || 
+                           extractPhoneFromContext(flow_token);
+    
+    console.log("📱 Using phone number for signup:", userPhoneNumber);
+    
+    // If no phone number available, show error screen
+    if (!userPhoneNumber) {
+      console.warn("❌ No phone number available for signup flow");
+      return createSignUpScreen(
+        "Phone number not available", 
+        {
+          message: "Unable to determine phone number",
+          error_messages: ["Please contact support or try again later."]
+        }
+      );
+    }
+    
+    return createSignUpScreen(userPhoneNumber);
   }
 
   if (action === "data_exchange") {
@@ -59,230 +184,178 @@ export const getNextScreen = async (decryptedBody: FlowRequest) => {
       case "SIGN_UP":
         try {
           // Process signup form data
-          const { email, password, accept_terms } = data;
+          const { full_name, accept_terms, phone_number } = data;
+          
+          // Use webhook phone number or fallback to form data or extraction
+          const actualPhoneNumber = webhook_phone_number || 
+                                   phone_number || 
+                                   extractPhoneFromContext(flow_token);
+          
+          console.log("📱 Signup using phone number:", actualPhoneNumber);
           
           // Validation
-          if (!email || !password) {
-            return {
-              screen: "SIGN_UP",
-              data: {
-                greeting: "Welcome to Goalmatic! 👋",
-                subtitle: "Create your account to get started",
-                error: {
-                  message: "Email and password are required",
-                  error_messages: ["Please fill in all required fields"]
-                }
+          if (!full_name || full_name.trim().length === 0) {
+            return createSignUpScreen(
+              actualPhoneNumber,
+              {
+                message: "Full name is required",
+                error_messages: ["Please enter your full name"]
               }
-            };
+            );
           }
 
           if (!accept_terms) {
-            return {
-              screen: "SIGN_UP", 
-              data: {
-                greeting: "Welcome to Goalmatic! 👋",
-                subtitle: "Create your account to get started",
-                error: {
-                  message: "Terms acceptance required",
-                  error_messages: ["Please accept the terms and conditions to continue"]
-                }
+            return createSignUpScreen(
+              actualPhoneNumber,
+              {
+                message: "Terms acceptance required",
+                error_messages: ["You must accept the terms and conditions to continue"]
               }
-            };
+            );
           }
 
-          if (password.length < 6) {
-            return {
-              screen: "SIGN_UP",
-              data: {
-                greeting: "Welcome to Goalmatic! 👋",
-                subtitle: "Create your account to get started",
-                error: {
-                  message: "Password too short",
-                  error_messages: ["Password must be at least 6 characters long"]
-                }
+          if (!actualPhoneNumber) {
+            return createSignUpScreen(
+              actualPhoneNumber,
+              {
+                message: "Phone number required",
+                error_messages: ["Unable to determine your phone number. Please contact support."]
               }
-            };
+            );
           }
 
-          console.info("Creating user with email:", email);
+          // Ensure phone number is properly formatted
+          const formattedPhone = actualPhoneNumber.startsWith('+') ? actualPhoneNumber : `+${actualPhoneNumber}`;
 
-          // Create Firebase Auth user
+          // Check if phone number is already registered
+          const existingUser = await goals_db.collection('users')
+            .where('phone', '==', formattedPhone)
+            .get();
+
+          if (!existingUser.empty) {
+            return createSignUpScreen(
+              formattedPhone,
+              {
+                message: "Account already exists",
+                error_messages: ["An account with this phone number already exists. Please contact support if this is an error."]
+              }
+            );
+          }
+
+          console.info("Creating account for phone:", formattedPhone);
+
+          // Create Firebase Auth user with phone number
+          // Since this is initiated from WhatsApp, we consider the phone number verified
           const userRecord = await auth.createUser({
-            email: email,
-            password: password,
-            emailVerified: false,
+            phoneNumber: formattedPhone,
+            disabled: false,
           });
 
           // Create user document in Firestore
           await goals_db.collection('users').doc(userRecord.uid).set({
-            email: email,
-            created_at: new Date(),
-            email_verified: false,
-            onboarding_completed: false,
-            signup_method: 'whatsapp_flow',
+            id: userRecord.uid,
+            name: full_name.trim(),
+            photo_url: null,
+            email: null,
+            phone: formattedPhone,
+            username: full_name.trim(),
+            referred_by: null,
+            created_at: Timestamp.fromDate(new Date()),
+            updated_at: Timestamp.fromDate(new Date()),
+            timezone: 'UTC',
+            signup_method: 'whatsapp_flow_phone',
+            phone_verified: true, // Consider verified since initiated from WhatsApp
+            onboarding_completed: true, // Complete onboarding since it's simplified
             flow_token: flow_token,
           });
 
-          // Generate email verification link
-          // const verificationLink = await auth.generateEmailVerificationLink(email);
-          // console.info("Verification link generated for:", email);
+          // Create WhatsApp integration
+          const integrationId = uuidv4();
+          await goals_db.collection('users').doc(userRecord.uid).collection('integrations').doc(integrationId).set({
+            id: integrationId,
+            type: 'MESSAGING',
+            provider: 'WHATSAPP',
+            phone: formattedPhone,
+            created_at: Timestamp.fromDate(new Date()),
+            updated_at: Timestamp.fromDate(new Date()),
+            integration_id: 'WHATSAPP',
+            user_id: userRecord.uid,
+          });
 
-          // Navigate to verification screen
+          // Navigate directly to completion screen
           return {
-            screen: "VERIFY",
+            screen: "COMPLETE",
             data: {
               user_id: userRecord.uid,
-              user_email: email,
-              verification_sent: true,
-              message: "Account created successfully! Please check your email to verify your account.",
-              verified: false,
-              reminder: "Don't forget to check your spam folder!"
+              img:"https://goalmatic.io/og.png",
+              full_name: full_name.trim(),
+              phone_number: formattedPhone,
+              verified: true,
+              message: "Account created successfully!"
             },
           };
 
         } catch (error: any) {
           console.error("Signup error:", error);
           
+          // Use webhook phone number or fallback to form data or extraction for error response
+          const errorPhoneNumber = webhook_phone_number || 
+                                  data.phone_number || 
+                                  extractPhoneFromContext(flow_token) ||
+                                  "Phone number unavailable";
+          
           let errorMessage = "An error occurred during signup";
           let errorMessages = ["Please try again"];
 
-          if (error.code === 'auth/email-already-exists') {
-            errorMessage = "Email already exists";
-            errorMessages = ["This email is already registered. Please use a different email or try logging in."];
-          } else if (error.code === 'auth/invalid-email') {
-            errorMessage = "Invalid email format";
-            errorMessages = ["Please enter a valid email address"];
+          if (error.code === 'auth/phone-number-already-exists') {
+            errorMessage = "Phone number already registered";
+            errorMessages = ["This phone number is already registered. Please contact support."];
+          } else if (error.code === 'auth/invalid-phone-number') {
+            errorMessage = "Invalid phone number";
+            errorMessages = ["The provided phone number is invalid."];
           }
-
-          return {
-            screen: "SIGN_UP",
-            data: {
-              greeting: "Welcome to Goalmatic! 👋",
-              subtitle: "Create your account to get started",
-              error: {
-                message: errorMessage,
-                error_messages: errorMessages
-              }
-            }
-          };
-        }
-
-      case "VERIFY":
-        try {
-          const { user_id, email } = data;
           
-          if (!user_id) {
-            return {
-              screen: "SIGN_UP",
-              data: {
-                greeting: "Welcome to Goalmatic! 👋",
-                subtitle: "Create your account to get started",
-                error: {
-                  message: "Session expired",
-                  error_messages: ["Please start the signup process again"]
-                }
-              }
-            };
-          }
-
-          // Check if email has been verified
-          const userRecord = await auth.getUser(user_id);
-          
-          if (userRecord.emailVerified) {
-            // Update Firestore document
-            await goals_db.collection('users').doc(user_id).update({
-              email_verified: true,
-              verified_at: new Date(),
-            });
-
-            return {
-              screen: "COMPLETE",
-              data: {
-                user_id: user_id,
-                email: userRecord.email,
-                verified: true,
-                message: "Email verified successfully!"
-              },
-            };
-          } else {
-            return {
-              screen: "VERIFY",
-              data: {
-                user_id: user_id,
-                user_email: email,
-                verification_sent: true,
-                verified: false,
-                message: "Email not yet verified. Please check your email and click the verification link.",
-                reminder: "Don't forget to check your spam folder!"
-              },
-            };
-          }
-
-        } catch (error: any) {
-          console.error("Verification check error:", error);
-          return {
-            screen: "VERIFY",
-            data: {
-              user_id: data.user_id || null,
-              user_email: data.email || "",
-              verification_sent: false,
-              verified: false,
-              message: "An error occurred while checking verification status.",
-              reminder: null,
-              error: {
-                message: "Verification check failed",
-                error_messages: ["Please try again"]
-              }
+          return createSignUpScreen(
+            errorPhoneNumber,
+            {
+              message: errorMessage,
+              error_messages: errorMessages
             }
-          };
-        }
-
-      case "COMPLETE":
-        try {
-          const { user_id } = data;
-          
-          if (user_id) {
-            // Update user document with completion status
-            await goals_db.collection('users').doc(user_id).update({
-              onboarding_completed: true,
-              completed_at: new Date(),
-            });
-          }
-
-          // Send success response to complete and close the flow
-          return {
-            screen: "SUCCESS",
-            data: {
-              message: "Welcome to Goalmatic! 🎉",
-              subtitle: "Your account has been created successfully.",
-              action_text: "Get Started",
-              extension_message_response: {
-                params: {
-                  flow_token,
-                },
-              },
-            },
-          };
-
-        } catch (error: any) {
-          console.error("Completion error:", error);
-          return {
-            screen: "COMPLETE",
-            data: {
-              user_id: data.user_id || null,
-              email: data.email || "",
-              verified: false,
-              message: "An error occurred during completion.",
-              error: {
-                message: "Completion failed",
-                error_messages: ["Please try again"]
-              }
-            }
-          };
+          );
         }
 
       default:
         break;
+    }
+  }
+
+  // Handle completion action
+  if (action === "complete") {
+    try {
+      const { user_id, full_name, phone_number } = data;
+      
+      // Log successful completion
+      console.info("Flow completed successfully for user:", user_id);
+      
+      // Return success response
+      return {
+        data: {
+          status: "success",
+          img:"https://goalmatic.io/og.png",
+          message: `Welcome to Goalmatic, ${full_name}!`,
+          user_id: user_id,
+          phone_number: phone_number
+        }
+      };
+
+    } catch (error: any) {
+      console.error("Completion error:", error);
+      return {
+        data: {
+          status: "error",
+          message: "An error occurred during completion."
+        }
+      };
     }
   }
 

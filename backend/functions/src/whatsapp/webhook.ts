@@ -88,7 +88,7 @@ export const goals_WA_message_webhook = onRequest({
 
             // Get user details and agent configuration
             const { userDetails, agentData, error } = await getUserDetailsAndAgent(from);
-            if (error) {
+            if (error && error.status === 404) {
                 const data = get_WA_TextMessageInput(from, error);
                 await send_WA_Message(data, phone_number_id);
                 res.sendStatus(200);

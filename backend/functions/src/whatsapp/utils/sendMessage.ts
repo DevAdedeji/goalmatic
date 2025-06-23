@@ -5,7 +5,7 @@ export const send_WA_Message = (data, phone_number_id?: string) => {
   // phone_number_id = '479033418637760'
   const config = {
     method: 'post',
-    url: `https://graph.facebook.com/v22.0/${process.env.PHONE_NUMBER_ID || phone_number_id}/messages`,
+    url: `https://graph.facebook.com/v23.0/${process.env.PHONE_NUMBER_ID || phone_number_id}/messages`,
     headers: {
       'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export const sendWAReadAndTypingIndicator = async (
   phone_number_id: string,
   message_id: string
 ) => {
-  const url = `https://graph.facebook.com/v22.0/${phone_number_id}/messages`;
+  const url = `https://graph.facebook.com/v23.0/${phone_number_id}/messages`;
   const data = {
     messaging_product: 'whatsapp',
     status: 'read',

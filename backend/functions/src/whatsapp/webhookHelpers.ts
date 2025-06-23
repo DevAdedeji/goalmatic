@@ -60,7 +60,10 @@ export const getUserDetailsAndAgent = async (from: string) => {
             };
         } else if (db_user_details.status === 404) {
             return {
-                error: 'User not found! Please register on https://www.goalmatic.io to use our services.\n\nIf you have registered, ensure your WhatsApp number is linked correctly.',
+                error: {
+                    message: 'User not found! Please register on https://www.goalmatic.io to use our services.\n\nIf you have registered, ensure your WhatsApp number is linked correctly.',
+                    status: 404
+                },
                 userDetails: null,
                 agentData: null
             };
