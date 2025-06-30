@@ -1,10 +1,9 @@
 type dataType = {
   username: string;
   recipientNumber: string;
-  uniqueTemplateMessageId: string;
 }
 
-export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
+export const goalmatic_whatsapp_signup_flow_template = (data: dataType) => {
   return JSON.stringify({
     'messaging_product': 'whatsapp',
     'recipient_type': 'individual',
@@ -22,7 +21,7 @@ export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
             {
               'type': 'image',
               'image': {
-                'link': 'https://goalmatic.io/hero/workflow.png',
+                'link': 'https://goalmatic.io/hero/signup-flow.png',
               },
             },
           ],
@@ -36,6 +35,19 @@ export const goalmatic_whatsapp_workflow_template = (data: dataType) => {
             },
 
           ],
+        },
+        {
+          'type': 'button',
+          "index": "0",
+          "sub_type": "flow",
+          'parameters': [
+            {
+              "type": "action",
+              "action": {
+                "flow_token": data.recipientNumber
+              }
+            }
+          ]
         },
     
       ],

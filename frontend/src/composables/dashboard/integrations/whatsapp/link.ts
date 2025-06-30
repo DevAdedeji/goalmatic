@@ -52,7 +52,7 @@ export const useLinkWhatsapp = () => {
             id,
             type: 'MESSAGING',
             provider: 'WHATSAPP',
-            phone: phoneNumber.value.replace('+', '').trim(),
+            phone: phoneNumber.value, // Keep normalized format (with +)
             created_at: Timestamp.fromDate(new Date()),
             updated_at: Timestamp.fromDate(new Date()),
             integration_id: 'WHATSAPP',

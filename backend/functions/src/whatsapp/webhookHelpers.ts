@@ -24,11 +24,33 @@ export const parseWebhookEvent = (req: any) => {
     const entry = req.body.entry && req.body.entry[0];
     const changes = entry && entry.changes && entry.changes[0];
     const value = changes && changes.value;
+    
+    // Check if this is a message webhook
     const message = value && value.messages && value.messages[0];
     const phone_number_id = value?.metadata?.phone_number_id;
-    const from = message?.from;
+    
+    // For message webhooks, get 'from' from the message
+    let from = message?.from;
+    
+    // Check if this is a status webhook (delivery, read receipts, etc.)
+    const status = value && value.statuses && value.statuses[0];
+    if (status && !from) {
+        // For status webhooks, get 'from' from the recipient_id
+        from = status.recipient_id;
+    }
+    
+    // Extract contact information including user's name from WhatsApp payload
+    const contacts = value && value.contacts && value.contacts[0];
+    const contactName = contacts?.profile?.name;
 
-    return { message, phone_number_id, from };
+    return { 
+        message, 
+        phone_number_id, 
+        from, 
+        contactName,
+        status, // Add status for handling status updates
+        webhookType: message ? 'message' : (status ? 'status' : 'unknown')
+    };
 }
 
 // Helper function to check if message should be skipped based on environment
@@ -109,6 +131,34 @@ export const processMessageContent = async (
         const imageCaption = message.image.caption || '';
         msg_body_for_agent = await processWhatsAppImage(message.image.id, from, phone_number_id, agentData, imageCaption);
         messageTypeForAgent = 'image';
+    } else if (message.type === 'interactive' && message.interactive?.type === 'nfm_reply') {
+        // Handle WhatsApp Flow completion
+        console.log("Received WhatsApp Flow completion:", JSON.stringify(message.interactive.nfm_reply, null, 2));
+        
+        const responseJson = message.interactive.nfm_reply.response_json;
+        let flowData: any = {};
+        
+        try {
+            flowData = typeof responseJson === 'string' ? JSON.parse(responseJson) : responseJson;
+        } catch (e) {
+            console.error("Error parsing flow response JSON:", e);
+        }
+        
+        // Check if this is a signup flow completion based on flow_token
+        const flowToken = flowData.flow_token;
+        const isSignupFlow = flowToken === from; // Our signup flow uses phone number as flow_token
+        
+        if (isSignupFlow) {
+            // For signup flow completion, return a welcome message
+            msg_body_for_agent = "__SKIP_AI_RESPONSE_SIGNUP__";
+            messageTypeForAgent = 'flow_completion_signup';
+            console.log("Signup flow completed for user:", from);
+        } else {
+            // For other flows, we'll skip responding by returning a special flag
+            msg_body_for_agent = "__SKIP_AI_RESPONSE__";
+            messageTypeForAgent = 'flow_completion_other';
+            console.log("Flow completed - skipping AI response for:", from);
+        }
     } else {
         msg_body_for_agent = "Received an unhandled message type.";
         console.warn("Webhook: Unhandled message type made it past initial checks:", message.type);

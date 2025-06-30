@@ -10,6 +10,10 @@ import { Timestamp } from 'firebase-admin/firestore'
 import { v4 as uuidv4 } from 'uuid'
 import { goals_db } from '../../../init'
 import firebaseServer from '../../../init'
+import { 
+  isValidPhoneNumber as isValidPhone, 
+  extractPhoneNumber as extractPhone,
+} from '../../../utils/phoneUtils'
 
 // Initialize Firebase Admin Auth
 const auth = getAuth(firebaseServer()!)
@@ -50,7 +54,7 @@ const extractPhoneFromContext = (flow_token: string): string | null => {
       
       for (const field of phoneFields) {
         if (decodedData[field]) {
-          const extractedPhone = extractPhoneNumber(decodedData[field]);
+          const extractedPhone = extractPhone(decodedData[field]);
           if (extractedPhone) return extractedPhone;
         }
       }
@@ -60,7 +64,7 @@ const extractPhoneFromContext = (flow_token: string): string | null => {
         if (typeof decodedData[key] === 'object' && decodedData[key] !== null) {
           for (const field of phoneFields) {
             if (decodedData[key][field]) {
-              const extractedPhone = extractPhoneNumber(decodedData[key][field]);
+              const extractedPhone = extractPhone(decodedData[key][field]);
               if (extractedPhone) return extractedPhone;
             }
           }
@@ -69,57 +73,71 @@ const extractPhoneFromContext = (flow_token: string): string | null => {
     }
     
     // Fallback: use regex to extract phone number from the entire token
-    const phoneFromToken = extractPhoneNumber(flow_token);
+    const phoneFromToken = extractPhone(flow_token);
     if (phoneFromToken) return phoneFromToken;
     
     // If structured data exists, try to extract from any string values
     if (decodedData && typeof decodedData === 'object') {
       const searchText = JSON.stringify(decodedData);
-      return extractPhoneNumber(searchText);
+      return extractPhone(searchText);
     }
     
     return null;
   } catch (error) {
     console.warn('Error extracting phone from context:', error);
     // Final fallback: try regex on the raw token
-    return extractPhoneNumber(flow_token);
+    return extractPhone(flow_token);
   }
 }
 
-// Helper function to extract phone number using regex
-const extractPhoneNumber = (text: string): string | null => {
-  if (!text || typeof text !== 'string') return null;
-  
-  // Comprehensive regex pattern for international phone numbers
-  // This pattern matches various formats including:
-  // +1234567890, +32 484 48 76 94, 0484487694, (123) 456-7890, etc.
-  const phoneRegex = /(\+?\d{1,4}[-.\s]?\(?\d{1,4}\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9})/g;
-  
-  const matches = text.match(phoneRegex);
-  
-  if (matches && matches.length > 0) {
-    // Return the first valid phone number found
-    for (const match of matches) {
-      const cleaned = match.replace(/[-.\s()]/g, '');
-      
-      // Basic validation: phone number should be 7-15 digits
-      if (cleaned.length >= 7 && cleaned.length <= 15) {
-        // Ensure it starts with + for international format
-        if (cleaned.startsWith('+')) {
-          return cleaned;
-        } else if (cleaned.match(/^\d+$/)) {
-          // If it's all digits, add + prefix
-          return `+${cleaned}`;
-        }
-      }
+// Note: Now using centralized phone utils instead of local functions
+
+// Helper function to check if phone number is already used in users or integrations
+const isPhoneNumberInUse = async (phoneNumber: string): Promise<boolean> => {
+  try {
+    // Check if phone number exists in users collection
+    const usersSnapshot = await goals_db.collection('users')
+      .where('phone', '==', phoneNumber)
+      .get();
+    
+    if (!usersSnapshot.empty) {
+      console.warn(`Phone number ${phoneNumber} already exists in users collection`);
+      return true;
     }
+
+    // Use collection group query to efficiently check across all integrations
+    const integrationsSnapshot = await goals_db.collectionGroup('integrations')
+      .where('phone', '==', phoneNumber)
+      .where('provider', '==', 'WHATSAPP')
+      .get();
+    
+    if (!integrationsSnapshot.empty) {
+      console.warn(`Phone number ${phoneNumber} already exists in integrations`);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Error checking phone number in users/integrations:', error);
+    // In case of error, assume it might be in use to be safe
+    return true;
   }
-  
-  return null;
 }
 
 // Helper function to create SIGN_UP screen response
-const createSignUpScreen = (phoneNumber: string, error?: { message: string; error_messages: string[] }) => {
+const createSignUpScreen = () => {
+  return {
+    screen: "SIGN_UP",
+    data: {
+      greeting: "Welcome to Goalmatic! 👋",
+      img: "https://goalmatic.io/mail.png",
+      subtitle: "Complete your account setup",
+    }
+  };
+}
+
+// Helper function to create SIGN_UP screen response with error message
+const createSignUpScreenWithError = (phoneNumber: string, error: { message: string; error_messages: string[] }) => {
   return {
     screen: "SIGN_UP",
     data: {
@@ -127,7 +145,8 @@ const createSignUpScreen = (phoneNumber: string, error?: { message: string; erro
       img: "https://goalmatic.io/mail.png",
       subtitle: "Complete your account setup",
       phone_number: phoneNumber,
-      ...(error && { error })
+      error_message: error.message,
+      error_messages: error.error_messages
     }
   };
 }
@@ -157,25 +176,9 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
 
   // handle initial request when opening the flow
   if (action === "INIT") {
-    // Use phone number from webhook context first, then try extracting from flow_token as fallback
-    const userPhoneNumber = webhook_phone_number || 
-                           extractPhoneFromContext(flow_token);
+
     
-    console.log("📱 Using phone number for signup:", userPhoneNumber);
-    
-    // If no phone number available, show error screen
-    if (!userPhoneNumber) {
-      console.warn("❌ No phone number available for signup flow");
-      return createSignUpScreen(
-        "Phone number not available", 
-        {
-          message: "Unable to determine phone number",
-          error_messages: ["Please contact support or try again later."]
-        }
-      );
-    }
-    
-    return createSignUpScreen(userPhoneNumber);
+    return createSignUpScreen();
   }
 
   if (action === "data_exchange") {
@@ -184,18 +187,18 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
       case "SIGN_UP":
         try {
           // Process signup form data
-          const { full_name, accept_terms, phone_number } = data;
+          const { full_name, accept_terms } = data || {};
           
           // Use webhook phone number or fallback to form data or extraction
           const actualPhoneNumber = webhook_phone_number || 
-                                   phone_number || 
+                                   data.phone_number || 
                                    extractPhoneFromContext(flow_token);
           
           console.log("📱 Signup using phone number:", actualPhoneNumber);
           
           // Validation
           if (!full_name || full_name.trim().length === 0) {
-            return createSignUpScreen(
+            return createSignUpScreenWithError(
               actualPhoneNumber,
               {
                 message: "Full name is required",
@@ -205,7 +208,7 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
           }
 
           if (!accept_terms) {
-            return createSignUpScreen(
+            return createSignUpScreenWithError(
               actualPhoneNumber,
               {
                 message: "Terms acceptance required",
@@ -215,11 +218,11 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
           }
 
           if (!actualPhoneNumber) {
-            return createSignUpScreen(
-              actualPhoneNumber,
+            return createSignUpScreenWithError(
+              actualPhoneNumber || "Phone number unavailable",
               {
                 message: "Phone number required",
-                error_messages: ["Unable to determine your phone number. Please contact support."]
+                error_messages: ["Unable to determine your phone number."]
               }
             );
           }
@@ -227,17 +230,25 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
           // Ensure phone number is properly formatted
           const formattedPhone = actualPhoneNumber.startsWith('+') ? actualPhoneNumber : `+${actualPhoneNumber}`;
 
-          // Check if phone number is already registered
-          const existingUser = await goals_db.collection('users')
-            .where('phone', '==', formattedPhone)
-            .get();
-
-          if (!existingUser.empty) {
-            return createSignUpScreen(
+          // Validate phone number format using strict regex
+          if (!isValidPhone(formattedPhone)) {
+            return createSignUpScreenWithError(
               formattedPhone,
               {
-                message: "Account already exists",
-                error_messages: ["An account with this phone number already exists. Please contact support if this is an error."]
+                message: "Invalid phone number format",
+                error_messages: ["Please provide a valid international phone number (e.g., +1234567890)."]
+              }
+            );
+          }
+
+          // Check if phone number is already in use (users collection or integrations)
+          const phoneInUse = await isPhoneNumberInUse(formattedPhone);
+          if (phoneInUse) {
+            return createSignUpScreenWithError(
+              formattedPhone,
+              {
+                message: "Phone number already in use",
+                error_messages: ["This phone number is already registered or connected to another account."]
               }
             );
           }
@@ -315,7 +326,7 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
             errorMessages = ["The provided phone number is invalid."];
           }
           
-          return createSignUpScreen(
+          return createSignUpScreenWithError(
             errorPhoneNumber,
             {
               message: errorMessage,

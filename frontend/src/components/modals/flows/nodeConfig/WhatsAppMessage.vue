@@ -161,7 +161,8 @@ async function prepopulateUserPhone() {
 		const wa = userIntegrationsRef.value[0] as any
 		if (wa && typeof wa === 'object' && 'phone' in wa) phone = wa.phone as string
 	}
-	form.value.phoneNumber = `+${phone}` || ''
+	// After migration, phone numbers should already be normalized with +
+	form.value.phoneNumber = phone || ''
 }
 
 

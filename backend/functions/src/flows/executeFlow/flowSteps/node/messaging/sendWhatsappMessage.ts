@@ -7,6 +7,7 @@ import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTempl
 import { v4 as uuidv4 } from 'uuid';
 import { processMentionsProps } from "../../../../../utils/processMentions";
 import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
+import { normalizePhoneForWhatsApp } from "../../../../../utils/phoneUtils";
 
 const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
@@ -17,7 +18,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         let { message, recipientType, phoneNumber } = processedPropsWithAiContext;
 
-        let recipientNumber = null;
+        let recipientNumber: string | null = null;
 
         if (recipientType === 'user') {
             // Get user ID from context.requestPayload
@@ -32,10 +33,14 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
                 .limit(1)
                 .get();
             if (userIntegrationsSnap.empty) throw new Error('No WhatsApp integration found for user');
-            recipientNumber = userIntegrationsSnap.docs[0].data().phone;
+            // Integration phone numbers should already be normalized after migration
+            const integrationPhone = userIntegrationsSnap.docs[0].data().phone;
+            recipientNumber = normalizePhoneForWhatsApp(integrationPhone);
+            if (!recipientNumber) throw new Error('Invalid phone number in user integration');
         } else if (recipientType === 'custom') {
             if (!phoneNumber) throw new Error('Phone number is required');
-            recipientNumber = phoneNumber.toString().replace('+', '').trim();
+            recipientNumber = normalizePhoneForWhatsApp(phoneNumber);
+            if (!recipientNumber) throw new Error('Invalid phone number format');
         } else {
             throw new Error('Invalid recipient type');
         }

@@ -2,6 +2,7 @@ import { onRequest } from 'firebase-functions/v2/https'
 import { get_WA_TextMessageInput, send_WA_Message, sendWAReadAndTypingIndicator } from './utils/sendMessage'
 import { WhatsappAgent } from './utils/WhatsappAgent'
 import { setWhatsAppPhone } from '../ai'
+import { goalmatic_whatsapp_signup_flow_template } from './templates/signup'
 import {
     handleGetRequest,
     parseWebhookEvent,
@@ -23,14 +24,26 @@ export const goals_WA_message_webhook = onRequest({
         handleGetRequest(req, res);
         return;
     }
+    console.log('req.body', JSON.stringify(req.body, null, 2));
 
     if (req.method === 'POST') {
         try {
-            const { message, phone_number_id, from } = parseWebhookEvent(req);
+            const { message, phone_number_id, from, contactName, status, webhookType } = parseWebhookEvent(req);
 
             console.log('message', message);
             console.log('phone_number_id', phone_number_id);
             console.log('from', from);
+            console.log('contactName', contactName);
+            console.log('status', status);
+            console.log('webhookType', webhookType);
+
+            // Handle status webhooks (delivery receipts, read receipts, etc.)
+            if (webhookType === 'status') {
+                console.log("Received status webhook:", JSON.stringify(status, null, 2));
+                console.log(`Status update for recipient ${from}: ${status.status}`);
+                res.sendStatus(200);
+                return;
+            }
 
             if (!message) {
                 console.log("Webhook received non-message event or malformed body:", JSON.stringify(req.body));
@@ -89,8 +102,24 @@ export const goals_WA_message_webhook = onRequest({
             // Get user details and agent configuration
             const { userDetails, agentData, error } = await getUserDetailsAndAgent(from);
             if (error && error.status === 404) {
-                const data = get_WA_TextMessageInput(from, error);
-                await send_WA_Message(data, phone_number_id);
+                const signup_flow_template = goalmatic_whatsapp_signup_flow_template({
+                    username: contactName || 'User',
+                    recipientNumber: from,
+                });
+
+                console.log('Sending signup flow template:', signup_flow_template);
+                try {
+                await send_WA_Message(signup_flow_template);
+                    console.log('Signup flow template sent successfully');
+                } catch (sendError: any) {
+                    console.error('Error sending signup flow template:');
+                    console.error('Status:', sendError.response?.status);
+                    console.error('Status text:', sendError.response?.statusText);
+                    console.error('Response data:', JSON.stringify(sendError.response?.data, null, 2));
+                    console.error('Request config:', JSON.stringify(sendError.config, null, 2));
+                    console.error('Full error:', sendError.message);
+                    throw sendError; // Re-throw to be caught by outer catch
+                }
                 res.sendStatus(200);
                 return;
             }
@@ -111,15 +140,55 @@ export const goals_WA_message_webhook = onRequest({
                 agentData!
             );
 
+            // Check if we should skip AI response (e.g., for certain flow completions)
+            if (msg_body_for_agent === "__SKIP_AI_RESPONSE__" || msg_body_for_agent === "__SKIP_AI_RESPONSE_SIGNUP__") {
+                const responseData = get_WA_TextMessageInput(from, "What can I help you with today?");
+                await send_WA_Message(responseData, phone_number_id);
+                res.sendStatus(200);
+                return;
+            }
+
             // Get AI response and send it - pass the original message for potential media storage
             const gpt_response = await WhatsappAgent(userDetails, msg_body_for_agent, agentData!, messageTypeForAgent, undefined, message);
             const responseData = get_WA_TextMessageInput(from, gpt_response.msg);
+            
+            console.log('Sending AI response message:', responseData);
+            try {
             await send_WA_Message(responseData, phone_number_id);
+                console.log('AI response message sent successfully');
+            } catch (sendError: any) {
+                console.error('Error sending AI response message:');
+                console.error('Status:', sendError.response?.status);
+                console.error('Status text:', sendError.response?.statusText);
+                console.error('Response data:', JSON.stringify(sendError.response?.data, null, 2));
+                console.error('Request config:', JSON.stringify(sendError.config, null, 2));
+                console.error('Full error:', sendError.message);
+                throw sendError; // Re-throw to be caught by outer catch
+            }
             
             res.sendStatus(200);
 
         } catch (e: any) {
-            console.error('Error in webhook POST processing:', e.message, e.stack);
+            console.error('Error in webhook POST processing:', e.message);
+            console.error('Error stack:', e.stack);
+            
+            // If it's an Axios error, log additional details
+            if (e.response) {
+                console.error('HTTP Error Details:');
+                console.error('Status:', e.response.status);
+                console.error('Status Text:', e.response.statusText);
+                console.error('Response Headers:', JSON.stringify(e.response.headers, null, 2));
+                console.error('Response Data:', JSON.stringify(e.response.data, null, 2));
+            }
+            
+            if (e.request) {
+                console.error('Request Details:');
+                console.error('Request URL:', e.config?.url);
+                console.error('Request Method:', e.config?.method);
+                console.error('Request Headers:', JSON.stringify(e.config?.headers, null, 2));
+                console.error('Request Data:', JSON.stringify(e.config?.data, null, 2));
+            }
+            
             res.sendStatus(500); 
         }
     } else {

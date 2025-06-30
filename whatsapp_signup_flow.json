@@ -38,17 +38,6 @@
                                 "font-weight": "bold"
                             },
                             {
-                                "type": "If",
-                                "condition": "${data.error} != null",
-                                "then": [
-                                    {
-                                        "type": "TextBody",
-                                        "text": "❌ ${data.error.message}",
-                                        "font-weight": "bold"
-                                    }
-                                ]
-                            },
-                            {
                                 "type": "TextInput",
                                 "label": "Full Name",
                                 "name": "full_name",
@@ -95,26 +84,20 @@
                     "type": "string",
                     "__example__": "https://goalmatic.io/mail.png"
                 },
-                "error": {
-                    "type": "object",
+                "error_message": {
+                    "type": "string",
                     "optional": true,
-                    "properties": {
-                        "message": {
-                            "type": "string"
-                        },
-                        "error_messages": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
+                    "__example__": "Full name is required"
+                },
+                "error_messages": {
+                    "type": "array",
+                    "optional": true,
+                    "items": {
+                        "type": "string"
                     },
-                    "__example__": {
-                        "message": "Full name is required",
-                        "error_messages": [
-                            "Please enter your full name"
-                        ]
-                    }
+                    "__example__": [
+                        "Please enter your full name"
+                    ]
                 }
             }
         },
