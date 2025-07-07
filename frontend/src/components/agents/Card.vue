@@ -1,5 +1,5 @@
 <template>
-	<article class="card">
+	<article class="card" @click="viewAgent(agent)">
 		<div class="body">
 			<header class="flex justify-between items-center">
 				<img :src="agent.avatar || '/bot.png'" alt="" class="flex w-[34px] h-[34px] flex-shrink-0 aspect-square rounded-full border border-white">
@@ -7,7 +7,7 @@
 					<nuxt-link :to="`/agents/explore/${agent.id}`" class="btn">
 						View
 					</nuxt-link>
-					<button v-if="agent.creator_id === user_id" class="btn" @click="selectAgent(agent)">
+					<button v-if="agent.creator_id === user_id" class="btn" @click.stop="selectAgent(agent)">
 						Use
 					</button>
 				</div>
@@ -37,7 +37,9 @@ const props = defineProps<{
     agent: any
 }>()
 
-
+const viewAgent = (agent: any) => {
+	useRouter().push(`/agents/explore/${agent.id}`)
+}
 </script>
 
 <style scoped lang="postcss">

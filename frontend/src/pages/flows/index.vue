@@ -9,7 +9,7 @@
 					Find the best workflows for your usecase
 				</p>
 			</div>
-			<button class="btn-primary !px-3 md:px-6" @click="createNewFlow">
+			<button class="btn-primary !px-3 md:px-6" @click="openCreateWorkflow">
 				Create Workflow
 			</button>
 		</div>
@@ -78,7 +78,7 @@
 					<button
 						v-if="!searchQuery && activeTab === 'my'"
 						class="btn-primary"
-						@click="createNewFlow"
+						@click="openCreateWorkflow"
 					>
 						Create Workflow
 					</button>
@@ -106,8 +106,8 @@ import { Activity, FileEdit, Search } from 'lucide-vue-next'
 import { usePageHeader } from '@/composables/utils/header'
 import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
-import { useCreateFlow } from '@/composables/dashboard/flows/create'
 import { useHeaderTitle } from '@/composables/core/headerTitle'
+import { useFlowsModal } from '@/composables/core/modals'
 import FlowCard from '@/components/flows/Card.vue'
 
 interface Flow {
@@ -154,7 +154,7 @@ const tabs = computed(() => [
 
 const { userFlows, loading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
 const { setDeleteFlowData } = useDeleteFlow()
-const { loading: createLoading, createNewFlow } = useCreateFlow()
+const { openCreateWorkflow } = useFlowsModal()
 
 // Computed workflows on display
 const workflowsOnDisplay = computed((): Flow[] => {

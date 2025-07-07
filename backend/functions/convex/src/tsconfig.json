@@ -22,10 +22,8 @@
     "noEmit": true,
     "sourceMap": false,
   },
-  "include": [
-    "./**/*"
-  ],
   "exclude": [
-    "./_generated"
+    "/_generated",
+    "/**/*.ts"
   ]
 }

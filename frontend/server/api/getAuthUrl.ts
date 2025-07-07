@@ -25,6 +25,9 @@ export default defineEventHandler(async (event) => {
     case 'spreadsheet':
       scopes = ['https://www.googleapis.com/auth/spreadsheets', 'email', 'profile', 'openid']
       break
+    case 'gmail':
+      scopes = ['https://www.googleapis.com/auth/gmail.modify', 'email', 'profile', 'openid']
+      break
     case 'calendar':
     default:
       scopes = ['https://www.googleapis.com/auth/calendar', 'email', 'profile', 'openid']

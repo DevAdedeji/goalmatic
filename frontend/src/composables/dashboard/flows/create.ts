@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
@@ -9,8 +9,8 @@ import { FlowStep, FlowStatus, FlowType } from '@/composables/dashboard/flows/ty
 
 // Form for creating a new flow
 const createFlowForm = reactive({
-  name: 'Default Flow',
-  description: 'Default description',
+  name: '',
+  description: '',
   type: 'standard' as FlowType,
   steps: [] as FlowStep[],
   status: 0 as FlowStatus,
@@ -21,9 +21,13 @@ export const useCreateFlow = () => {
 const { id: user_id, userProfile } = useUser()
   const loading = ref(false)
 
+  const isDisabled = computed(() => {
+    return !createFlowForm.name.trim()
+  })
+
   const resetForm = () => {
-    createFlowForm.name = 'Default Flow'
-    createFlowForm.description = 'Default description'
+    createFlowForm.name = ''
+    createFlowForm.description = ''
     createFlowForm.type = 'standard'
     createFlowForm.steps = []
     createFlowForm.status = 0
@@ -63,14 +67,29 @@ const { id: user_id, userProfile } = useUser()
 
   const createNewFlow = async () => {
     const id = await createFlow()
-    useRouter().push(`/flows/${id}`)
+    if (id) {
+      useRouter().push(`/flows/${id}`)
+    }
+  }
+
+  const createWorkflowModal = async () => {
+    const id = await createFlow()
+    if (id) {
+      // Import and close modal
+      const { useFlowsModal } = await import('@/composables/core/modals')
+      await useRouter().push(`/flows/${id}`)
+      useFlowsModal().closeCreateWorkflow()
+      resetForm()
+    }
   }
 
   return {
     createNewFlow,
     createFlow,
+    createWorkflowModal,
     createFlowForm,
     loading,
-    resetForm
+    resetForm,
+    isDisabled
   }
 }

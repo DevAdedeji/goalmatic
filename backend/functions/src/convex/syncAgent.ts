@@ -128,10 +128,13 @@ export const convexSyncAgentUpdate = onDocumentUpdated({
     
     // Prepare update data - only include fields that have changed
     const updates: any = {
-      updated_at: convertTimestamp(afterData.updated_at),
-      firebase_synced: true,
-      last_sync: Date.now()
+      updated_at: convertTimestamp(afterData.updated_at)
     };
+
+    // Add last_used if it exists
+    if (afterData.last_used) {
+      updates.last_used = convertTimestamp(afterData.last_used);
+    }
 
     if (beforeData?.name !== afterData.name) {
       updates.name = afterData.name;

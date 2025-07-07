@@ -28,6 +28,14 @@ export const availableIntegrations = () => {
                     options: useFetchUserAgents().fetchUserAgents
                 }
             ] as EditConfigField[]
+        },
+        {
+            name: 'Gmail',
+            icon: '/icons/gmail.svg',
+            description: 'Send and receive emails through your Gmail account. Automate email workflows and manage your inbox.',
+            type: 'EMAIL',
+            provider: 'GOOGLE',
+            id: 'GMAIL'
         }
     ]
 }

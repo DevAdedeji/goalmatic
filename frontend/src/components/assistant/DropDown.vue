@@ -129,11 +129,19 @@
 											{{ agent.description }}
 										</p>
 									</div>
-									<button
-										class="px-3 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 transition-colors"
-									>
-										{{ activeTab === 'community' ? 'Clone' : 'Use' }}
-									</button>
+									<div class="flex items-center gap-0">
+										<button
+											class="px-2 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 transition-colors"
+											@click.stop="viewAgent(agent)"
+										>
+											View
+										</button>
+										<button
+											class="px-2 py-1 text-xs font-medium text-primary bg-primary/10 rounded-md hover:bg-primary/20 transition-colors"
+										>
+											{{ activeTab === 'community' ? 'Clone' : 'Use' }}
+										</button>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -155,16 +163,7 @@
 </template>
 
 <script setup>
-import {
-	ChevronDown,
-	X,
-	Search,
-	Users,
-	Compass,
-	Plus,
-	Eye,
-	User
-} from 'lucide-vue-next'
+import { ChevronDown, X, Search, User } from 'lucide-vue-next'
 import {
 	DropdownMenuContent,
 	DropdownMenuPortal,
@@ -185,6 +184,7 @@ const props = defineProps({
 	}
 })
 
+
 // Reactive data
 const searchQuery = ref('')
 const activeTab = ref('my')
@@ -196,6 +196,10 @@ const tabs = [
 	{ id: 'community', name: 'Community Agents' }
 ]
 
+const viewAgent = (agent) => {
+	isOpen.value = false
+	useRouter().push(`/agents/explore/${agent.id}`)
+}
 // Fetch agents data
 const { fetchAllAgents, fetchedAllAgents } = useFetchAgents()
 const { fetchUserAgents, fetchedUserAgents, user_id } = useFetchUserAgents()

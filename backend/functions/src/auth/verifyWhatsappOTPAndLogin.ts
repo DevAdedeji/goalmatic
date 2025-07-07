@@ -99,7 +99,7 @@ export const verifyWhatsappOTPAndLogin = onCall(
 
             } catch (error: any) {
                 console.error('Login error:', error);
-                return { code: 500, message: 'Login failed. Please try again.' };
+                return { code: 500, message: `Login failed. Please try again. ${error.message}` };
             }
 
         } catch (error) {

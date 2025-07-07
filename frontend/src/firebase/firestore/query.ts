@@ -22,17 +22,26 @@ export const getFirestoreCollectionWithWhereQuery = async (
     return new Promise((resolve) => {
         const unsub = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
+                const changeData = change.doc.data()
+
                 if (change.type === 'added') {
-                    ArrayRef.value.push(change.doc.data())
+                    // Check if the item already exists in the array to prevent duplicates
+                    const existingItem = ArrayRef.value.find((item) => item.id === changeData.id)
+                    if (!existingItem) {
+                        ArrayRef.value.push(changeData)
+                    }
                 }
                 if (change.type === 'modified') {
-                    const index = ArrayRef.value.findIndex((item) => item.id === change.doc.data().id)
+                    const index = ArrayRef.value.findIndex((item) => item.id === changeData.id)
                     if (index !== -1) {
-                        ArrayRef.value[index] = change.doc.data()
+                        ArrayRef.value[index] = changeData
+                    } else {
+                        // If item doesn't exist (edge case), add it
+                        ArrayRef.value.push(changeData)
                     }
                 }
                 if (change.type === 'removed') {
-                    ArrayRef.value = ArrayRef.value.filter((item) => item.id !== change.doc.data().id)
+                    ArrayRef.value = ArrayRef.value.filter((item) => item.id !== changeData.id)
                 }
             })
             resolve(ArrayRef.value)
@@ -61,17 +70,26 @@ export const getFirestoreSubCollectionWithWhereQuery = async (
     return new Promise((resolve) => {
         const unsub = onSnapshot(q, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
+                const changeData = change.doc.data()
+
                 if (change.type === 'added') {
-                    ArrayRef.value.push(change.doc.data())
+                    // Check if the item already exists in the array to prevent duplicates
+                    const existingItem = ArrayRef.value.find((item) => item.id === changeData.id)
+                    if (!existingItem) {
+                        ArrayRef.value.push(changeData)
+                    }
                 }
                 if (change.type === 'modified') {
-                    const index = ArrayRef.value.findIndex((item) => item.id === change.doc.data().id)
+                    const index = ArrayRef.value.findIndex((item) => item.id === changeData.id)
                     if (index !== -1) {
-                        ArrayRef.value[index] = change.doc.data()
+                        ArrayRef.value[index] = changeData
+                    } else {
+                        // If item doesn't exist (edge case), add it
+                        ArrayRef.value.push(changeData)
                     }
                 }
                 if (change.type === 'removed') {
-                    ArrayRef.value = ArrayRef.value.filter((item) => item.id !== change.doc.data().id)
+                    ArrayRef.value = ArrayRef.value.filter((item) => item.id !== changeData.id)
                 }
             })
             resolve(ArrayRef.value)

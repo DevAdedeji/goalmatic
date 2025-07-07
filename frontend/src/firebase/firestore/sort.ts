@@ -14,18 +14,24 @@ export const getFirestoreCollectionWithSort = async (
 	return new Promise((resolve) => {
 		const unsub = onSnapshot(q, (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
+				const changeData = change.doc.data()
+
 				if (change.type === 'added') {
-					ArrayRef.value.push(change.doc.data())
+					// Check if the item already exists in the array to prevent duplicates
+					const existingItem = ArrayRef.value.find((item) => item.id === changeData.id)
+					if (!existingItem) {
+						ArrayRef.value.push(changeData)
+					}
 				}
 				if (change.type === 'modified') {
 					const changedArray = ArrayRef.value.filter(
-						(item) => item.id !== change.doc.data().id
+						(item) => item.id !== changeData.id
 					)
-					ArrayRef.value = [...changedArray, change.doc.data()]
+					ArrayRef.value = [...changedArray, changeData]
 				}
 				if (change.type === 'removed') {
 					const changedArray = ArrayRef.value.filter(
-						(item) => item.id !== change.doc.data().id
+						(item) => item.id !== changeData.id
 					)
 					ArrayRef.value = changedArray
 				}
@@ -47,18 +53,24 @@ export const getFirestoreSubCollectionWithSort = async (
 	return new Promise((resolve) => {
 		const unsub = onSnapshot(q, (snapshot) => {
 			snapshot.docChanges().forEach((change) => {
+				const changeData = change.doc.data()
+
 				if (change.type === 'added') {
-					ArrayRef.value.push(change.doc.data())
+					// Check if the item already exists in the array to prevent duplicates
+					const existingItem = ArrayRef.value.find((item) => item.id === changeData.id)
+					if (!existingItem) {
+						ArrayRef.value.push(changeData)
+					}
 				}
 				if (change.type === 'modified') {
 					const changedArray = ArrayRef.value.filter(
-						(item) => item.id !== change.doc.data().id
+						(item) => item.id !== changeData.id
 					)
-					ArrayRef.value = [...changedArray, change.doc.data()]
+					ArrayRef.value = [...changedArray, changeData]
 				}
 				if (change.type === 'removed') {
 					const changedArray = ArrayRef.value.filter(
-						(item) => item.id !== change.doc.data().id
+						(item) => item.id !== changeData.id
 					)
 					ArrayRef.value = changedArray
 				}

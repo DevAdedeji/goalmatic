@@ -9,6 +9,53 @@ import { normalizePhoneNumber, normalizePhoneForWhatsApp, getPhoneQueryFormats }
 // Initialize Firebase Admin Auth
 const auth = getAuth(firebaseServer()!);
 
+// Helper function to check if phone number is linked to a different user
+const isPhoneLinkedToAnotherUser = async (phoneNumber: string, currentUserId: string): Promise<{ isLinked: boolean; message?: string }> => {
+    try {
+        // Check if phone number exists as main phone in users collection (different user)
+        const usersSnapshot = await goals_db.collection('users')
+            .where('phone', '==', phoneNumber)
+            .get();
+        
+        if (!usersSnapshot.empty) {
+            const userDoc = usersSnapshot.docs[0];
+            if (userDoc.id !== currentUserId) {
+                return { 
+                    isLinked: true, 
+                    message: 'This phone number is already registered as the main phone for another account.' 
+                };
+            }
+        }
+
+        // Check if phone number exists in WhatsApp integrations (different user)
+        const integrationsSnapshot = await goals_db.collectionGroup('integrations')
+            .where('phone', '==', phoneNumber)
+            .where('provider', '==', 'WHATSAPP')
+            .get();
+        
+        if (!integrationsSnapshot.empty) {
+            for (const doc of integrationsSnapshot.docs) {
+                const integration = doc.data();
+                if (integration.user_id !== currentUserId) {
+                    return { 
+                        isLinked: true, 
+                        message: 'This WhatsApp number is already linked to another account.' 
+                    };
+                }
+            }
+        }
+        
+        return { isLinked: false };
+    } catch (error) {
+        console.error('Error checking phone number conflicts:', error);
+        // In case of error, assume it might be in use to be safe
+        return { 
+            isLinked: true, 
+            message: 'Unable to verify phone number availability. Please try again later.' 
+        };
+    }
+};
+
 // Original function - requires authentication
 export const sendWhatsappOTP = onCall(
     {
@@ -21,6 +68,7 @@ export const sendWhatsappOTP = onCall(
                 throw new HttpsError('unauthenticated', 'Unauthorized');
 
             const { phoneNumber } = request.data;
+            const currentUserId = request.auth.uid;
             
             // Normalize phone number
             const normalizedPhone = normalizePhoneNumber(phoneNumber);
@@ -28,6 +76,15 @@ export const sendWhatsappOTP = onCall(
 
             if (!normalizedPhone || !whatsappPhone)
                 throw new Error('Invalid phone number format');
+
+            // Check if phone number is already linked to another user
+            const conflictCheck = await isPhoneLinkedToAnotherUser(normalizedPhone, currentUserId);
+            if (conflictCheck.isLinked) {
+                return { 
+                    code: 400, 
+                    message: conflictCheck.message || 'This phone number is already in use by another account.' 
+                };
+            }
 
             const otp = generateFourDigitOTP();
 

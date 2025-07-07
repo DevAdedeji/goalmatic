@@ -33,6 +33,19 @@ export const availableTools = ref([
 	},
 
 	{
+		id: 'GMAIL',
+		name: 'Gmail',
+		icon: '/icons/mail.svg',
+		description: 'Send and manage emails through Gmail',
+		checkStatus: true,
+		abilities: [
+			{ name: 'Send Email', id: 'GMAIL_SEND_EMAIL', icon: '/icons/mail.svg', primary_id: 'GMAIL' },
+			{ name: 'Read Emails', id: 'GMAIL_READ_EMAILS', icon: '/icons/mail.svg', primary_id: 'GMAIL' },
+			{ name: 'Create Draft', id: 'GMAIL_CREATE_DRAFT', icon: '/icons/mail.svg', primary_id: 'GMAIL' }
+		]
+	},
+
+	{
 		id: 'DATETIME',
 		name: 'Date Time',
 		icon: '/icons/dateTime.svg',

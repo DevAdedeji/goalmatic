@@ -55,15 +55,15 @@ export const parseWebhookEvent = (req: any) => {
 
 // Helper function to check if message should be skipped based on environment
 export const shouldSkipMessageForDevProd = (from: string): { shouldSkip: boolean; reason?: string } => {
-    const devNumbers = (process.env.DEV_WHATSAPP_NUMBERS || '').split(',');
-    const isDevNumber = devNumbers.includes(from);
+    // const devNumbers = (process.env.DEV_WHATSAPP_NUMBERS || '').split(',');
+    // const isDevNumber = devNumbers.includes(from);
     
-    if (is_dev && !isDevNumber) {
-        return { shouldSkip: true, reason: `Dev mode: Skipping message from non-dev number: ${from}` };
-    }
-    if (!is_dev && isDevNumber) {
-        return { shouldSkip: true, reason: `Prod mode: Skipping message from dev number: ${from}` };
-    }
+    // if (is_dev && !isDevNumber) {
+    //     return { shouldSkip: true, reason: `Dev mode: Skipping message from non-dev number: ${from}` };
+    // }
+    // if (!is_dev && isDevNumber) {
+    //     return { shouldSkip: true, reason: `Prod mode: Skipping message from dev number: ${from}` };
+    // }
     return { shouldSkip: false };
 }
 

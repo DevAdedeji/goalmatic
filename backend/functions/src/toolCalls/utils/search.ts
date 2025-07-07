@@ -13,7 +13,7 @@ export const search = tool({
   }),
   execute: async ({ query }: { query: string }) => {
         const result = await generateText({
-            model: google("gemini-2.0-flash-001", {useSearchGrounding: true}),
+            model: google("gemini-2.5-flash", {useSearchGrounding: true}),
             maxSteps: 2,
             prompt: `Search the internet for the following query: ${query}`,
         });

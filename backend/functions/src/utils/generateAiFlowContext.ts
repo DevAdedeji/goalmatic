@@ -23,7 +23,7 @@ const generateAiContent = async (originalValue: string, { name, description, pro
 
     try {
         const result = await generateText({
-            model: google("gemini-2.0-flash-001", {useSearchGrounding: true}),
+            model: google("gemini-2.5-flash", {useSearchGrounding: true}),
             system: systemPrompt,
             prompt: originalValue,
             temperature: 0.7,

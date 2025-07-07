@@ -29,7 +29,7 @@ export const generateCron = onCall({ cors: true, region: 'us-central1' }, async 
     });
 
     const result = await generateObject({
-      model: google('gemini-1.5-flash-001'),
+      model: google('gemini-2.5-flash'),
       system: systemPrompt,
       prompt: input,
       schema: cronSchema,

@@ -1,11 +1,11 @@
 import axios from 'axios'
 
 export const send_WA_Message = (data, phone_number_id?: string) => {
-  phone_number_id = '613700238502517'
-  // phone_number_id = '479033418637760'
+  const actualPhoneNumberId = phone_number_id || process.env.PHONE_NUMBER_ID || '613700238502517'
+  
   const config = {
     method: 'post',
-    url: `https://graph.facebook.com/v23.0/${process.env.PHONE_NUMBER_ID || phone_number_id}/messages`,
+    url: `https://graph.facebook.com/v23.0/${actualPhoneNumberId}/messages`,
     headers: {
       'Authorization': `Bearer ${process.env.WHATSAPP_TOKEN}`,
       'Content-Type': 'application/json',

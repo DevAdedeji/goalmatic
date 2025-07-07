@@ -82,7 +82,7 @@ async function transcribeWithGemini(audioBuffer: Buffer): Promise<string> {
     try {
         // Use Vercel AI SDK to generate content with the audio file
         const result = await generateText({
-            model: google("gemini-2.0-flash-001"),
+            model: google("gemini-2.5-flash"),
             messages: [
                 {
                     role: 'user',

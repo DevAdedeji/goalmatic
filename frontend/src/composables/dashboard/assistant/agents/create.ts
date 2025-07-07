@@ -54,9 +54,9 @@ export const useCreateAgent = () => {
 
         await setFirestoreDocument('agents', id, sent_data)
         loading.value = false
+        await useRouter().push(`/agents/explore/${id}`)
         useAssistantModal().closeCreateAgent()
         resetForm()
-        useRouter().push(`/agents/explore/${id}`)
     }
 
     return { createAgent, createAgentForm, loading, isDisabled }
