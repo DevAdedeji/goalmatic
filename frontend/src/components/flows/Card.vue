@@ -1,5 +1,5 @@
 <template>
-	<article class="workflow-card">
+	<article class="workflow-card" @click="emit('edit', flow)">
 		<div class="card-body">
 			<header class="card-header">
 				<div class="title-section">

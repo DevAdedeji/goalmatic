@@ -138,6 +138,25 @@ export const sendWhatsappOTPForSignup = onCall(
                 };
             }
 
+            // Check if phone number exists in WhatsApp integrations
+            // For web app, we allow signup but track the integration status
+            let whatsappIntegrationExists = false;
+            try {
+                const integrationsSnapshot = await goals_db.collectionGroup('integrations')
+                    .where('phone', '==', phoneFormats.normalized)
+                    .where('provider', '==', 'WHATSAPP')
+                    .get();
+                
+                whatsappIntegrationExists = !integrationsSnapshot.empty;
+                
+                if (whatsappIntegrationExists) {
+                    console.log(`Phone ${phoneFormats.normalized} already has WhatsApp integration, but allowing web signup`);
+                }
+            } catch (error) {
+                console.error('Error checking WhatsApp integrations:', error);
+                // Continue with signup if integration check fails
+            }
+
             const otp = generateFourDigitOTP();
 
             const waMsg = goalmatic_whatsapp_integration_otp({
@@ -155,6 +174,7 @@ export const sendWhatsappOTPForSignup = onCall(
                     phone: phoneFormats.normalized, // Store normalized format
                     whatsapp_phone: phoneFormats.whatsapp, // Also store WhatsApp format
                     type: 'signup',
+                    whatsapp_integration_exists: whatsappIntegrationExists, // Track integration status
                     created_at: new Date(),
                     expires_at: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
                 });

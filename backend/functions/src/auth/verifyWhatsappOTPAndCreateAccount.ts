@@ -82,18 +82,26 @@ export const verifyWhatsappOTPAndCreateAccount = onCall(
                     phone_verified: true,
                 });
 
-                // Create WhatsApp integration - also use normalized format
-                const integrationId = uuidv4();
-                await goals_db.collection('users').doc(userRecord.uid).collection('integrations').doc(integrationId).set({
-                    id: integrationId,
-                    type: 'MESSAGING',
-                    provider: 'WHATSAPP',
-                    phone: normalizedPhone, // Use normalized format consistently
-                    created_at: Timestamp.fromDate(new Date()),
-                    updated_at: Timestamp.fromDate(new Date()),
-                    integration_id: 'WHATSAPP',
-                    user_id: userRecord.uid,
-                });
+                // Only create WhatsApp integration if it doesn't already exist
+                // Check the flag we stored during OTP creation
+                const shouldCreateIntegration = !otpData.whatsapp_integration_exists;
+                
+                if (shouldCreateIntegration) {
+                    console.log(`Creating new WhatsApp integration for ${normalizedPhone}`);
+                    const integrationId = uuidv4();
+                    await goals_db.collection('users').doc(userRecord.uid).collection('integrations').doc(integrationId).set({
+                        id: integrationId,
+                        type: 'MESSAGING',
+                        provider: 'WHATSAPP',
+                        phone: normalizedPhone, // Use normalized format consistently
+                        created_at: Timestamp.fromDate(new Date()),
+                        updated_at: Timestamp.fromDate(new Date()),
+                        integration_id: 'WHATSAPP',
+                        user_id: userRecord.uid,
+                    });
+                } else {
+                    console.log(`Skipping WhatsApp integration creation - phone ${normalizedPhone} already has WhatsApp integration`);
+                }
 
                 // Create custom token for client-side authentication
                 const customToken = await auth.createCustomToken(userRecord.uid);

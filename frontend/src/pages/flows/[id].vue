@@ -1,30 +1,36 @@
 <template>
 	<ClientOnly>
-		<div class="p-4 sm:p-6">
-			<FlowsIdLoader v-if="loading" />
+		<NuxtLayout name="custom-header-dashboard">
+			<template #header>
+				<FlowHeader />
+			</template>
+			<div class="p-4 sm:p-6">
+				<FlowsIdLoader v-if="loading" />
 
-			<!-- Flow details -->
-			<div v-else-if="flowDetails && Object.keys(flowDetails).length > 0">
-				<!-- Use the new Header component -->
-				<FlowsIdHeader v-model:current-tab="currentTab" :flow-data="flowDetails" :flow-runs="flowRuns" />
+				<!-- Flow details -->
+				<div v-else-if="flowDetails && Object.keys(flowDetails).length > 0">
+					<!-- Use the new Header component -->
+					<FlowsIdHeader v-model:current-tab="currentTab" :flow-data="flowDetails" :flow-runs="flowRuns" />
 
-				<!-- Use the Details component -->
-				<FlowsIdDetails
-					:current-tab="currentTab"
-					:flow-data="flowDetails"
-					:flow-runs="flowRuns"
-					:flow-runs-loading="flowRunsLoading"
-					@refresh-runs="fetchFlowRuns"
-				/>
+					<!-- Use the Details component -->
+					<FlowsIdDetails
+						:current-tab="currentTab"
+						:flow-data="flowDetails"
+						:flow-runs="flowRuns"
+						:flow-runs-loading="flowRunsLoading"
+						@refresh-runs="fetchFlowRuns"
+					/>
+				</div>
+
+				<FlowsIdErrorState v-else />
 			</div>
-
-			<FlowsIdErrorState v-else />
-		</div>
+		</NuxtLayout>
 	</ClientOnly>
 </template>
 
 <script setup lang="ts">
 import { watch } from 'vue'
+import FlowHeader from '@/components/layouts/header/FlowHeader.vue'
 import FlowsIdHeader from '@/components/flows/id/Header.vue'
 import FlowsIdDetails from '@/components/flows/id/Details.vue'
 import FlowsIdLoader from '@/components/flows/id/Loader.vue'
@@ -64,9 +70,10 @@ watch(() => currentTab.value, (newTab) => {
   }
 })
 
+
+
 definePageMeta({
-	layout: 'dashboard'
-	// No authentication middleware - public flows can be viewed by anyone
+    layout: false
 })
 </script>
 
