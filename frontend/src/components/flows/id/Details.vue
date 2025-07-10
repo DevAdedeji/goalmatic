@@ -1,7 +1,7 @@
 <template>
 	<FlowsIdFlowSection v-if="currentTab === 'editor'" :flow-data="flowData" />
 	<FlowsIdRunSection
-		v-if="currentTab === 'runs'"
+		v-if="currentTab === 'logs'"
 		:flow-runs="flowRuns"
 		:loading="flowRunsLoading"
 		@refresh-runs="$emit('refreshRuns')"

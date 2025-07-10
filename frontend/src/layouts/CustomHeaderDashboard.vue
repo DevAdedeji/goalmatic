@@ -10,8 +10,8 @@
 
 
 			<Alert />
-			<div class="w-full h-full relative  overflow-x-hidden bg-light   pb-40">
-				<section class="flex-col flex items-stretch">
+			<div class="w-full h-full relative  overflow-x-hidden bg-light   ">
+				<section class="flex-col flex items-stretch h-full">
 					<slot />
 				</section>
 			</div>

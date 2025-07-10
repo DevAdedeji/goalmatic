@@ -7,6 +7,33 @@
 }
 
 @layer base {
+	.controls {
+		@apply flex items-center justify-between border-b border-[#E9EAEB] pb-5 mb-4;
+		.options {
+			@apply items-center gap-2;
+		}
+	}
+
+	.tabs {
+		@apply w-full md:w-auto flex items-start gap-2 rounded-lg bg-[#f9f8fb] p-1;
+
+		.tab-btn {
+			@apply w-full md:w-auto flex items-center justify-center font-medium p-2 gap-2.5 rounded-none text-xs text-[#19213d];
+
+			&.active {
+				border-radius: 4px;
+				border: 1px solid #f0f2f5;
+				background: #fcfcfd;
+				box-shadow: 0px 1px 3px 0px rgba(25, 33, 61, 0.1);
+				display: flex;
+				padding: 8px;
+				justify-content: center;
+				align-items: center;
+				gap: 10px;
+			}
+		}
+	}
+
 	.transite {
 		@apply transition-all duration-75 ease-linear;
 	}

@@ -96,15 +96,11 @@
 		</div>
 
 		<!-- Flow validity warning (only for owners) -->
-		<div v-if="!isFlowValid && isOwner(flowData)" class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800 flex items-center gap-2">
-			<AlertTriangle :size="18" />
-			<span>Your flow needs at least one trigger and one action step to be valid.</span>
-		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { PlusCircle, AlertTriangle } from 'lucide-vue-next'
+import { PlusCircle } from 'lucide-vue-next'
 import FlowStepCard from './FlowStepCard.vue'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useFlowsModal } from '@/composables/core/modals'
