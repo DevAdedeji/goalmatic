@@ -208,8 +208,55 @@
 						<li>
 							<strong>Google Calendar:</strong> We access your Google Calendar data to create, read, and modify events, enabling scheduling and appointment management within our service.
 						</li>
+						<li>
+							<strong>Gmail:</strong> We access your Gmail data to read, compose, send, and manage email messages on your behalf. This enables our AI agents to handle email-related tasks such as reading emails, sending responses, organizing messages, and managing your inbox. We only access Gmail data that you explicitly authorize and use it solely for providing email management features within our service.
+						</li>
 					</ul>
-					<p>We access this data solely for providing and improving our service and only with your explicit consent. Our practices adhere strictly to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a> and its Limited Use requirements. We do not use your Google user data for any other purpose.</p>
+
+					<h3 class="text-2xl text-gray-900 mt-6 mb-3">
+						Data Collection and Usage
+					</h3>
+					<p>We collect and use Google user data solely for the following purposes:</p>
+					<ul>
+						<li>To provide the core functionality of our AI-powered productivity platform</li>
+						<li>To enable automated task management and scheduling features</li>
+						<li>To facilitate email management and communication on your behalf</li>
+						<li>To improve the user experience and functionality of our service</li>
+					</ul>
+
+					<h3 class="text-2xl text-gray-900 mt-6 mb-3">
+						Data Sharing and Transfer
+					</h3>
+					<p>We do not sell, rent, or transfer your Google user data to third parties for any purpose other than providing our core service functionality. We may share your data only in the following limited circumstances:</p>
+					<ul>
+						<li>With your explicit consent for specific features you request</li>
+						<li>With trusted service providers who assist in operating our platform (under strict confidentiality agreements)</li>
+						<li>When required by law or to protect our rights and safety</li>
+					</ul>
+
+					<h3 class="text-2xl text-gray-900 mt-6 mb-3">
+						Data Protection and Security
+					</h3>
+					<p>We implement industry-standard security measures to protect your Google user data:</p>
+					<ul>
+						<li>All data transmissions are encrypted using TLS/SSL protocols</li>
+						<li>Access to your data is restricted to authorized personnel only</li>
+						<li>We use secure servers and databases with regular security audits</li>
+						<li>Data access logs are maintained and monitored for suspicious activity</li>
+					</ul>
+
+					<h3 class="text-2xl text-gray-900 mt-6 mb-3">
+						Data Retention and Deletion
+					</h3>
+					<p>We retain your Google user data only for as long as necessary to provide our services:</p>
+					<ul>
+						<li>Active user data is retained while your account remains active and you continue using our services</li>
+						<li>You may revoke access to your Google data at any time through your Google account settings</li>
+						<li>Upon account deletion or service discontinuation, we will delete your Google user data within 30 days</li>
+						<li>You may request immediate deletion of your data by contacting us at support@goalmatic.io</li>
+					</ul>
+
+					<p>We access this data solely for providing and improving our service and only with your explicit consent. Our practices adhere strictly to the <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank">Google API Services User Data Policy</a> and its Limited Use requirements. We do not use your Google user data for advertising, training AI models, or any other purpose beyond providing our core service functionality.</p>
 
 					<h2 class="text-3xl text-gray-900">
 						Contact Us

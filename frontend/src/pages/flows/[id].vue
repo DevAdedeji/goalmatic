@@ -11,9 +11,6 @@
 
 				<!-- Flow details -->
 				<div v-else-if="flowDetails && Object.keys(flowDetails).length > 0">
-					<!-- Use the new Header component -->
-					<!-- <FlowsIdHeader v-model:current-tab="currentTab" :flow-data="flowDetails" :flow-runs="flowRuns" /> -->
-
 					<!-- Use the Details component -->
 					<FlowsIdDetails
 						:current-tab="currentTab"

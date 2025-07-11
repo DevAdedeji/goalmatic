@@ -91,6 +91,57 @@
 					<li>Otherwise attempt to interfere with the proper working of Service.</li>
 				</ul>
 				<h2 class="text-3xl text-gray-900 dark:text-white">
+					Google API Services Integration
+				</h2>
+				<p>Our Service integrates with various Google API services to provide enhanced functionality. By using our Service, you acknowledge and agree to the following:</p>
+
+				<h3 class="text-2xl text-gray-900 dark:text-white mt-6 mb-3">
+					API Access and Authorization
+				</h3>
+				<p>Our application requests access to your Google account data through the following APIs:</p>
+				<ul>
+					<li><strong>Gmail API:</strong> To read, compose, send, and manage email messages on your behalf</li>
+					<li><strong>Google Drive API:</strong> To access files and spreadsheets you explicitly select to share</li>
+					<li><strong>Google Calendar API:</strong> To create, read, and modify calendar events for scheduling purposes</li>
+				</ul>
+				<p>You must explicitly authorize our application to access each of these services. You may revoke this authorization at any time through your Google Account settings.</p>
+
+				<h3 class="text-2xl text-gray-900 dark:text-white mt-6 mb-3">
+					Compliance with Google's Terms
+				</h3>
+				<p>Our use of Google API services is subject to and complies with:</p>
+				<ul>
+					<li>Google's API Terms of Service</li>
+					<li>Google's API Services User Data Policy, including the Limited Use requirements</li>
+					<li>All applicable Google developer policies and guidelines</li>
+				</ul>
+				<p>You can review Google's API Terms of Service at <a class="underline" target="_blank" rel="noreferrer" href="https://developers.google.com/terms">https://developers.google.com/terms</a></p>
+
+				<h3 class="text-2xl text-gray-900 dark:text-white mt-6 mb-3">
+					Data Usage Limitations
+				</h3>
+				<p>We use your Google user data solely for providing and improving our Service functionality. We do not:</p>
+				<ul>
+					<li>Sell, rent, or lease your Google user data to third parties</li>
+					<li>Use your data for advertising purposes</li>
+					<li>Use your data to train AI models outside of our core service functionality</li>
+					<li>Transfer your data to data brokers or for credit determination</li>
+					<li>Use your data for any purpose other than providing our core service features</li>
+				</ul>
+
+				<h3 class="text-2xl text-gray-900 dark:text-white mt-6 mb-3">
+					Your Rights and Control
+				</h3>
+				<p>You have the right to:</p>
+				<ul>
+					<li>Revoke our application's access to your Google data at any time</li>
+					<li>Request deletion of your Google user data from our systems</li>
+					<li>Access information about how we use your Google data</li>
+					<li>File complaints with Google regarding our handling of your data</li>
+				</ul>
+				<p>To exercise these rights, contact us at support@goalmatic.io or manage your permissions through your Google Account settings.</p>
+
+				<h2 class="text-3xl text-gray-900 dark:text-white">
 					Analytics
 				</h2>
 				<p>We may use third-party Service Providers to monitor and analyze the use of our Service.</p>
