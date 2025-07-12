@@ -1,22 +1,35 @@
 <template>
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-4 mt-12">
 		<!-- Flow trigger section -->
 		<div class="flex flex-col gap-4 items-center">
 			<colorBadge>
 				When this happens...
 			</colorBadge>
 
-			<button v-if="!flowData.trigger && isOwner(flowData)"
-				class="flow-empty-btn group"
-				@click="useFlowsModal().openSelectNode({ type: 'trigger' })">
-				<PlusCircle :size="18" class="text-text-secondary group-hover:text-primary transition-colors" />
-				<span class="group-hover:text-primary transition-colors">Add Trigger</span>
-			</button>
+			<section v-if="!flowData.trigger && isOwner(flowData)" class="w-full bg-grey max-w-[600px] rounded-xl border border-line">
+				<header class="flex  items-center justify-between px-4 py-3">
+					<div class="flex flex-col">
+						<p class="text-base font-bold">
+							When this happens
+						</p>
+						<span class="text-sm text-[#7A797E]">Your workflow starts when this happens</span>
+					</div>
 
-			<!-- Show message for non-owners when no trigger -->
-			<div v-else-if="!flowData.trigger" class="flow-empty-display">
-				<span class="text-text-secondary">No trigger configured</span>
-			</div>
+					<colorBadge>
+						trigger
+					</colorBadge>
+				</header>
+				<section class="bg-light rounded-b-xl border-y border-line p-3 flex justify-center">
+					<button
+						class="btn flex items-center gap-2 bg-grey border border-line"
+						@click="useFlowsModal().openSelectNode({ type: 'trigger' })">
+						<PlusCircle :size="18" class="text-text-secondary group-hover:text-primary transition-colors" />
+						<span class="group-hover:text-primary transition-colors">Add Trigger</span>
+					</button>
+				</section>
+			</section>
+
+
 
 			<FlowStepCard
 				v-else

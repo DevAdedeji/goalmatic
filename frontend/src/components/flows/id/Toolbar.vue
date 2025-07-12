@@ -1,6 +1,6 @@
 <template>
 	<div class="w-full flex flex-col lg:flex-row flex-wrap justify-between items-center md:my-4 gap-4">
-		<div class="w-full lg:w-[30%] flex justify-start">
+		<div class="w-full lg:w-[30%] flex justify-start z-10">
 			<div class="tabs border border-line ">
 				<button
 					v-for="tab in tabs"
@@ -15,13 +15,15 @@
 			</div>
 		</div>
 
+		<section class="lg:absolute static md:inset-x-0 w-full justify-center flex z-0">
+			<article v-if="!isFlowValid && isOwner(flowData)" class="w-full lg:w-[35%] p-2.5 flex  justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
+				<AlertTriangle :size="18" />
+				<span class="text-sm">Add a trigger and action to make your flow valid.</span>
+			</article>
+		</section>
 
-		<article v-if="!isFlowValid && isOwner(flowData)" class="w-full lg:w-[35%] p-2.5 flex  justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
-			<AlertTriangle :size="18" />
-			<span class="text-sm">Add a trigger and action to make your flow valid.</span>
-		</article>
 
-		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end">
+		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end z-10">
 			<!-- Flow Status Toggle -->
 			<Tooltip v-if="isOwner(flowData) && !allNodesValid && flowData.status !== 1" placement="top">
 				<template #trigger>
