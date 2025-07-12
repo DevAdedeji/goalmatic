@@ -12,11 +12,22 @@
 				<div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']">
 					<header class="modal-title flex justify-between w-full items-center">
 						<slot name="header">
-							<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
+							<div v-if="image || description" class="flex items-center gap-3 flex-1">
+								<img v-if="image" :src="image" :alt="imageAlt || title" class="w-8 h-8 flex-shrink-0">
+								<div class="flex-1">
+									<h3 class="font-medium text-headline">
+										{{ title }}
+									</h3>
+									<p v-if="description" class="text-sm text-text-secondary">
+										{{ description }}
+									</p>
+								</div>
+							</div>
+							<span v-else :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
 							<X
 								v-if="!noClose"
 								name="close"
-								class="text-dark w-5 cursor-pointer  rounded-md"
+								class="text-dark w-5 cursor-pointer rounded-md flex-shrink-0"
 								@click="closeModal"
 							/>
 						</slot>
@@ -28,20 +39,33 @@
 			</transition>
 
 			<transition name="slide" appear @after-leave="handleAfterLeave">
-				<div v-if="type == 'sidebar' && show" class="sidebar">
-					<header class="modal-title flex justify-between w-full items-center">
-						<slot name="header">
-							<span :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
-							<X
-								v-if="!noClose"
-								name="close"
-								class="text-dark w-5 cursor-pointer  rounded-md"
-								@click="closeModal"
-							/>
-						</slot>
-					</header>
-					<slot />
-				</div>
+				<aside v-if="type == 'sidebar' && show" class="sidebar">
+					<div class="sidebar-content">
+						<header class="modal-title flex justify-between w-full items-center">
+							<slot name="header">
+								<div v-if="image || description" class="flex items-center gap-3 flex-1">
+									<img v-if="image" :src="image" :alt="imageAlt || title" class="size-7 flex-shrink-0">
+									<div class="flex-1">
+										<h3 class="font-medium text-headline text-base">
+											{{ title }}
+										</h3>
+										<p v-if="description" class="text-sm text-text-secondary">
+											{{ description }}
+										</p>
+									</div>
+								</div>
+								<span v-else :class="[noClose?'text-center w-full':'text-start font-semibold']">{{ title }}</span>
+								<X
+									v-if="!noClose"
+									name="close"
+									class="text-dark w-5 cursor-pointer rounded-md flex-shrink-0"
+									@click="closeModal"
+								/>
+							</slot>
+						</header>
+						<slot />
+					</div>
+				</aside>
 			</transition>
 			<transition name="glide_up" appear @after-leave="handleAfterLeave">
 				<div v-if="type == 'bottom_bar' && show" class="bottombar">
@@ -128,8 +152,22 @@ const props = defineProps({
 		default: 'popup',
 		type: String as PropType<modalTypes>,
 		required: false
+	},
+	image: {
+		default: '',
+		type: String,
+		required: false
+	},
+	imageAlt: {
+		default: '',
+		type: String,
+		required: false
+	},
+	description: {
+		default: '',
+		type: String,
+		required: false
 	}
-
 })
 
 const show = ref(true)
@@ -160,9 +198,22 @@ const handleAfterLeave = () => {
 
 <style scoped lang="scss">
 .sidebar{
-	@apply bg-light w-[448px] max-w-[90vw] h-screen fixed right-0 p-4;
-	header{
-		// @apply rounded-none
+	@apply p-4 w-[448px] max-w-[90vw] h-screen fixed right-0 ;
+
+	@media screen and (max-width: 640px) {
+		@apply w-full max-w-full p-0 bottom-0 right-0 left-0 h-auto;
+	}
+
+	.sidebar-content{
+		@apply bg-light h-full overflow-y-auto p-4 rounded-xl;
+
+		@media screen and (max-width: 640px) {
+			@apply rounded-t-2xl rounded-b-none h-auto max-h-[90vh];
+		}
+
+		header{
+			@apply p-0;
+		}
 	}
 }
     .bottombar {
@@ -209,6 +260,9 @@ const handleAfterLeave = () => {
 .slide-enter-from,
 .slide-leave-to {
 	transform: translateX(500px);
+	@media screen and (max-width: 640px) {
+		transform: translateY(800px);
+	}
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;

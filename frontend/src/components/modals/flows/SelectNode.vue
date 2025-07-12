@@ -21,7 +21,7 @@
 					<!-- Parent node -->
 					<div
 						class="p-4 hover:border-primary cursor-pointer transition-colors"
-						:class="{'border-b border-border': hasChildren(node) && !expandedNodes[node.node_id]}"
+						:class="{'border-b border-border': hasChildren(node) && !expandedNodes[node.node_id || '']}"
 						@click="handleNodeClick(node)"
 					>
 						<div class="flex items-center justify-between">
@@ -35,9 +35,9 @@
 								v-if="hasChildren(node)"
 								:class="[
 									'transition-transform w-5 h-5 text-text-secondary',
-									!expandedNodes[node.node_id] ? 'transform rotate-180' : ''
+									!expandedNodes[node.node_id || ''] ? 'transform rotate-180' : ''
 								]"
-								@click.stop="toggleNodeExpansion(node.node_id)"
+								@click.stop="toggleNodeExpansion(node.node_id || '')"
 							/>
 						</div>
 						<p class="text-sm text-text-secondary ml-8">
@@ -47,7 +47,7 @@
 
 					<!-- Children nodes -->
 					<div
-						v-if="hasChildren(node) && !expandedNodes[node.node_id]"
+						v-if="hasChildren(node) && !expandedNodes[node.node_id || '']"
 						class="bg-gray-50"
 					>
 						<div

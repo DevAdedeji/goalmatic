@@ -1,17 +1,12 @@
 <template>
-	<div :class="[ 'px-4 py-5  rounded-lg relative w-full max-w-2xl border-[1.5px]', isTrigger ? ' border-primary ' : ' border-border']">
-		<div :class="['absolute -left-2 -top-2 w-6 h-6 text-white rounded-full flex items-center justify-center font-bold',isTrigger ? 'bg-primary' : 'bg-gray-500']">
-			{{ stepIndex + 1 }}
-		</div>
-
+	<div class="px-4 py-5  rounded-b-xl relative w-full  border-[1.5px] bg-light" @click="emit('editStep', props.step)">
 		<!-- Step Header -->
 		<div class="flex justify-between items-center mb-2">
 			<h3 class="font-medium flex items-center gap-2">
-				<img :src="step.icon" :alt="step.name" class="size-6 p-0.5 rounded-md">
-				<span>
+				<img :src="step.icon" :alt="step.name" class="size-9 p-0.5 rounded-md">
+				<span class="flex flex-col items-start text-xs md:text-sm">
 					<span v-if="step.parent_node_id">
 						<span class="text-primary font-bold">{{ step.name.split(':')[0].trim() }}</span>
-						<span class="mx-1">:</span>
 					</span>
 					<span class="italic">{{ step.name.split(':').pop().trim() }}</span>
 				</span>
@@ -21,47 +16,26 @@
 					Invalid
 				</span>
 			</h3>
-			<div v-if="isOwner" class="flex gap-2">
-				<!-- Change Button -->
-				<span v-if="props.isFlowActive" class="tooltip-wrapper">
-					<button class="icon-btn disabled-btn" disabled>
-						<RefreshCw :size="18" />
-					</button>
-					<span class="tooltip-text">Cannot change node while flow is active</span>
-				</span>
-				<button v-else class="icon-btn text-text-secondary hover:text-blue-500" @click="$emit('changeNode', step)">
-					<RefreshCw :size="18" />
-				</button>
-				<!-- Edit Button -->
-				<span v-if="props.isFlowActive" class="tooltip-wrapper">
-					<button class="icon-btn disabled-btn" disabled>
-						<Edit2 :size="18" />
-					</button>
-					<span class="tooltip-text">Cannot edit node while flow is active</span>
-				</span>
-				<button v-else class="icon-btn text-text-secondary hover:text-primary" @click="$emit('editStep', step)">
-					<Edit2 :size="18" />
-				</button>
-				<!-- Remove Button -->
-				<span v-if="props.isFlowActive" class="tooltip-wrapper">
-					<button class="icon-btn disabled-btn" disabled>
-						<Trash2 :size="18" />
-					</button>
-					<span class="tooltip-text">Cannot delete node while flow is active</span>
-				</span>
-				<button v-else class="icon-btn text-text-secondary hover:text-danger" @click="$emit('removeStep')">
-					<Trash2 :size="18" />
-				</button>
+			<div v-if="isOwner">
+				<IconDropdown
+					class=""
+					:data="step"
+					:children="dropdownItems"
+					btn-class="bg-grey p-2 rounded-md border border-line"
+					class-name="w-48"
+					:index="0"
+					align="end"
+				/>
 			</div>
 		</div>
 
 		<!-- Step Description -->
-		<p class="text-text-secondary">
+		<!-- <p class="text-text-secondary">
 			{{ step.description }}
-		</p>
+		</p> -->
 
 		<!-- Required Props Warning -->
-		<div v-if="!isNodeValidComputed && isOwner" class="mt-3 p-2 bg-danger-50 border border-danger-200 rounded-md text-danger-800 text-sm">
+		<div v-if="!isNodeValidComputed && isOwner" class="mt-3 p-2 bg-danger-50  rounded-md text-sm">
 			<p class="font-semibold">
 				This node is missing required properties:
 			</p>
@@ -101,6 +75,7 @@
 import { Edit2, Trash2, RefreshCw, AlertCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { isNodeValid, getMissingRequiredProps } from '@/composables/dashboard/flows/nodes/nodeOperations'
+import IconDropdown from '@/components/core/IconDropdown.vue'
 
 // Define Props
 const props = defineProps({
@@ -126,6 +101,13 @@ const props = defineProps({
 	}
 })
 
+// Define Emits
+const emit = defineEmits([
+	'editStep',
+	'removeStep',
+	'changeNode'
+])
+
 // Check if node is valid - now using centralized function
 const isNodeValidComputed = computed(() => {
 	return isNodeValid(props.step)
@@ -133,6 +115,46 @@ const isNodeValidComputed = computed(() => {
 
 // Access isOwner prop
 const isOwner = computed(() => props.isOwner)
+
+// Define dropdown items with conditional logic
+const dropdownItems = computed(() => {
+	const items = [
+		{
+			name: 'Change Node',
+			icon: RefreshCw,
+			func: props.isFlowActive ? () => {} : () => emit('changeNode', props.step),
+			class: props.isFlowActive ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-500',
+			hide: false
+		},
+		{
+			name: 'Edit Properties',
+			icon: Edit2,
+			func: props.isFlowActive ? () => {} : () => emit('editStep', props.step),
+			class: props.isFlowActive ? 'opacity-50 cursor-not-allowed' : 'hover:text-primary',
+			hide: false
+		},
+		{
+			name: 'Remove Node',
+			icon: Trash2,
+			func: props.isFlowActive ? () => {} : () => emit('removeStep'),
+			class: props.isFlowActive ? 'opacity-50 cursor-not-allowed' : 'hover:text-danger',
+			hide: false
+		}
+	]
+
+	// Add tooltip text when flow is active
+	if (props.isFlowActive) {
+		items.forEach((item) => {
+			const originalFunc = item.func
+			item.func = () => {
+				// Do nothing when flow is active, could show a toast message here
+				console.log('Cannot perform action while flow is active')
+			}
+		})
+	}
+
+	return items
+})
 
 // Utility: Parse mentions in Tiptap HTML to @NodeName.key
 const parseMentionsFromHtml = (html: string): string => {
@@ -158,13 +180,6 @@ const hasPropsData = computed(() => {
 const isAiEnabledField = (fieldKey: string) => {
 	return props.step.aiEnabledFields && props.step.aiEnabledFields.includes(fieldKey)
 }
-
-// Define Emits
-defineEmits([
-	'editStep',
-	'removeStep',
-	'changeNode'
-])
 </script>
 
 <style scoped>
@@ -179,36 +194,5 @@ defineEmits([
 }
 .icon-btn:hover {
   background-color: rgba(0, 0, 0, 0.05);
-}
-.disabled-btn {
-  opacity: 0.4;
-  cursor: not-allowed !important;
-  pointer-events: none;
-}
-.tooltip-wrapper {
-  position: relative;
-  display: inline-block;
-}
-.tooltip-text {
-  visibility: hidden;
-  opacity: 0;
-  width: max-content;
-  background-color: #333;
-  color: #fff;
-  text-align: center;
-  border-radius: 4px;
-  padding: 4px 8px;
-  position: absolute;
-  z-index: 10;
-  bottom: 120%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  transition: opacity 0.2s;
-  pointer-events: none;
-}
-.tooltip-wrapper:hover .tooltip-text {
-  visibility: visible;
-  opacity: 1;
 }
 </style>

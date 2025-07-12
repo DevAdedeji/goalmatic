@@ -1,6 +1,6 @@
 <template>
 	<div class="w-full flex flex-col lg:flex-row flex-wrap justify-between items-center md:my-4 gap-4">
-		<div class="w-full lg:w-[30%] flex justify-start z-10">
+		<div class="w-full lg:w-[30%] flex justify-start z-[1]">
 			<div class="tabs border border-line ">
 				<button
 					v-for="tab in tabs"
@@ -23,7 +23,7 @@
 		</section>
 
 
-		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end z-10">
+		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end z-[1]">
 			<!-- Flow Status Toggle -->
 			<Tooltip v-if="isOwner(flowData) && !allNodesValid && flowData.status !== 1" placement="top">
 				<template #trigger>

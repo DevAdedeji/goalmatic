@@ -4,23 +4,11 @@
 		:title="`Edit ${payload?.name || 'Node'}`"
 		:props-modal="propsModal"
 		type="sidebar"
+		:image="payload?.icon"
+		:image-alt="payload?.name"
+		:description="payload?.description"
 	>
 		<section class="mt-6">
-			<!-- Node Info Header -->
-			<div class="flex items-center gap-3 mb-4">
-				<img v-if="payload?.icon" :src="payload.icon" :alt="payload?.name" class="w-8 h-8">
-				<div>
-					<h3 class="font-medium text-headline">
-						{{ payload?.name }}
-					</h3>
-					<p class="text-sm text-text-secondary">
-						{{ payload?.description }}
-					</p>
-				</div>
-			</div>
-
-			<div class="border-t border-border my-4" />
-
 			<component
 				:is="nodeConfigComponent"
 				:payload="payload"
