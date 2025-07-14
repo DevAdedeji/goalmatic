@@ -1,16 +1,12 @@
 import { ref } from 'vue'
-import { getFunctions, httpsCallable } from 'firebase/functions'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
+import { callFirebaseFunction } from '@/firebase/functions'
 
 export const useComposioGmail = () => {
     const { id: user_id } = useUser()
     const loading = ref(false)
     const connecting = ref(false)
-    const functions = getFunctions()
-
-    const setupComposioGmail = httpsCallable(functions, 'setupComposioGmail')
-    const checkComposioGmailConnection = httpsCallable(functions, 'checkComposioGmailConnection')
 
     const connect = async () => {
         loading.value = true
@@ -18,11 +14,11 @@ export const useComposioGmail = () => {
 
         try {
             // Initiate Gmail connection
-            const result = await setupComposioGmail()
-            const { redirectUrl, connectionId } = result.data as {
+            const result = await callFirebaseFunction('setupComposioGmail', {}) as {
                 redirectUrl: string
                 connectionId: string
             }
+            const { redirectUrl, connectionId } = result
 
             // Open OAuth window
             const authWindow = window.open(redirectUrl, '_blank', 'width=500,height=600')
@@ -30,8 +26,8 @@ export const useComposioGmail = () => {
             // Check connection status periodically
             const checkConnection = async () => {
                 try {
-                    const checkResult = await checkComposioGmailConnection({ connectionId })
-                    const { success } = checkResult.data as { success: boolean }
+                    const checkResult = await callFirebaseFunction('checkComposioGmailConnection', { connectionId }) as { success: boolean }
+                    const { success } = checkResult
 
                     if (success) {
                         // Connection successful
