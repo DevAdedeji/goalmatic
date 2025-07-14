@@ -1,42 +1,30 @@
 <template>
 	<FlowsIdFlowSection v-if="currentTab === 'editor'" :flow-data="flowData" />
-	<FlowsIdRunSection
+	<FlowsIdLogs
 		v-if="currentTab === 'logs'"
-		:flow-runs="flowRuns"
-		:loading="flowRunsLoading"
-		@refresh-runs="$emit('refreshRuns')"
+		:flow-logs="flowLogs"
+		:loading="flowLogsLoading"
+		@refresh-logs="emit('refreshLogs')"
 	/>
 </template>
 
 <script setup lang="ts">
 import { defineProps, defineEmits } from 'vue'
 import FlowsIdFlowSection from '@/components/flows/id/FlowSection.vue'
-import FlowsIdRunSection from '@/components/flows/id/RunSection.vue'
+import FlowsIdLogs from '@/components/flows/id/Logs.vue'
 
 
+// Define Props and Emits
+defineProps<{
+	flowData: Record<string, any>
+	currentTab: string
+	flowLogs: any[]
+	flowLogsLoading: boolean
+}>()
 
-// Define emits
-const emit = defineEmits(['refreshRuns'])
-
-// Define Props
-defineProps({
-	flowData: {
-		type: Object,
-		required: true
-	},
-	currentTab: {
-		type: String,
-		required: true
-	},
-	flowRuns: {
-		type: Array,
-		default: () => []
-	},
-	flowRunsLoading: {
-		type: Boolean,
-		default: false
-	}
-})
+const emit = defineEmits<{
+	refreshLogs: []
+}>()
 
 
 </script>

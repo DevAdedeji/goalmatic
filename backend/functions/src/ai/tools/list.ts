@@ -5,6 +5,9 @@ import { GOOGLECALENDAR_DELETE_EVENT } from "./googleCalendar/deleteEvent";
 import { GMAIL_SEND_EMAIL } from "./gmail/sendEmail";
 import { GMAIL_READ_EMAILS } from "./gmail/readEmails";
 import { GMAIL_CREATE_DRAFT } from "./gmail/createDraft";
+import { COMPOSIO_GMAIL_SEND_EMAIL } from "./gmail/composio/sendEmail";
+import { COMPOSIO_GMAIL_READ_EMAILS } from "./gmail/composio/readEmails";
+import { COMPOSIO_GMAIL_CREATE_DRAFT } from "./gmail/composio/createDraft";
 import { CURRENT_DATE_TIME_TOOL } from "../../toolCalls/utils//dateTime";
 import { SEARCH_TOOL } from "../../toolCalls/utils/search";
 import type { Tool } from 'ai';
@@ -30,10 +33,15 @@ export const availableTools: Record<string, ToolSignature> = {
     [GOOGLECALENDAR_UPDATE_EVENT.id]: GOOGLECALENDAR_UPDATE_EVENT,
     [GOOGLECALENDAR_DELETE_EVENT.id]: GOOGLECALENDAR_DELETE_EVENT,
 
-    // Gmail tools
+    // Gmail tools (Original)
     [GMAIL_SEND_EMAIL.id]: GMAIL_SEND_EMAIL,
     [GMAIL_READ_EMAILS.id]: GMAIL_READ_EMAILS,
     [GMAIL_CREATE_DRAFT.id]: GMAIL_CREATE_DRAFT,
+
+    // Gmail tools (Composio)
+    [COMPOSIO_GMAIL_SEND_EMAIL.id]: COMPOSIO_GMAIL_SEND_EMAIL,
+    [COMPOSIO_GMAIL_READ_EMAILS.id]: COMPOSIO_GMAIL_READ_EMAILS,
+    [COMPOSIO_GMAIL_CREATE_DRAFT.id]: COMPOSIO_GMAIL_CREATE_DRAFT,
 
     // Table tools
     [TABLE_CREATE.id]: TABLE_CREATE,

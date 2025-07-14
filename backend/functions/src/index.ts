@@ -19,6 +19,9 @@ export * from './users/onCreated'
 export * from './chat/deleteChatSession'
 export * from './chat/shareChatSession'
 
+// Composio Gmail integration
+export * from './ai/tools/gmail/composio/setup'
+
 // Convex sync functions
 export * from './convex/index'
 export * from './agents/migrateAgents'

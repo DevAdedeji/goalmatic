@@ -37,10 +37,7 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
             throw new HttpsError('permission-denied', 'You do not have permission to test this flow');
         }
 
-        // Check if the flow has a trigger
-        // if (!flowData?.trigger) {
-        //     throw new HttpsError('failed-precondition', 'Flow must have a trigger to be tested');
-        // }
+        
         
         // Check if the flow has steps
         if (!flowData?.steps || flowData.steps.length === 0) {
@@ -52,12 +49,12 @@ export const testFlow = onCall({cors: true, region: 'us-central1'}, async (reque
         const startTime = new Date();
         
         // Create a run record for this test execution
-        const runRef = goals_db.collection('flows').doc(flowId).collection('runs').doc(executionId);
+        const runRef = goals_db.collection('flows').doc(flowId).collection('logs').doc(executionId);
         await runRef.set({
             id: executionId,
             status: 'running',
             start_time: Timestamp.fromDate(startTime),
-            trigger: 'test',
+            trigger: 'manual',
             steps_completed: 0,
             steps_total: flowData.steps.length,
             created_at: Timestamp.fromDate(startTime),

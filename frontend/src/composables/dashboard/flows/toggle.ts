@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore'
-import { useFlowRuns } from './runs'
+import { useFlowLogs } from './logs'
 import { useEditFlow } from './edit'
 import { useFetchFlowById } from './id'
 import { useAlert } from '@/composables/core/notification'
@@ -7,7 +7,7 @@ import { callFirebaseFunction } from '@/firebase/functions'
 
 export const useToggleFlow = () => {
     const loading = ref(false)
-    const { fetchFlowRuns } = useFlowRuns()
+    const { fetchFlowLogs } = useFlowLogs()
     const { updateFlow } = useEditFlow() // Get updateFlow from useEditFlow
     const { flowDetails } = useFetchFlowById() // Get flowDetails to update local state
 

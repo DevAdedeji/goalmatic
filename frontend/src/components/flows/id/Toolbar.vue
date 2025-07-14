@@ -16,16 +16,46 @@
 		</div>
 
 		<section class="lg:absolute static md:inset-x-0 w-full justify-center flex z-0">
-			<article v-if="!isFlowValid && isOwner(flowData)" class="w-full lg:w-[35%] p-2.5 flex  justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
+			<!-- Error State -->
+			<article v-if="flowStatus === 'error'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
+				<AlertTriangle :size="18" />
+				<span class="text-sm">Error detected · One or more parts of your flow has an error.</span>
+			</article>
+
+			<!-- Invalid Flow State -->
+			<article v-else-if="flowStatus === 'invalid'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
 				<AlertTriangle :size="18" />
 				<span class="text-sm">Add a trigger and action to make your flow valid.</span>
+			</article>
+
+			<!-- Running State -->
+			<article v-else-if="flowStatus === 'running'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-blue-200 text-blue-800 bg-blue-50">
+				<Spinner size="18" class="animate-spin" />
+				<span class="text-sm">Flow Running · Your flow is currently executing.</span>
+			</article>
+
+			<!-- Completed State -->
+			<article v-else-if="flowStatus === 'completed'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-green-200 text-green-800 bg-green-50">
+				<CheckCircle :size="18" />
+				<span class="text-sm">Flow Completed · Your flow has executed successfully.</span>
+			</article>
+
+			<!-- Canceled State -->
+			<article v-else-if="flowStatus === 'canceled'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
+				<XCircle :size="18" />
+				<span class="text-sm">Flow Canceled · This flow was stopped before completion.</span>
+			</article>
+
+			<!-- No Activity State -->
+			<article v-else-if="flowStatus === 'idle'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-gray-200 text-gray-600 bg-gray-50">
+				<span class="text-sm">No new activity · Your flow is running smoothly.</span>
 			</article>
 		</section>
 
 
 		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end z-[1]">
 			<!-- Flow Status Toggle -->
-			<Tooltip v-if="isOwner(flowData) && !allNodesValid && flowData.status !== 1" placement="top">
+			<Tooltip v-if="isOwner(flowData) && !canActivateFlow && flowData.status !== 1" placement="top">
 				<template #trigger>
 					<div class="btn-outline w-auto gap-2 cursor-not-allowed opacity-60 !px-4">
 						{{ flowData.status === 1 ? 'Deactivate' : 'Activate' }} Flow
@@ -55,7 +85,7 @@
 
 
 
-			<Tooltip v-if="isOwner(flowData) && !allNodesValid" placement="top">
+			<Tooltip v-if="isOwner(flowData) && !canRunTests" placement="top">
 				<template #trigger>
 					<button class="btn-outline cursor-not-allowed opacity-60 !px-4" disabled>
 						Run Test
@@ -84,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { Workflow, ScrollText, AlertTriangle } from 'lucide-vue-next'
+import { Workflow, ScrollText, AlertTriangle, CheckCircle, XCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useFlowOwner } from '@/composables/dashboard/flows/owner'
@@ -114,7 +144,7 @@ const props = defineProps({
 const emit = defineEmits(['update:currentTab'])
 
 // Check if all nodes in the flow are valid
-const allNodesValid = computed(() => {
+const canActivateFlow = computed(() => {
 	// Must have a trigger
 	if (!props.flowData.trigger) {
 		return false
@@ -138,6 +168,62 @@ const allNodesValid = computed(() => {
 	}
 
 	return true
+})
+
+// Check if tests can be run (needs at least one valid node)
+const canRunTests = computed(() => {
+	// Check if trigger exists and is valid
+	if (props.flowData.trigger && isNodeValid(props.flowData.trigger)) {
+		return true
+	}
+
+	// Check if at least one action step exists and is valid
+	if (props.flowData.steps && props.flowData.steps.length > 0) {
+		for (const step of props.flowData.steps) {
+			if (isNodeValid(step)) {
+				return true
+			}
+		}
+	}
+
+	return false
+})
+
+// Determine the current flow status
+const flowStatus = computed(() => {
+	// If flow is not valid (missing trigger or actions), show invalid
+	if (!isFlowValid.value && isOwner(props.flowData)) {
+		return 'invalid'
+	}
+
+	// If flow has errors (you can add error checking logic here)
+	// This would typically check for execution errors or validation errors
+	if (props.flowData.hasErrors) {
+		return 'error'
+	}
+
+	// If flow is currently executing
+	if (props.flowData.isRunning) {
+		return 'running'
+	}
+
+	// If flow was canceled
+	if (props.flowData.status === 'canceled' || props.flowData.lastExecution?.status === 'canceled') {
+		return 'canceled'
+	}
+
+	// If flow completed successfully
+	if (props.flowData.lastExecution?.status === 'completed') {
+		return 'completed'
+	}
+
+	// If flow is active but no recent activity
+	if (props.flowData.status === 1) {
+		return 'idle'
+	}
+
+	// Default case - don't show any status
+	return null
 })
 
 // Handle flow toggle

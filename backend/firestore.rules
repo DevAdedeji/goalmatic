@@ -118,8 +118,8 @@ service cloud.firestore {
           (request.resource.data.creator_id == resource.data.creator_id &&
            validTimestamp(request.resource.data.updated_at)));
 
-      // Runs subcollection: stores individual flow runs
-      match /runs/{runId} {
+      // Logs subcollection: stores individual flow logs
+      match /logs/{logId} {
         allow create: if isSignedIn() && (
           (!('creator_id' in request.resource.data) || request.resource.data.creator_id == request.auth.uid)
         );

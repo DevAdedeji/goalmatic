@@ -57,7 +57,7 @@
 
 
 			<div class="flex gap-2 w-full lg:hidden justify-end">
-				<Tooltip v-if="isOwner(flowDetails) && !allNodesValid && flowDetails.status !== 1" placement="bottom">
+				<Tooltip v-if="isOwner(flowDetails) && !canActivateFlow && flowDetails.status !== 1" placement="bottom">
 					<template #trigger>
 						<div class="flex-1 btn-outline w-full gap-2 cursor-not-allowed opacity-60  text-xs">
 							{{ flowDetails.status === 1 ? 'Deactivate' : 'Activate' }}
@@ -84,7 +84,7 @@
 					</span>
 				</div>
 
-				<Tooltip v-if="isOwner(flowDetails) && !allNodesValid" placement="bottom">
+				<Tooltip v-if="isOwner(flowDetails) && !canRunTests" placement="bottom">
 					<template #trigger>
 						<button class="btn-outline cursor-not-allowed opacity-60  text-xs flex-1 w-full" disabled>
 							Test
@@ -98,11 +98,11 @@
 				</Tooltip>
 				<button
 					v-else-if="isOwner(flowDetails)"
-					class="btn-outline  text-xs"
+					class="btn-outline  text-xs flex-1"
 					:disabled="testLoading"
 					@click="handleTestFlow"
 				>
-					<span v-if="!testLoading">Test</span>
+					<span v-if="!testLoading">Run Test</span>
 					<span v-else class="flex items-center gap-1">
 						<Spinner size="12" class="animate-spin" />
 						...
@@ -157,8 +157,10 @@ const handleToggleVisibility = () => {
 	openVisibilityConfirmation(flowDetails.value)
 }
 
-// Check if all nodes in the flow are valid
-const allNodesValid = computed(() => {
+
+
+// Check if the flow can be activated
+const canActivateFlow = computed(() => {
 	// Must have a trigger
 	if (!flowDetails.value.trigger) {
 		return false
@@ -182,6 +184,25 @@ const allNodesValid = computed(() => {
 	}
 
 	return true
+})
+
+// Check if the flow can be tested (needs at least one valid node)
+const canRunTests = computed(() => {
+	// Check if trigger exists and is valid
+	if (flowDetails.value.trigger && isNodeValid(flowDetails.value.trigger)) {
+		return true
+	}
+
+	// Check if at least one action step exists and is valid
+	if (flowDetails.value.steps && flowDetails.value.steps.length > 0) {
+		for (const step of flowDetails.value.steps) {
+			if (isNodeValid(step)) {
+				return true
+			}
+		}
+	}
+
+	return false
 })
 
 // Handle flow toggle

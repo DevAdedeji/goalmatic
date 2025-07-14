@@ -89,16 +89,18 @@ export const failedScheduleTimeCallback = onRequest(
 
       try {
         // Create a new run document for the failed execution in the runs subcollection
-        const runRef = flowRef.collection('runs').doc(executionId);
+        const runRef = flowRef.collection('logs').doc(executionId);
+        const currentTime = new Date();
+        
         await runRef.set({
           id: executionId,
           status: 'failed',
-          start_time: Timestamp.fromDate(new Date()),
-          end_time: Timestamp.fromDate(new Date()),
-          duration: '0s',
+          start_time: Timestamp.fromDate(currentTime),
+          end_time: Timestamp.fromDate(currentTime),
+          duration: '0s', // 0s is appropriate for callback failures as they never actually executed
           error: `Message delivery failed with status ${status} after ${retried} retries`,
           dlqId,
-          created_at: Timestamp.fromDate(new Date()),
+          created_at: Timestamp.fromDate(currentTime),
           creator_id: userId || 'system',
           steps: 0
         });

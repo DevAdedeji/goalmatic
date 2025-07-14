@@ -2,7 +2,7 @@
 	<div class="flex flex-col gap-4 mt-12 pb-64">
 		<!-- Flow trigger section -->
 		<div class="flex flex-col gap-4 items-center">
-			<section v-if="!flowData.trigger && isOwner(flowData)" class="w-full bg-grey max-w-[600px] rounded-xl border border-line">
+			<section v-if="!flowData.trigger && isOwner(flowData)" class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">
@@ -122,7 +122,7 @@
 				</div>
 			</section>
 
-			<section v-else-if="isOwner(flowData)" class="w-full bg-grey max-w-[600px] rounded-xl border border-line">
+			<section v-else-if="isOwner(flowData)" class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">

@@ -1,6 +1,6 @@
 import { Timestamp, collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
-import { useFlowRuns } from './runs'
+import { useFlowLogs } from './logs'
 import { useFetchFlowById } from './id'
 import { updateFirestoreDocument } from '@/firebase/firestore/edit'
 import { useUser } from '@/composables/auth/user'
@@ -14,7 +14,7 @@ export const useEditFlow = () => {
   const toggleVisibilityLoading = ref(false)
 
   // Get flow runs functionality from the dedicated composable
-  const { flowRuns, flowRunsLoading, fetchFlowRuns } = useFlowRuns()
+  const { flowLogs, flowLogsLoading, fetchFlowLogs } = useFlowLogs()
 
   const { flowDetails } = useFetchFlowById()
 
@@ -265,9 +265,9 @@ export const useEditFlow = () => {
 
   return {
     loading,
-    flowRuns,
-    flowRunsLoading,
-    fetchFlowRuns,
+    flowLogs,
+    flowLogsLoading,
+    fetchFlowLogs,
     updateFlow,
     addStepToFlow,
     removeStepFromFlow,

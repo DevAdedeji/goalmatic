@@ -15,7 +15,7 @@
 		>
 		<!-- <XCircle v-if="phone_number && !disabled" name="close-fill" class="w-4 absolute top-[54%] right-4 cursor-pointer" @click="clearInput" /> -->
 
-		<div ref="target" class="flex flex-col absolute top-[9px]">
+		<div ref="target" class="flex flex-col absolute top-[6px]">
 			<ClientOnly>
 				<DropdownMenuRoot v-slot="{ open }">
 					<DropdownMenuTrigger as="button" :disabled="disabled" class="cursor-pointer flex items-center gap-1.5 p-1.5 pl-4 py-0 bg-transparent focus:outline-none">

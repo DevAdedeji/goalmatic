@@ -122,7 +122,7 @@
 
 				<!-- Owner-only buttons -->
 				<template v-if="isOwner(flowData)">
-					<Tooltip v-if="!allNodesValid && flowData.status !== 1" placement="top">
+					<Tooltip v-if="!canActivateFlow && flowData.status !== 1" placement="top">
 						<template #trigger>
 							<button
 								class="btn-outline flex-1 cursor-not-allowed opacity-60"
@@ -155,7 +155,7 @@
 					</button>
 
 					<!-- Test Flow Button -->
-					<Tooltip v-if="!allNodesValid" placement="top">
+					<Tooltip v-if="!canRunTests" placement="top">
 						<template #trigger>
 							<button
 								class="btn-outline w-full  cursor-not-allowed opacity-60"
@@ -194,7 +194,7 @@
 			:tabs="['editor', 'runs']"
 			:selected="currentTab"
 			:icons="[Settings, Play]"
-			:counts="[undefined, flowRuns.length]"
+			:counts="[undefined, flowLogs.length]"
 			class="mb-6"
 			@changed="$emit('update:currentTab', $event)"
 		/>
@@ -232,29 +232,56 @@ const props = defineProps({
 		type: String,
 		required: true
 	},
-    flowRuns: {
+    flowLogs: {
         type: Array,
-        required: true
+        default: () => []
     }
 })
 
-// Check if all nodes in the flow are valid
-const allNodesValid = computed(() => {
-	// Check trigger node if it exists
-	if (props.flowData.trigger && !isNodeValid(props.flowData.trigger)) {
+// Check if the flow can be activated
+const canActivateFlow = computed(() => {
+	// Must have a trigger
+	if (!props.flowData.trigger) {
 		return false
 	}
 
-	// Check all action nodes
-	if (props.flowData.steps && props.flowData.steps.length > 0) {
-		for (const step of props.flowData.steps) {
-			if (!isNodeValid(step)) {
-				return false
-			}
+	// Must have at least one action step
+	if (!props.flowData.steps || props.flowData.steps.length === 0) {
+		return false
+	}
+
+	// Check if trigger is valid
+	if (!isNodeValid(props.flowData.trigger)) {
+		return false
+	}
+
+	// Check if all action nodes are valid
+	for (const step of props.flowData.steps) {
+		if (!isNodeValid(step)) {
+			return false
 		}
 	}
 
 	return true
+})
+
+// Check if the flow can be tested (needs at least one valid node)
+const canRunTests = computed(() => {
+	// Check if trigger exists and is valid
+	if (props.flowData.trigger && isNodeValid(props.flowData.trigger)) {
+		return true
+	}
+
+	// Check if at least one action step exists and is valid
+	if (props.flowData.steps && props.flowData.steps.length > 0) {
+		for (const step of props.flowData.steps) {
+			if (isNodeValid(step)) {
+				return true
+			}
+		}
+	}
+
+	return false
 })
 
 // Refs for input elements inside popovers

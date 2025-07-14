@@ -29,8 +29,33 @@ const getOrdinalSuffix = (num: number): string => {
   }
 }
 
-export const formatDate = (dateString: string | number, type?: 'dateInput'): string => {
-  const date = new Date(dateString)
+export const formatDate = (dateInput: string | number | Date | { seconds: number; nanoseconds?: number } | { toDate(): Date }, type?: 'dateInput'): string => {
+  let date: Date
+
+  // Handle different input types
+  if (dateInput instanceof Date) {
+    date = dateInput
+  } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+    date = new Date(dateInput)
+    } else if (dateInput && typeof dateInput === 'object') {
+    // Handle Firestore Timestamp objects (have toDate method)
+    if ('toDate' in dateInput && typeof dateInput.toDate === 'function') {
+      date = dateInput.toDate()
+    } else if ('seconds' in dateInput && typeof dateInput.seconds === 'number') {
+      // Handle plain Firestore timestamp objects with seconds/nanoseconds
+      date = new Date(dateInput.seconds * 1000 + (dateInput.nanoseconds || 0) / 1000000)
+    } else {
+      date = new Date(dateInput as any)
+    }
+  } else {
+    date = new Date()
+  }
+
+  // Validate the date
+  if (isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const month = months[date.getMonth()]
   const day = date.getDate()
@@ -40,10 +65,10 @@ export const formatDate = (dateString: string | number, type?: 'dateInput'): str
   const today = new Date()
   const yesterday = new Date(today)
   yesterday.setDate(yesterday.getDate() - 1)
-  const dateObj = new Date(date)
-  if (dateObj.toDateString() === today.toDateString() && !type) {
+
+  if (date.toDateString() === today.toDateString() && !type) {
     return 'Today'
-  } else if (dateObj.toDateString() === yesterday.toDateString() && !type) {
+  } else if (date.toDateString() === yesterday.toDateString() && !type) {
     return 'Yesterday'
   } else {
     return `${day}${ordinal} ${month}, ${year}`

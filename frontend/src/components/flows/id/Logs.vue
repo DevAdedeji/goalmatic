@@ -1,12 +1,12 @@
 <template>
-	<div class="mt-2">
-		<div class="flex justify-between items-center mb-4">
+	<div class="mt-2 bg-light rounded-xl border border-line">
+		<div class="flex justify-between items-center p-4">
 			<h2 class="text-xl font-medium text-headline">
-				Flow Execution History
+				Logs
 			</h2>
 			<button
 				class="px-3 py-1 text-sm rounded-md border border-border hover:border-primary hover:text-primary transition-colors flex items-center gap-1"
-				@click="$emit('refreshRuns')"
+				@click="emit('refreshLogs')"
 			>
 				<RefreshCw :size="14" />
 				Refresh
@@ -16,7 +16,7 @@
 		<!-- Use Table component -->
 		<Table
 			:headers="tableHeaders"
-			:table-data="flowRuns"
+			:table-data="flowLogs"
 			:loading="loading"
 			:checkbox="false"
 		>
@@ -67,10 +67,9 @@
 
 				<!-- Trigger -->
 				<span v-else-if="item.trigger" class="text-text-secondary capitalize">
-					<span v-if="item.data.trigger === 'test'" class="flex items-center">
-						<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">Test Run</span>
-					</span>
-					<span v-else>{{ item.data.trigger }}</span>
+					<ColorBadge :name="item.data.trigger" class="border-none !bg-line" />
+
+
 				</span>
 
 				<!-- Steps -->
@@ -91,19 +90,13 @@ import { formatDate } from '@/composables/utils/formatter'
 import Table from '@/components/core/Table.vue'
 
 // Define event emits
-const emit = defineEmits(['refreshRuns'])
+const emit = defineEmits(['refreshLogs'])
 
 // Define Props
-defineProps({
-	flowRuns: {
-		type: Array as PropType<any[]>,
-		default: () => []
-	},
-	loading: {
-		type: Boolean,
-		default: false
-	}
-})
+defineProps<{
+  flowLogs: any[]
+  loading: boolean
+}>()
 
 // Define headers for the Table component
 const tableHeaders = [

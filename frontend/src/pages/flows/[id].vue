@@ -15,9 +15,9 @@
 					<FlowsIdDetails
 						:current-tab="currentTab"
 						:flow-data="flowDetails"
-						:flow-runs="flowRuns"
-						:flow-runs-loading="flowRunsLoading"
-						@refresh-runs="fetchFlowRuns"
+						:flow-logs="flowLogs"
+						:flow-logs-loading="flowLogsLoading"
+						@refresh-logs="refreshFlowLogs"
 					/>
 				</div>
 
@@ -41,11 +41,11 @@ import { useCustomHead } from '@/composables/core/head'
 const route = useRoute()
 const flowId = route.params.id as string
 const { fetchFlowById, loading, flowDetails } = useFetchFlowById()
-const { fetchFlowRuns, flowRuns, flowRunsLoading } = useEditFlow()
+const { fetchFlowLogs, flowLogs, flowLogsLoading } = useEditFlow()
 
 onMounted(async () => {
 	await fetchFlowById(flowId)
-	await fetchFlowRuns(flowId)
+	await fetchFlowLogs(flowId)
 })
 
 // Add SEO meta tags
@@ -57,15 +57,15 @@ await useCustomHead({
 
 const currentTab = ref('editor')
 
-// Function to refresh flow runs
-const refreshFlowRuns = async () => {
-  await fetchFlowRuns(flowId)
+// Function to refresh flow logs
+const refreshFlowLogs = async () => {
+  await fetchFlowLogs(flowId)
 }
 
-// Watch for tab changes to refresh runs when switching to the runs tab
+// Watch for tab changes to refresh logs when switching to the logs tab
 watch(() => currentTab.value, (newTab) => {
-  if (newTab === 'runs') {
-    refreshFlowRuns()
+  if (newTab === 'logs') {
+    refreshFlowLogs()
   }
 })
 

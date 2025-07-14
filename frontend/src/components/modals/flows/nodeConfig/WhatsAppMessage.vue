@@ -133,7 +133,7 @@ onMounted(async () => {
 	} else {
 		aiMode.message = 'manual'
 	}
-
+console.log(form.value.recipientType)
 	if (form.value.recipientType === 'user') {
 		await prepopulateUserPhone()
 	}

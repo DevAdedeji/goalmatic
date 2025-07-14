@@ -1,11 +1,11 @@
 import { ref } from 'vue'
-import { useFlowRuns } from './runs'
+import { useFlowLogs } from './logs'
 import { useAlert } from '@/composables/core/notification'
 import { callFirebaseFunction } from '@/firebase/functions'
 
 export const useTestFlow = () => {
     const loading = ref(false)
-    const { fetchFlowRuns } = useFlowRuns()
+    const { fetchFlowLogs } = useFlowLogs()
 
     /**
      * Test a flow without activating it
@@ -26,7 +26,7 @@ export const useTestFlow = () => {
             useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow test completed successfully' })
 
             // Refresh the flow runs to show the test run
-            await fetchFlowRuns(flow.id)
+            await fetchFlowLogs(flow.id)
 
             // Call the success callback if provided
             if (onSuccess) {
