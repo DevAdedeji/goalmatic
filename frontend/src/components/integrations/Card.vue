@@ -20,7 +20,8 @@
 						@mouseenter="isHovering = true"
 						@mouseleave="isHovering = false"
 					>
-						<span v-if="status && isHovering">Disconnect</span>
+						<Spinner v-if="integrationState?.find((integration) => integration.id === integration_id)?.loading.value" size="16px" class="my-0.5 mx-2.5" />
+						<span v-else-if="status && isHovering">Disconnect</span>
 						<span v-else>{{ status ? 'Connected' : 'Connect' }}</span>
 					</button>
 				</div>
@@ -42,6 +43,10 @@
 </template>
 
 <script setup lang="ts">
+import { formattedIntegrationsObjectMap } from '@/composables/dashboard/integrations/connect'
+
+const integrationState = formattedIntegrationsObjectMap()
+
 
 interface Props {
     name: string;

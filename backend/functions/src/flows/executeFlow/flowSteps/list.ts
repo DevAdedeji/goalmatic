@@ -3,7 +3,7 @@ import { WorkflowContext } from "@upstash/workflow";
 import { createGoogleCalendarEventNode } from "./node/googleCalendar/createEvent";
 import { updateGoogleCalendarEventNode } from "./node/googleCalendar/updateEvent";
 import { deleteGoogleCalendarEventNode } from "./node/googleCalendar/deleteEvent";
-import { sendGmailEmailNode, readGmailEmailsNode, createGmailDraftNode } from "./node/gmail";
+import { sendComposioGmailEmailNode, readComposioGmailEmailsNode, createComposioGmailDraftNode } from "./node/gmail";
 import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } from "./node/table";
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
 
@@ -23,9 +23,9 @@ export const availableNodes: Record<string, NodeSignature> = {
     [deleteGoogleCalendarEventNode.nodeId]: deleteGoogleCalendarEventNode,
 
     // Gmail nodes
-    [sendGmailEmailNode.nodeId]: sendGmailEmailNode,
-    [readGmailEmailsNode.nodeId]: readGmailEmailsNode,
-    [createGmailDraftNode.nodeId]: createGmailDraftNode,
+    [sendComposioGmailEmailNode.nodeId]: sendComposioGmailEmailNode,
+    [readComposioGmailEmailsNode.nodeId]: readComposioGmailEmailsNode,
+    [createComposioGmailDraftNode.nodeId]: createComposioGmailDraftNode,
 
     // Table nodes
     [readTableNode.nodeId]: readTableNode,

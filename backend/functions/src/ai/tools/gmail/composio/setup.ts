@@ -1,38 +1,59 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { setupComposioGmailConnection, waitForGmailConnection } from './index';
+// @ts-ignore
+import { Composio } from '@composio/core';
+import { is_dev } from '../../../../init';
 
 /**
  * Firebase callable function to initiate Gmail connection with Composio
  */
-export const setupComposioGmail = onCall({
-    cors: true,
-    region: 'us-central1'
-}, async (request) => {
-    try {
-        if (!request.auth) {
-            throw new HttpsError('unauthenticated', 'User must be authenticated');
+
+const COMPOSIO_API_KEY = is_dev ? process.env.COMPOSIO_API_KEY_DEV : process.env.COMPOSIO_API_KEY_PROD;
+
+const gmailAuthConfigId = 'ac_2-tTrIlhH1J4';
+export const setupComposioGmail = onCall(
+    {
+        cors: true,
+        region: 'us-central1',
+    },
+    async (request) => {
+
+        try {
+            if (!request.auth) {
+                throw new HttpsError('unauthenticated', 'User must be authenticated');
+            }
+
+            const userId = request.auth.uid;
+            console.log(userId);
+            const composio = new Composio({ apiKey: COMPOSIO_API_KEY });
+
+            const response = await composio.connectedAccounts.initiate(userId, gmailAuthConfigId, {
+                allowMultiple: true
+            });
+
+            console.log(response);
+
+            // const userId = request.auth.uid;
+
+            // Set up Gmail connection
+
+            return {
+                success: true,
+                redirectUrl: response.redirectUrl,
+                connectionId: response.id,
+                message: 'Please visit the redirect URL to authorize Gmail access',
+            };
+        } catch (error) {
+            console.error('Error setting up Composio Gmail:', error);
+            throw new HttpsError(
+                'internal',
+                `Failed to set up Gmail connection: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
         }
-
-        const userId = request.auth.uid;
-        
-        // Set up Gmail connection
-        const connectionResult = await setupComposioGmailConnection(userId);
-        
-        return {
-            success: true,
-            redirectUrl: connectionResult.redirectUrl,
-            connectionId: connectionResult.connectionId,
-            message: 'Please visit the redirect URL to authorize Gmail access'
-        };
-    } catch (error) {
-        console.error('Error setting up Composio Gmail:', error);
-        throw new HttpsError('internal', `Failed to set up Gmail connection: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-});
+);
 
-/**
- * Firebase callable function to check Gmail connection status
- */
+
+
 export const checkComposioGmailConnection = onCall({
     cors: true,
     region: 'us-central1'
@@ -41,21 +62,36 @@ export const checkComposioGmailConnection = onCall({
         if (!request.auth) {
             throw new HttpsError('unauthenticated', 'User must be authenticated');
         }
-
-        const userId = request.auth.uid;
+        const composio = new Composio({ apiKey: COMPOSIO_API_KEY });
         const { connectionId } = request.data;
         
         if (!connectionId) {
-            throw new HttpsError('invalid-argument', 'Connection ID is required');
+            throw new HttpsError('invalid-argument', 'connectedAccountId is required');
         }
         
-        // Wait for connection to be established
-        const isConnected = await waitForGmailConnection(userId, connectionId);
+        const maxAttempts = 30;
+        let attempts = 0;
+
+        while (attempts < maxAttempts) { 
+            const connection = await composio.connectedAccounts.waitForConnection(connectionId);
+
+            if (connection.params?.status === 'ACTIVE') {
+                return {
+                    success: true,
+                    message: 'Gmail connection established successfully',
+                    data: {
+                        ...connection.params,
+                        id: connectionId
+                    }
+                };
+            }
+        }
+
         
-        return {
-            success: isConnected,
-            message: isConnected ? 'Gmail connection established successfully' : 'Gmail connection failed'
-        };
+        // return {
+        //     success: isConnected,
+        //     message: isConnected ? 'Gmail connection established successfully' : 'Gmail connection failed'
+        // };
     } catch (error) {
         console.error('Error checking Composio Gmail connection:', error);
         throw new HttpsError('internal', `Failed to check Gmail connection: ${error instanceof Error ? error.message : 'Unknown error'}`);

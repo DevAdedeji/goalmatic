@@ -191,18 +191,7 @@ service cloud.firestore {
       }
     }
 
-    // Leaderboard collection: tracks user points for agent clones
-    match /leaderboard/{userId} {
-      // Allow read access to all authenticated users
-      allow read: if isSignedIn();
-
-      // Only allow create/update from the clone.ts function
-      // This is enforced by application logic, not by rules
-      allow create, update: if isSignedIn();
-
-      // Don't allow deletion of leaderboard entries
-      allow delete: if false;
-    }
+  
 
     // Processed messages collection: tracks WhatsApp message IDs to prevent duplicates
     // Only accessible by Cloud Functions (admin privileges)

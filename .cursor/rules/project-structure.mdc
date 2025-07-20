@@ -1,0 +1,314 @@
+# Project Structure Guide
+
+## Overview
+This is a full-stack application with a Vue.js frontend and Firebase/Convex backend, integrating Composio for AI agent capabilities.
+
+## Directory Structure
+
+### Root Level
+- `frontend/` - Vue.js/Nuxt.js frontend application
+- `backend/` - Firebase Functions and Convex backend
+- `package.json` - Root package.json with workspace scripts
+- `README.md` - Project documentation
+- `notes.md` - Development notes
+- `whatsapp_signup_flow.json` - WhatsApp integration configuration
+
+### Frontend Structure (`frontend/`)
+```
+frontend/
+├── src/
+│   ├── components/          # Vue components organized by feature
+│   │   ├── agents/         # AI agent-related components
+│   │   ├── assistant/      # Chat assistant components
+│   │   ├── auth/           # Authentication components
+│   │   ├── core/           # Reusable core components
+│   │   ├── flows/          # Workflow/flow components
+│   │   ├── integrations/   # Third-party integration components
+│   │   ├── layouts/        # Layout components
+│   │   ├── leaderboard/    # Leaderboard components
+│   │   ├── modals/         # Modal components
+│   │   ├── tables/         # Data table components
+│   │   └── test/           # Testing components
+│   ├── composables/        # Vue composables (reusable logic)
+│   │   ├── assistant/      # Assistant-related composables
+│   │   ├── auth/           # Authentication composables
+│   │   ├── core/           # Core utility composables
+│   │   ├── dashboard/      # Dashboard-specific composables
+│   │   ├── helpers/        # Helper functions
+│   │   ├── payment/        # Payment-related composables
+│   │   ├── stores/         # State management
+│   │   ├── test/           # Testing utilities
+│   │   └── utils/          # Utility functions
+│   ├── firebase/           # Firebase configuration and utilities
+│   │   ├── auth.ts         # Authentication setup
+│   │   ├── firestore/      # Firestore utilities
+│   │   ├── functions.ts    # Firebase Functions client
+│   │   └── init.ts         # Firebase initialization
+│   ├── layouts/            # Vue layout components
+│   ├── lib/                # Library utilities
+│   ├── middlewares/        # Nuxt middlewares
+│   ├── pages/              # Vue pages (Nuxt routing)
+│   │   ├── agents/         # Agent-related pages
+│   │   ├── auth/           # Authentication pages
+│   │   ├── dashboard/      # Dashboard pages
+│   │   ├── flows/          # Flow-related pages
+│   │   ├── integrations/   # Integration pages
+│   │   ├── leaderboard/    # Leaderboard pages
+│   │   ├── notes/          # Notes pages
+│   │   ├── settings/       # Settings pages
+│   │   ├── share/          # Sharing pages
+│   │   ├── tables/         # Table pages
+│   │   └── template/       # Template pages
+│   ├── plugins/            # Nuxt plugins
+│   └── types/              # TypeScript type definitions
+├── public/                 # Static assets
+│   ├── avatars/           # User avatar images
+│   ├── background.svg     # Background images
+│   ├── business/          # Business-related images
+│   ├── hero/              # Hero section images
+│   ├── icons/             # Icon assets
+│   └── scripts/           # Client-side scripts
+└── server/                # Server-side API routes
+    └── api/               # API endpoints
+        ├── gemini/        # Google Gemini integration
+        ├── getAuthUrl.ts  # OAuth authentication
+        ├── oauth2callback.ts # OAuth callback handling
+        └── refreshToken.ts # Token refresh logic
+```
+
+### Backend Structure (`backend/`)
+```
+backend/
+├── convex/                # Convex database and functions
+│   ├── src/
+│   │   ├── agents.ts      # AI agent functions
+│   │   ├── flows.ts       # Workflow functions
+│   │   └── _generated/    # Auto-generated types
+│   ├── convex.json        # Convex configuration
+│   └── package.json       # Convex dependencies
+├── functions/             # Firebase Functions
+│   ├── convex/            # Convex integration
+│   ├── lib/               # Shared library code
+│   │   ├── agents/        # Agent-related utilities
+│   │   ├── ai/            # AI integration utilities
+│   │   │   └── tools/     # AI tool implementations
+│   │   ├── assistant/     # Assistant utilities
+│   │   ├── auth/          # Authentication utilities
+│   │   ├── chat/          # Chat functionality
+│   │   ├── convex/        # Convex utilities
+│   │   ├── flows/         # Workflow utilities
+│   │   │   ├── activateFlow/    # Flow activation
+│   │   │   ├── callbackFlow/    # Flow callbacks
+│   │   │   ├── deactivateFlow/  # Flow deactivation
+│   │   │   ├── executeFlow/     # Flow execution
+│   │   │   └── testFlow/        # Flow testing
+│   │   ├── helpers/       # Helper functions
+│   │   ├── migrations/    # Database migrations
+│   │   ├── referrals/     # Referral system
+│   │   ├── tables/        # Table utilities
+│   │   ├── toolCalls/     # Tool execution utilities
+│   │   │   ├── gmail/     # Gmail integration
+│   │   │   ├── googleCalendar/ # Google Calendar integration
+│   │   │   ├── table/     # Table operations
+│   │   │   └── utils/     # Tool utilities
+│   │   ├── users/         # User management
+│   │   ├── utils/         # Utility functions
+│   │   └── whatsapp/      # WhatsApp integration
+│   │       ├── templates/ # Message templates
+│   │       └── utils/     # WhatsApp utilities
+│   ├── src/               # Firebase Functions source
+│   │   ├── agents/        # Agent-related functions
+│   │   ├── ai/            # AI integration functions
+│   │   ├── assistant/     # Assistant functions
+│   │   ├── auth/          # Authentication functions
+│   │   ├── chat/          # Chat functions
+│   │   ├── convex/        # Convex integration functions
+│   │   ├── flows/         # Workflow functions
+│   │   ├── helpers/       # Helper functions
+│   │   ├── referrals/     # Referral functions
+│   │   ├── tables/        # Table functions
+│   │   ├── toolCalls/     # Tool execution functions
+│   │   ├── users/         # User management functions
+│   │   ├── utils/         # Utility functions
+│   │   └── whatsapp/      # WhatsApp functions
+│   ├── package.json       # Functions dependencies
+│   └── tsconfig.json      # TypeScript configuration
+├── firebase.json          # Firebase configuration
+├── firestore.indexes.json # Firestore indexes
+├── firestore.rules        # Firestore security rules
+└── package.json           # Backend dependencies
+```
+
+## Key Technologies
+
+### Frontend
+- **Vue.js 3** - Progressive JavaScript framework
+- **Nuxt.js 3** - Vue.js meta-framework
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS** - Utility-first CSS framework
+- **Firebase** - Backend-as-a-Service
+- **VueUse** - Vue composition utilities
+- **TipTap** - Rich text editor
+- **Vue Cal** - Calendar component
+
+### Backend
+- **Firebase Functions** - Serverless functions
+- **Convex** - Real-time database
+- **TypeScript** - Type-safe JavaScript
+- **Composio** - AI agent platform integration
+- **WhatsApp Business API** - Messaging integration
+
+## Development Workflow
+
+### Scripts
+```bash
+# Frontend development
+npm run f          # Start frontend dev server
+npm run dev        # Alternative frontend dev command
+
+# Backend development
+npm run b          # Start backend emulators
+npm run emu        # Alternative backend emulator command
+
+# Deployment
+npm run deploy     # Deploy to Firebase
+npm run ds         # Deploy specific functions
+```
+
+### Environment Setup
+1. **Frontend**: Configure environment variables in `.env` files
+2. **Backend**: Set up Firebase project and Convex deployment
+3. **Composio**: Configure API keys and authentication
+4. **WhatsApp**: Set up Business API credentials
+
+## Code Organization Principles
+
+### 1. Feature-Based Organization
+- Group related components, composables, and utilities by feature
+- Keep feature-specific code close together
+- Use clear, descriptive folder names
+
+### 2. Separation of Concerns
+- Separate UI components from business logic
+- Use composables for reusable logic
+- Keep API calls in dedicated services
+
+### 3. Type Safety
+- Use TypeScript throughout the codebase
+- Define clear interfaces for data structures
+- Use strict TypeScript configuration
+
+### 4. Modularity
+- Break down large components into smaller, focused ones
+- Use barrel exports for clean imports
+- Implement proper dependency injection
+
+## File Naming Conventions
+
+### Components
+- Use PascalCase for component names: `UserProfile.vue`
+- Use kebab-case for file names: `user-profile.vue`
+- Group related components in feature folders
+
+### Utilities and Services
+- Use camelCase for function names: `formatDate.ts`
+- Use descriptive names that indicate purpose
+- Group utilities by domain or functionality
+
+### Types and Interfaces
+- Use PascalCase for type names: `UserProfile.ts`
+- Prefix interfaces with 'I' if needed: `IUserProfile`
+- Use descriptive names that clearly indicate purpose
+
+## Import Organization
+
+### 1. External Dependencies
+```typescript
+// Third-party libraries
+import { ref, computed } from 'vue';
+import { defineStore } from 'pinia';
+```
+
+### 2. Internal Modules
+```typescript
+// Internal utilities and types
+import { formatDate } from '@/utils/date';
+import type { User } from '@/types/user';
+```
+
+### 3. Relative Imports
+```typescript
+// Same directory or closely related
+import { UserCard } from './UserCard.vue';
+import { useUserStore } from '../stores/user';
+```
+
+## Configuration Files
+
+### Frontend Configuration
+- `nuxt.config.ts` - Nuxt.js configuration
+- `tailwind.config.js` - Tailwind CSS configuration
+- `tsconfig.json` - TypeScript configuration
+- `eslint.config.js` - ESLint configuration
+
+### Backend Configuration
+- `firebase.json` - Firebase project configuration
+- `firestore.rules` - Firestore security rules
+- `firestore.indexes.json` - Firestore indexes
+- `convex/convex.json` - Convex configuration
+
+## Testing Strategy
+
+### Frontend Testing
+- Unit tests for composables and utilities
+- Component tests for Vue components
+- Integration tests for feature workflows
+
+### Backend Testing
+- Unit tests for Firebase Functions
+- Integration tests for Convex functions
+- End-to-end tests for complete workflows
+
+## Deployment Strategy
+
+### Frontend Deployment
+- Deploy to Firebase Hosting
+- Use environment-specific configurations
+- Implement proper caching strategies
+
+### Backend Deployment
+- Deploy Firebase Functions
+- Deploy Convex functions
+- Configure proper environment variables
+
+## Security Considerations
+
+### Frontend Security
+- Implement proper authentication
+- Use HTTPS for all API calls
+- Sanitize user inputs
+- Implement proper CORS policies
+
+### Backend Security
+- Use Firestore security rules
+- Implement proper authentication middleware
+- Validate all inputs
+- Use environment variables for sensitive data
+
+## Performance Optimization
+
+### Frontend Performance
+- Use lazy loading for components
+- Implement proper caching strategies
+- Optimize bundle size
+- Use CDN for static assets
+
+### Backend Performance
+- Optimize database queries
+- Implement proper indexing
+- Use caching where appropriate
+- Monitor function execution times
+description:
+globs:
+alwaysApply: false
+---

@@ -38,12 +38,14 @@ import { useDisconnectIntegration } from '@/composables/dashboard/integrations/d
 import { useEditIntegrationsConfig } from '@/composables/dashboard/integrations/editConfig'
 
 
-const { connectIntegration, loading: connectIntegrationLoading } = useConnectIntegration()
-const { disconnectIntegration, loading: disconnectIntegrationLoading } = useDisconnectIntegration()
+const { connectIntegration } = useConnectIntegration()
+const { disconnectIntegration } = useDisconnectIntegration()
 const { fetchUserIntegrations, loading: IntegrationListLoading, fetchedIntegrations } = useFetchIntegrations()
 const { editConfig } = useEditIntegrationsConfig()
 
-fetchUserIntegrations()
+onMounted(() => {
+	fetchUserIntegrations()
+})
 
 const updateIntegration = (data: any) => {
 	if (data.status) {

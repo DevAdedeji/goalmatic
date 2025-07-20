@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { rawConversationData, sessionId as currentSessionId } from './state'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useConfirmationModal } from '@/composables/core/confirmation'
@@ -104,11 +105,25 @@ export const useChatHistory = () => {
       })
   })
 
-  /**
+                /**
    * Navigate to a specific chat session
    */
   const navigateToSession = (sessionId: string) => {
-    router.push(`/agents/${sessionId}`)
+    if (sessionId === 'new') {
+      // Reset conversation state
+      rawConversationData.value = { messages: [] }
+      currentSessionId.value = null
+
+      // Force URL change without page reload
+      const currentPath = router.currentRoute.value.path
+      if (currentPath.startsWith('/agents/') && currentPath !== '/agents') {
+        location.assign('/agents')
+      } else {
+        router.push('/agents')
+      }
+    } else {
+      router.push(`/agents/${sessionId}`)
+    }
   }
 
   /**

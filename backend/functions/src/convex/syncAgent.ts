@@ -1,6 +1,6 @@
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { api } from '../../convex/src/_generated/api';
-import { goals_db_string } from '../init';
+import { goals_db_string, isConvexSyncEnabled } from '../init';
 import { getConvexClient, convertTimestamp } from './utils';
 
 // Transform Firebase agent data to Convex format
@@ -37,6 +37,13 @@ export const convexSyncAgentCreate = onDocumentCreated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncAgentCreate triggered for:', event.params.agentId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping agent creation sync for:', event.params.agentId);
+    return;
+  }
+  
   try {
     const agentId = event.params.agentId;
     const agentData = event.data?.data();
@@ -84,6 +91,13 @@ export const convexSyncAgentUpdate = onDocumentUpdated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncAgentUpdate triggered for:', event.params.agentId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping agent update sync for:', event.params.agentId);
+    return;
+  }
+  
   try {
     const agentId = event.params.agentId;
     const beforeData = event.data?.before.data();
@@ -190,6 +204,14 @@ export const convexSyncAgentDelete = onDocumentDeleted({
   document: 'agents/{agentId}',
   database: goals_db_string,
 }, async (event) => {
+  console.log('convexSyncAgentDelete triggered for:', event.params.agentId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping agent deletion sync for:', event.params.agentId);
+    return;
+  }
+  
   try {
     const agentId = event.params.agentId;
     

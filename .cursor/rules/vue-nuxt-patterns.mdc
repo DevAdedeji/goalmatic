@@ -1,0 +1,932 @@
+# Vue.js and Nuxt.js Development Patterns
+
+## Component Architecture
+
+### 1. Composition API Patterns
+```typescript
+// ✅ Good: Use Composition API with proper typing
+<script setup lang="ts">
+interface Props {
+  user: User;
+  loading?: boolean;
+  showActions?: boolean;
+}
+
+interface Emits {
+  (e: 'update', user: User): void;
+  (e: 'delete', userId: string): void;
+  (e: 'select', user: User): void;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  loading: false,
+  showActions: true,
+});
+
+const emit = defineEmits<Emits>();
+
+// Reactive state
+const isExpanded = ref(false);
+const localUser = ref<User>(props.user);
+
+// Computed properties
+const displayName = computed(() => {
+  return props.user.name || props.user.email;
+});
+
+const userStatus = computed(() => {
+  return props.user.isActive ? 'Active' : 'Inactive';
+});
+
+// Methods
+const handleUpdate = () => {
+  emit('update', localUser.value);
+};
+
+const handleDelete = () => {
+  if (confirm('Are you sure you want to delete this user?')) {
+    emit('delete', props.user.id);
+  }
+};
+
+const toggleExpanded = () => {
+  isExpanded.value = !isExpanded.value;
+};
+
+// Lifecycle hooks
+onMounted(() => {
+  console.log('User component mounted');
+});
+
+watch(() => props.user, (newUser) => {
+  localUser.value = newUser;
+}, { deep: true });
+</script>
+```
+
+### 2. Component Structure
+```vue
+<template>
+  <!-- Use semantic HTML and proper accessibility -->
+  <div class="user-card" :class="{ 'user-card--expanded': isExpanded }">
+    <!-- Header section -->
+    <header class="user-card__header">
+      <div class="user-card__avatar">
+        <img 
+          :src="user.avatar || '/default-avatar.png'" 
+          :alt="`${displayName}'s avatar`"
+          @error="handleImageError"
+        />
+      </div>
+      
+      <div class="user-card__info">
+        <h3 class="user-card__name">{{ displayName }}</h3>
+        <p class="user-card__email">{{ user.email }}</p>
+        <span class="user-card__status" :class="`user-card__status--${userStatus.toLowerCase()}`">
+          {{ userStatus }}
+        </span>
+      </div>
+      
+      <button 
+        class="user-card__toggle"
+        @click="toggleExpanded"
+        :aria-expanded="isExpanded"
+        aria-label="Toggle user details"
+      >
+        <Icon :name="isExpanded ? 'chevron-up' : 'chevron-down'" />
+      </button>
+    </header>
+
+    <!-- Expanded content -->
+    <Transition name="expand">
+      <div v-if="isExpanded" class="user-card__details">
+        <div class="user-card__actions" v-if="showActions">
+          <button 
+            class="btn btn--primary"
+            @click="handleUpdate"
+            :disabled="loading"
+          >
+            <Icon name="edit" />
+            Edit
+          </button>
+          
+          <button 
+            class="btn btn--danger"
+            @click="handleDelete"
+            :disabled="loading"
+          >
+            <Icon name="trash" />
+            Delete
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Loading state -->
+    <div v-if="loading" class="user-card__loading">
+      <Spinner />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// Component logic here (as shown above)
+</script>
+
+<style scoped lang="scss">
+.user-card {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  transition: all 0.2s ease;
+
+  &--expanded {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__info {
+    flex: 1;
+  }
+
+  &__name {
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__email {
+    color: var(--text-secondary);
+    margin: 0 0 0.25rem 0;
+  }
+
+  &__status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.875rem;
+    font-weight: 500;
+
+    &--active {
+      background-color: var(--success-light);
+      color: var(--success);
+    }
+
+    &--inactive {
+      background-color: var(--warning-light);
+      color: var(--warning);
+    }
+  }
+
+  &__toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--hover-bg);
+    }
+  }
+
+  &__details {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  &__loading {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+  }
+}
+
+// Transition animations
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.expand-enter-to,
+.expand-leave-from {
+  opacity: 1;
+  max-height: 200px;
+}
+</style>
+```
+
+## Composables Patterns
+
+### 1. State Management Composables
+```typescript
+// composables/useUser.ts
+export const useUser = () => {
+  const user = ref<User | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
+
+  const fetchUser = async (userId: string) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const response = await $fetch<User>(`/api/users/${userId}`);
+      user.value = response;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch user';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const updateUser = async (userData: Partial<User>) => {
+    if (!user.value) throw new Error('No user to update');
+    
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      const response = await $fetch<User>(`/api/users/${user.value.id}`, {
+        method: 'PUT',
+        body: userData,
+      });
+      user.value = response;
+      return response;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to update user';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  const deleteUser = async (userId: string) => {
+    loading.value = true;
+    error.value = null;
+    
+    try {
+      await $fetch(`/api/users/${userId}`, {
+        method: 'DELETE',
+      });
+      user.value = null;
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to delete user';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  return {
+    user: readonly(user),
+    loading: readonly(loading),
+    error: readonly(error),
+    fetchUser,
+    updateUser,
+    deleteUser,
+  };
+};
+```
+
+### 2. API Composables
+```typescript
+// composables/useApi.ts
+export const useApi = () => {
+  const baseURL = useRuntimeConfig().public.apiBaseUrl;
+  const { $auth } = useNuxtApp();
+
+  const apiCall = async <T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> => {
+    const token = await $auth.getToken();
+    
+    const response = await $fetch<T>(`${baseURL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+    });
+
+    return response;
+  };
+
+  const get = <T>(endpoint: string): Promise<T> => {
+    return apiCall<T>(endpoint, { method: 'GET' });
+  };
+
+  const post = <T>(endpoint: string, data?: any): Promise<T> => {
+    return apiCall<T>(endpoint, {
+      method: 'POST',
+      body: data,
+    });
+  };
+
+  const put = <T>(endpoint: string, data?: any): Promise<T> => {
+    return apiCall<T>(endpoint, {
+      method: 'PUT',
+      body: data,
+    });
+  };
+
+  const del = <T>(endpoint: string): Promise<T> => {
+    return apiCall<T>(endpoint, { method: 'DELETE' });
+  };
+
+  return {
+    get,
+    post,
+    put,
+    delete: del,
+  };
+};
+```
+
+### 3. Form Handling Composables
+```typescript
+// composables/useForm.ts
+export const useForm = <T extends Record<string, any>>(initialData: T) => {
+  const form = ref<T>({ ...initialData });
+  const errors = ref<Partial<Record<keyof T, string>>>({});
+  const loading = ref(false);
+  const isValid = ref(false);
+
+  const validate = (schema: ZodSchema<T>) => {
+    try {
+      schema.parse(form.value);
+      errors.value = {};
+      isValid.value = true;
+      return true;
+    } catch (error) {
+      if (error instanceof ZodError) {
+        errors.value = error.errors.reduce((acc, err) => {
+          const path = err.path[0] as keyof T;
+          acc[path] = err.message;
+          return acc;
+        }, {} as Partial<Record<keyof T, string>>);
+      }
+      isValid.value = false;
+      return false;
+    }
+  };
+
+  const reset = () => {
+    form.value = { ...initialData };
+    errors.value = {};
+    isValid.value = false;
+  };
+
+  const setField = <K extends keyof T>(field: K, value: T[K]) => {
+    form.value[field] = value;
+  };
+
+  const setError = <K extends keyof T>(field: K, message: string) => {
+    errors.value[field] = message;
+  };
+
+  const clearError = <K extends keyof T>(field: K) => {
+    delete errors.value[field];
+  };
+
+  return {
+    form: readonly(form),
+    errors: readonly(errors),
+    loading: readonly(loading),
+    isValid: readonly(isValid),
+    validate,
+    reset,
+    setField,
+    setError,
+    clearError,
+  };
+};
+```
+
+## Page Patterns
+
+### 1. Page Structure
+```vue
+<!-- pages/users/[id].vue -->
+<template>
+  <div class="user-page">
+    <!-- Page header -->
+    <PageHeader>
+      <template #title>
+        {{ user?.name || 'User Details' }}
+      </template>
+      <template #actions>
+        <button 
+          class="btn btn--primary"
+          @click="handleEdit"
+          :disabled="loading"
+        >
+          <Icon name="edit" />
+          Edit User
+        </button>
+      </template>
+    </PageHeader>
+
+    <!-- Loading state -->
+    <div v-if="loading" class="loading-container">
+      <Spinner size="large" />
+      <p>Loading user details...</p>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="error-container">
+      <Alert type="error" :message="error" />
+      <button class="btn btn--secondary" @click="retry">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div v-else-if="user" class="user-content">
+      <div class="user-grid">
+        <!-- User info card -->
+        <Card title="User Information">
+          <UserInfo :user="user" />
+        </Card>
+
+        <!-- User activity -->
+        <Card title="Recent Activity">
+          <UserActivity :userId="user.id" />
+        </Card>
+
+        <!-- User settings -->
+        <Card title="Settings">
+          <UserSettings :user="user" @update="handleSettingsUpdate" />
+        </Card>
+      </div>
+    </div>
+
+    <!-- Not found state -->
+    <div v-else class="not-found">
+      <NotFound message="User not found" />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// Page meta
+definePageMeta({
+  title: 'User Details',
+  requiresAuth: true,
+  layout: 'dashboard',
+});
+
+// Route params
+const route = useRoute();
+const userId = route.params.id as string;
+
+// Composables
+const { user, loading, error, fetchUser } = useUser();
+const { $toast } = useNuxtApp();
+
+// Fetch user data
+const loadUser = async () => {
+  try {
+    await fetchUser(userId);
+  } catch (err) {
+    console.error('Failed to load user:', err);
+  }
+};
+
+// Actions
+const handleEdit = () => {
+  navigateTo(`/users/${userId}/edit`);
+};
+
+const handleSettingsUpdate = async (settings: UserSettings) => {
+  try {
+    // Update user settings
+    await updateUserSettings(userId, settings);
+    $toast.success('Settings updated successfully');
+  } catch (err) {
+    $toast.error('Failed to update settings');
+  }
+};
+
+const retry = () => {
+  loadUser();
+};
+
+// Load data on mount
+onMounted(() => {
+  loadUser();
+});
+
+// Watch for route changes
+watch(() => route.params.id, (newId) => {
+  if (newId !== userId) {
+    loadUser();
+  }
+});
+</script>
+
+<style scoped lang="scss">
+.user-page {
+  padding: 2rem;
+}
+
+.loading-container,
+.error-container,
+.not-found {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.user-content {
+  margin-top: 2rem;
+}
+
+.user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+</style>
+```
+
+## Layout Patterns
+
+### 1. Dashboard Layout
+```vue
+<!-- layouts/dashboard.vue -->
+<template>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" :class="{ 'sidebar--collapsed': sidebarCollapsed }">
+      <div class="sidebar__header">
+        <Logo />
+        <button 
+          class="sidebar__toggle"
+          @click="toggleSidebar"
+          aria-label="Toggle sidebar"
+        >
+          <Icon name="menu" />
+        </button>
+      </div>
+
+      <nav class="sidebar__nav">
+        <SidebarMenu :items="menuItems" />
+      </nav>
+
+      <div class="sidebar__footer">
+        <UserMenu />
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+      <!-- Top header -->
+      <header class="top-header">
+        <div class="top-header__left">
+          <Breadcrumbs />
+        </div>
+        
+        <div class="top-header__right">
+          <Notifications />
+          <UserDropdown />
+        </div>
+      </header>
+
+      <!-- Page content -->
+      <div class="page-content">
+        <slot />
+      </div>
+    </main>
+
+    <!-- Mobile overlay -->
+    <div 
+      v-if="showMobileOverlay" 
+      class="mobile-overlay"
+      @click="closeSidebar"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+const sidebarCollapsed = ref(false);
+const showMobileOverlay = ref(false);
+
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value;
+};
+
+const closeSidebar = () => {
+  sidebarCollapsed.value = false;
+  showMobileOverlay.value = false;
+};
+
+// Menu items
+const menuItems = [
+  {
+    label: 'Dashboard',
+    icon: 'home',
+    to: '/dashboard',
+  },
+  {
+    label: 'Agents',
+    icon: 'bot',
+    to: '/agents',
+  },
+  {
+    label: 'Flows',
+    icon: 'workflow',
+    to: '/flows',
+  },
+  {
+    label: 'Integrations',
+    icon: 'link',
+    to: '/integrations',
+  },
+  {
+    label: 'Settings',
+    icon: 'settings',
+    to: '/settings',
+  },
+];
+
+// Responsive behavior
+const { width } = useWindowSize();
+
+watch(width, (newWidth) => {
+  if (newWidth < 768) {
+    sidebarCollapsed.value = true;
+    showMobileOverlay.value = false;
+  }
+});
+</script>
+
+<style scoped lang="scss">
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 280px;
+  background-color: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease;
+
+  &--collapsed {
+    width: 64px;
+  }
+
+  &__header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__nav {
+    flex: 1;
+    padding: 1rem 0;
+  }
+
+  &__footer {
+    padding: 1rem;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.top-header {
+  height: 64px;
+  background-color: var(--header-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+
+    &:not(.sidebar--collapsed) {
+      transform: translateX(0);
+    }
+  }
+
+  .mobile-overlay {
+    display: block;
+  }
+}
+</style>
+```
+
+## Plugin Patterns
+
+### 1. Toast Plugin
+```typescript
+// plugins/toast.client.ts
+export default defineNuxtPlugin(() => {
+  const toast = {
+    success(message: string, options?: ToastOptions) {
+      showToast(message, { type: 'success', ...options });
+    },
+    
+    error(message: string, options?: ToastOptions) {
+      showToast(message, { type: 'error', ...options });
+    },
+    
+    warning(message: string, options?: ToastOptions) {
+      showToast(message, { type: 'warning', ...options });
+    },
+    
+    info(message: string, options?: ToastOptions) {
+      showToast(message, { type: 'info', ...options });
+    },
+  };
+
+  return {
+    provide: {
+      toast,
+    },
+  };
+});
+
+function showToast(message: string, options: ToastOptions) {
+  // Implementation using your preferred toast library
+  // Example with Vue Toastification
+  const toast = useToast();
+  toast[options.type](message, {
+    timeout: options.timeout || 5000,
+    position: options.position || 'top-right',
+  });
+}
+```
+
+### 2. Auth Plugin
+```typescript
+// plugins/auth.client.ts
+export default defineNuxtPlugin(async () => {
+  const auth = {
+    user: ref<User | null>(null),
+    loading: ref(true),
+    isAuthenticated: computed(() => !!auth.user.value),
+
+    async login(credentials: LoginCredentials) {
+      try {
+        const response = await $fetch<AuthResponse>('/api/auth/login', {
+          method: 'POST',
+          body: credentials,
+        });
+        
+        auth.user.value = response.user;
+        await navigateTo('/dashboard');
+        
+        return response;
+      } catch (error) {
+        throw new Error('Login failed');
+      }
+    },
+
+    async logout() {
+      try {
+        await $fetch('/api/auth/logout', { method: 'POST' });
+        auth.user.value = null;
+        await navigateTo('/login');
+      } catch (error) {
+        console.error('Logout failed:', error);
+      }
+    },
+
+    async checkAuth() {
+      try {
+        const user = await $fetch<User>('/api/auth/me');
+        auth.user.value = user;
+      } catch (error) {
+        auth.user.value = null;
+      } finally {
+        auth.loading.value = false;
+      }
+    },
+
+    async getToken(): Promise<string | null> {
+      // Implementation depends on your auth strategy
+      return null;
+    },
+  };
+
+  // Check authentication on app start
+  await auth.checkAuth();
+
+  return {
+    provide: {
+      auth,
+    },
+  };
+});
+```
+
+## Best Practices
+
+### 1. Performance
+- Use `v-memo` for expensive components
+- Implement proper lazy loading
+- Use `shallowRef` for large objects
+- Optimize bundle size with dynamic imports
+
+### 2. Accessibility
+- Use semantic HTML elements
+- Implement proper ARIA attributes
+- Ensure keyboard navigation
+- Provide alt text for images
+
+### 3. SEO
+- Use proper meta tags
+- Implement structured data
+- Optimize for Core Web Vitals
+- Use proper heading hierarchy
+
+### 4. Security
+- Validate all inputs
+- Sanitize user content
+- Implement proper CSRF protection
+- Use HTTPS for all requests
+
+### 5. Testing
+- Write unit tests for composables
+- Test component interactions
+- Implement E2E tests for critical flows
+- Use proper mocking strategies
+description:
+globs:
+alwaysApply: false
+---

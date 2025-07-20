@@ -1,0 +1,349 @@
+# TypeScript Best Practices
+
+## Code Style and Standards
+
+### 1. Type Safety
+- Always use explicit types for function parameters and return values
+- Prefer `interface` over `type` for object shapes
+- Use `const assertions` for immutable data
+- Leverage TypeScript's strict mode
+
+```typescript
+// ✅ Good: Explicit types
+interface User {
+  id: string;
+  email: string;
+  name: string;
+}
+
+function getUserById(id: string): Promise<User | null> {
+  // implementation
+}
+
+// ✅ Good: Const assertions
+const API_ENDPOINTS = {
+  users: '/api/users',
+  posts: '/api/posts',
+} as const;
+
+// ❌ Bad: Implicit any
+function processData(data) {
+  return data.map(item => item.value);
+}
+```
+
+### 2. Error Handling
+- Use custom error classes extending `Error`
+- Implement proper error boundaries
+- Use Result types for operations that can fail
+
+```typescript
+// ✅ Good: Custom error class
+class ValidationError extends Error {
+  constructor(message: string, public field: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+// ✅ Good: Result type pattern
+type Result<T, E = Error> = 
+  | { success: true; data: T }
+  | { success: false; error: E };
+
+async function fetchUser(id: string): Promise<Result<User, ValidationError>> {
+  try {
+    const user = await api.getUser(id);
+    return { success: true, data: user };
+  } catch (error) {
+    return { success: false, error: new ValidationError('User not found', 'id') };
+  }
+}
+```
+
+### 3. Async/Await Patterns
+- Always use async/await over raw promises
+- Handle promise rejections properly
+- Use Promise.all for concurrent operations
+
+```typescript
+// ✅ Good: Proper async/await usage
+async function loadUserData(userId: string): Promise<UserData> {
+  try {
+    const [user, posts, settings] = await Promise.all([
+      fetchUser(userId),
+      fetchUserPosts(userId),
+      fetchUserSettings(userId)
+    ]);
+    
+    return { user, posts, settings };
+  } catch (error) {
+    throw new Error(`Failed to load user data: ${error.message}`);
+  }
+}
+
+// ❌ Bad: Raw promises
+function loadUserData(userId: string) {
+  return fetchUser(userId)
+    .then(user => fetchUserPosts(userId)
+      .then(posts => ({ user, posts })));
+}
+```
+
+### 4. Null Safety
+- Use optional chaining (`?.`) and nullish coalescing (`??`)
+- Prefer non-null assertion (`!`) only when absolutely certain
+- Use type guards for runtime type checking
+
+```typescript
+// ✅ Good: Safe null handling
+function getDisplayName(user: User | null): string {
+  return user?.name ?? 'Anonymous';
+}
+
+// ✅ Good: Type guards
+function isUser(obj: unknown): obj is User {
+  return typeof obj === 'object' && obj !== null && 'id' in obj;
+}
+
+// ❌ Bad: Unsafe null access
+function getDisplayName(user: User | null): string {
+  return user.name; // Could throw if user is null
+}
+```
+
+### 5. Generics and Reusability
+- Use generics for reusable components and functions
+- Implement proper constraints on generic types
+- Use utility types for type transformations
+
+```typescript
+// ✅ Good: Generic function with constraints
+function createApiClient<T extends Record<string, any>>(
+  baseUrl: string,
+  defaultHeaders: T
+): ApiClient<T> {
+  return {
+    get: async (endpoint: string) => {
+      // implementation
+    },
+    post: async (endpoint: string, data: unknown) => {
+      // implementation
+    }
+  };
+}
+
+// ✅ Good: Utility types
+type ApiResponse<T> = {
+  data: T;
+  status: number;
+  message: string;
+};
+
+type PartialUser = Partial<User>;
+type UserKeys = keyof User;
+```
+
+### 6. Module Organization
+- Use barrel exports for clean imports
+- Group related functionality in modules
+- Use index files for public APIs
+
+```typescript
+// ✅ Good: Barrel export
+// utils/index.ts
+export { formatDate } from './date';
+export { validateEmail } from './validation';
+export { debounce } from './performance';
+
+// ✅ Good: Clean imports
+import { formatDate, validateEmail, debounce } from '@/utils';
+```
+
+### 7. Configuration and Environment
+- Use environment variables with proper typing
+- Implement configuration validation
+- Use const assertions for configuration objects
+
+```typescript
+// ✅ Good: Typed environment config
+interface Config {
+  apiUrl: string;
+  apiKey: string;
+  environment: 'development' | 'production' | 'test';
+}
+
+const config: Config = {
+  apiUrl: process.env.API_URL!,
+  apiKey: process.env.API_KEY!,
+  environment: (process.env.NODE_ENV as Config['environment']) || 'development'
+};
+
+// ✅ Good: Configuration validation
+function validateConfig(config: unknown): config is Config {
+  return (
+    typeof config === 'object' &&
+    config !== null &&
+    'apiUrl' in config &&
+    'apiKey' in config &&
+    'environment' in config
+  );
+}
+```
+
+### 8. Testing Patterns
+- Use proper typing for test utilities
+- Implement type-safe mocks
+- Use test data builders
+
+```typescript
+// ✅ Good: Typed test utilities
+interface TestUser extends Partial<User> {
+  id: string;
+  email: string;
+}
+
+function createTestUser(overrides: Partial<TestUser> = {}): TestUser {
+  return {
+    id: 'test-user-id',
+    email: 'test@example.com',
+    name: 'Test User',
+    ...overrides
+  };
+}
+
+// ✅ Good: Type-safe mocks
+const mockApiClient = {
+  getUser: jest.fn<Promise<User>, [string]>(),
+  createUser: jest.fn<Promise<User>, [CreateUserData]>(),
+} as const;
+```
+
+### 9. Performance Considerations
+- Use `useMemo` and `useCallback` appropriately in React
+- Implement proper memoization for expensive operations
+- Use lazy loading for large modules
+
+```typescript
+// ✅ Good: Proper memoization
+const expensiveValue = useMemo(() => {
+  return computeExpensiveValue(data);
+}, [data]);
+
+const handleClick = useCallback((id: string) => {
+  handleUserAction(id);
+}, [handleUserAction]);
+
+// ✅ Good: Lazy loading
+const LazyComponent = lazy(() => import('./HeavyComponent'));
+```
+
+### 10. Documentation and Comments
+- Use JSDoc for public APIs
+- Document complex type relationships
+- Include examples in documentation
+
+```typescript
+/**
+ * Fetches user data from the API
+ * @param userId - The unique identifier of the user
+ * @param options - Optional configuration for the request
+ * @returns Promise resolving to user data or null if not found
+ * @throws {ValidationError} When userId is invalid
+ * @example
+ * ```typescript
+ * const user = await fetchUser('123', { includePosts: true });
+ * console.log(user.name); // "John Doe"
+ * ```
+ */
+async function fetchUser(
+  userId: string,
+  options: FetchUserOptions = {}
+): Promise<User | null> {
+  // implementation
+}
+```
+
+## Project-Specific Guidelines
+
+### 1. Composio Integration
+- Always use proper error handling for Composio operations
+- Implement retry logic for transient failures
+- Use appropriate user context (individual vs organization)
+
+### 2. Vue.js Integration
+- Use proper typing for Vue components
+- Implement type-safe props and emits
+- Use Composition API with proper typing
+
+```typescript
+// ✅ Good: Typed Vue component
+interface Props {
+  user: User;
+  loading?: boolean;
+}
+
+interface Emits {
+  (e: 'update', user: User): void;
+  (e: 'delete', userId: string): void;
+}
+
+const props = defineProps<Props>();
+const emit = defineEmits<Emits>();
+```
+
+### 3. API Integration
+- Use typed API clients
+- Implement proper error handling for network requests
+- Use interceptors for common operations
+
+```typescript
+// ✅ Good: Typed API client
+class ApiClient {
+  async get<T>(endpoint: string): Promise<ApiResponse<T>> {
+    // implementation
+  }
+  
+  async post<T, D>(endpoint: string, data: D): Promise<ApiResponse<T>> {
+    // implementation
+  }
+}
+```
+
+## Linting and Formatting
+
+### 1. ESLint Configuration
+- Enable strict TypeScript rules
+- Use consistent import ordering
+- Enforce proper naming conventions
+
+### 2. Prettier Configuration
+- Use consistent formatting
+- Configure line length appropriately
+- Use trailing commas for cleaner diffs
+
+### 3. TypeScript Configuration
+- Enable strict mode
+- Use proper module resolution
+- Configure path mapping for clean imports
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+description:
+globs:
+alwaysApply: false
+---

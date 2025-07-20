@@ -1,6 +1,6 @@
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { api } from '../../convex/src/_generated/api';
-import { goals_db_string } from '../init';
+import { goals_db_string, isConvexSyncEnabled } from '../init';
 import { getConvexClient, convertTimestamp } from './utils';
 
 // Transform Firebase flow data to Convex format
@@ -30,6 +30,13 @@ export const convexSyncFlowCreate = onDocumentCreated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncFlowCreate triggered for:', event.params.flowId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping flow creation sync for:', event.params.flowId);
+    return;
+  }
+  
   try {
     const flowId = event.params.flowId;
     const flowData = event.data?.data();
@@ -77,6 +84,13 @@ export const convexSyncFlowUpdate = onDocumentUpdated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncFlowUpdate triggered for:', event.params.flowId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping flow update sync for:', event.params.flowId);
+    return;
+  }
+  
   try {
     const flowId = event.params.flowId;
     const beforeData = event.data?.before.data();
@@ -160,6 +174,14 @@ export const convexSyncFlowDelete = onDocumentDeleted({
   document: 'flows/{flowId}',
   database: goals_db_string,
 }, async (event) => {
+  console.log('convexSyncFlowDelete triggered for:', event.params.flowId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping flow deletion sync for:', event.params.flowId);
+    return;
+  }
+  
   try {
     const flowId = event.params.flowId;
     

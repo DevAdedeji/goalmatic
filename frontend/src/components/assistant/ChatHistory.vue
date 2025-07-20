@@ -13,6 +13,12 @@
 			</div>
 		</div>
 
+		<!-- <div class="flex w-full p-4">
+			<button class="btn landing-btn w-full" @click="navigateToSession('new')">
+				New Chat
+			</button>
+		</div> -->
+
 		<!-- Loading State -->
 		<div v-if="loading" class="loadingContainer">
 			<div class="loadingSpinner" />

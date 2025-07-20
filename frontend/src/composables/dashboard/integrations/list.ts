@@ -30,11 +30,11 @@ export const availableIntegrations = () => {
             ] as EditConfigField[]
         },
         {
-            name: 'Gmail (Composio)',
+            name: 'Gmail',
             icon: '/icons/gmail.svg',
-            description: 'Send and receive emails through your Gmail account using Composio. Enhanced authentication, better error handling, and seamless email workflows.',
+            description: 'Send and receive emails through your Gmail account. Automate email workflows and manage your inbox.',
             type: 'EMAIL',
-            provider: 'COMPOSIO',
+            provider: 'GOOGLE_COMPOSIO',
             id: 'GMAIL'
         }
     ]

@@ -6,10 +6,9 @@ import { useComposioGmail } from './gmail/composio'
 
 
 
-const formattedIntegrationsObjectMap = () => {
+export const formattedIntegrationsObjectMap = () => {
     const { link: GClink, loading: GClinkLoading } = useLinkGoogleCalendar()
     const { link: whatsappLink, loading: whatsappLinkLoading } = useLinkWhatsapp()
-    const { link: GSheetsLink, loading: GSheetsLinkLoading } = useLinkGoogleSheets()
     const { connect: gmailConnect, loading: gmailLinkLoading } = useComposioGmail()
     return [
     {
@@ -23,11 +22,6 @@ const formattedIntegrationsObjectMap = () => {
         loading: whatsappLinkLoading
     },
     {
-        id: 'GOOGLESHEETS',
-        link: GSheetsLink,
-        loading: GSheetsLinkLoading
-    },
-    {
         id: 'GMAIL',
         link: gmailConnect,
         loading: gmailLinkLoading
@@ -37,22 +31,19 @@ const formattedIntegrationsObjectMap = () => {
 
 
 export const useConnectIntegration = () => {
-    let loading = ref(false)
-
     const connectIntegration = async (id: string) => {
-        loading.value = true
         const formattedIntegrationObj = formattedIntegrationsObjectMap()
         const integration = formattedIntegrationObj.find((integration) => integration.id === id)
         if (integration) {
-            loading = integration.loading
+            integration.loading.value = true
             try {
                 await integration.link()
             } catch (error) {
-                loading.value = false
-                // console.error(error)
+                integration.loading.value = false
+                console.error(error)
             }
         }
     }
 
-    return { connectIntegration, loading }
+    return { connectIntegration }
 }

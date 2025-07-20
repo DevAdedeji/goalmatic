@@ -1,0 +1,470 @@
+# Composio TypeScript SDK Development Guide
+
+## Core Principles
+
+### 1. SDK Initialization
+Always initialize Composio with proper configuration:
+
+```typescript
+import { Composio } from '@composio/core';
+
+const composio = new Composio({
+  apiKey: process.env.COMPOSIO_API_KEY, // Required
+  baseURL: 'https://api.composio.dev', // Optional: Custom API endpoint
+  allowTracking: true, // Optional: Enable/disable telemetry
+  allowTracing: true, // Optional: Enable tracing
+  provider: new OpenAIProvider(), // Optional: Custom provider
+  telemetryTransport: customTransport, // Optional: Custom telemetry
+  defaultHeaders: { 'x-request-id': 'global-id' }, // Optional: Global headers
+});
+```
+
+### 2. User ID Management
+**NEVER use 'default' in production multi-user applications:**
+
+```typescript
+// ❌ Wrong: Using 'default' in production
+const tools = await composio.tools.get('default', { toolkits: ['github'] });
+
+// ✅ Correct: Use database UUID or unique identifier
+const userId = user.id; // e.g., "550e8400-e29b-41d4-a716-446655440000"
+const tools = await composio.tools.get(userId, { toolkits: ['github'] });
+
+// ✅ Organization-level connections
+const orgId = organization.id; // e.g., "org_550e8400-e29b-41d4-a716-446655440000"
+const tools = await composio.tools.get(orgId, { toolkits: ['slack'] });
+```
+
+### 3. Tool Execution Patterns
+
+#### Basic Tool Execution
+```typescript
+const result = await composio.tools.execute('GITHUB_GET_REPO', {
+  userId: 'user123',
+  arguments: {
+    owner: 'composio',
+    repo: 'sdk',
+  },
+});
+
+// Always check execution success
+if (result.successful) {
+  console.log('Repository details:', result.data);
+} else {
+  console.error('Execution failed:', result.error);
+}
+```
+
+#### Tool Fetching Patterns
+```typescript
+// Get tools from specific toolkit
+const tools = await composio.tools.get('user123', {
+  toolkits: ['github'],
+});
+
+// Get specific tool by slug
+const tool = await composio.tools.get('user123', 'GITHUB_GET_REPO');
+
+// Get tools with filters
+const tools = await composio.tools.get('user123', {
+  category: 'developer-tools',
+  limit: 10,
+});
+```
+
+### 4. Error Handling
+
+#### Comprehensive Error Handling
+```typescript
+import {
+  ComposioError,
+  ComposioNoAPIKeyError,
+  ComposioToolNotFoundError,
+  ComposioToolExecutionError,
+  ValidationError,
+  ConnectionRequestTimeoutError,
+  ConnectionRequestFailedError,
+  ComposioAuthConfigNotFoundError,
+} from '@composio/core';
+
+try {
+  const result = await composio.tools.execute('GITHUB_GET_REPO', {
+    userId: 'user123',
+    arguments: { owner: 'composio', repo: 'sdk' },
+  });
+
+  if (!result.successful) {
+    console.error('Execution failed:', result.error);
+  }
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.error('Validation error:', error.message);
+  } else if (error instanceof ComposioToolNotFoundError) {
+    console.error('Tool not found:', error.message);
+  } else if (error instanceof ComposioToolExecutionError) {
+    console.error('Tool execution error:', error.message);
+  } else if (error instanceof ComposioError) {
+    console.error('Composio error:', error.message);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+#### Global Error Handler
+```typescript
+function handleComposioError(error: unknown): void {
+  if (error instanceof ValidationError) {
+    console.error('Validation error:', error.message);
+  } else if (error instanceof ComposioToolNotFoundError) {
+    console.error('Tool not found:', error.message);
+  } else if (error instanceof ComposioToolExecutionError) {
+    console.error('Tool execution error:', error.message);
+  } else if (error instanceof ComposioAuthConfigNotFoundError) {
+    console.error('Auth config not found:', error.message);
+  } else if (error instanceof ConnectionRequestFailedError) {
+    console.error('Connection failed:', error.message);
+  } else if (error instanceof ConnectionRequestTimeoutError) {
+    console.error('Connection timed out:', error.message);
+  } else if (error instanceof ComposioError) {
+    console.error('Composio error:', error.message);
+  } else {
+    console.error('Unexpected error:', error);
+  }
+}
+```
+
+### 5. Authentication and Connections
+
+#### User Connection Flow
+```typescript
+// 1. Initiate connection
+const connectionRequest = await composio.toolkits.authorize('user123', 'github');
+
+// 2. Handle redirect URL
+if (connectionRequest.redirectUrl) {
+  console.log(`Please visit: ${connectionRequest.redirectUrl}`);
+}
+
+// 3. Wait for connection (with timeout)
+try {
+  const connectedAccount = await connectionRequest.waitForConnection();
+  console.log(`Connection successful! ID: ${connectedAccount.id}`);
+} catch (error) {
+  if (error instanceof ConnectionRequestTimeoutError) {
+    console.error('Connection timed out. Please try again.');
+  } else if (error instanceof ConnectionRequestFailedError) {
+    console.error(`Connection failed: ${error.message}`);
+  }
+}
+```
+
+#### Organization-wide Connections
+```typescript
+// Admin connects for entire organization
+async function connectOrganizationToSlack(organizationId: string, adminUserId: string) {
+  const connectionRequest = await composio.toolkits.authorize(organizationId, 'slack');
+  await storeConnectionRequest(organizationId, adminUserId, connectionRequest);
+  return connectionRequest.redirectUrl;
+}
+
+// Any user can use org-connected tools
+async function sendSlackMessage(organizationId: string, channel: string, message: string) {
+  return await composio.tools.execute('SLACK_SEND_MESSAGE', {
+    userId: organizationId, // Use organization ID
+    arguments: { channel, text: message },
+  });
+}
+```
+
+### 6. Custom Tools
+
+#### Basic Custom Tool
+```typescript
+const customTool = await composio.tools.createCustomTool({
+  name: 'Weather Forecast',
+  description: 'Get the weather forecast for a location',
+  slug: 'WEATHER_FORECAST',
+  inputParameters: {
+    type: 'object',
+    properties: {
+      location: {
+        type: 'string',
+        description: 'The location to get the forecast for'
+      },
+      days: {
+        type: 'integer',
+        description: 'Number of days for the forecast',
+        default: 3
+      }
+    },
+    required: ['location']
+  },
+  outputParameters: {
+    type: 'object',
+    properties: {
+      forecast: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            date: { type: 'string' },
+            temperature: { type: 'number' },
+            conditions: { type: 'string' }
+          }
+        }
+      }
+    }
+  },
+  handler: async (params, context) => {
+    try {
+      const { location, days = 3 } = params.arguments;
+      // Your implementation here
+      const forecast = await getWeatherForecast(location, days);
+      
+      return {
+        data: { forecast },
+        successful: true,
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: {},
+        successful: false,
+        error: error.message
+      };
+    }
+  }
+});
+```
+
+#### Toolkit-based Custom Tool
+```typescript
+const tool = await composio.tools.createCustomTool({
+  slug: 'GITHUB_LIST_AND_STAR',
+  name: 'List and Star Repository',
+  description: 'Lists repositories and stars them',
+  toolkitSlug: 'github',
+  inputParams: z.object({
+    owner: z.string().describe('Repository owner'),
+  }),
+  execute: async (input, connectionConfig, executeToolRequest) => {
+    // executeToolRequest can only call tools from the 'github' toolkit
+    const listResult = await executeToolRequest({
+      slug: 'LIST_REPOSITORIES',
+      arguments: { owner: input.owner },
+    });
+
+    const starResult = await executeToolRequest({
+      slug: 'STAR_REPOSITORY',
+      arguments: {
+        owner: input.owner,
+        repo: listResult.data.repositories[0].name,
+      },
+    });
+
+    return {
+      data: { listed: listResult.data, starred: starResult.data },
+      error: null,
+      successful: true,
+    };
+  },
+});
+```
+
+### 7. Providers Integration
+
+#### OpenAI Provider
+```typescript
+import { Composio } from '@composio/core';
+import { OpenAIProvider } from '@composio/openai';
+
+const composio = new Composio({
+  apiKey: process.env.COMPOSIO_API_KEY,
+  provider: new OpenAIProvider(),
+});
+
+// Get tools formatted for OpenAI
+const tools = await composio.tools.get('user123', {
+  toolkits: ['github'],
+});
+```
+
+#### Vercel AI SDK Provider
+```typescript
+import { Composio } from '@composio/core';
+import { VercelProvider } from '@composio/vercel';
+import { streamText } from 'ai';
+
+const composio = new Composio({
+  apiKey: process.env.COMPOSIO_API_KEY,
+  provider: new VercelProvider(),
+});
+
+// Get tools with strict mode for Vercel AI SDK
+const tools = await composio.tools.get('user123', {
+  toolkits: ['gmail', 'googlecalendar'],
+  strict: true // Remove non-required properties
+});
+
+const stream = streamText({
+  model: openai('gpt-4'),
+  messages,
+  tools,
+  callbacks: {
+    onToolCall: async tool => {
+      return await composio.provider.executeToolCall(tool);
+    },
+  },
+});
+```
+
+### 8. Modifiers and Hooks
+
+#### Schema Modifiers
+```typescript
+const tools = await composio.tools.get('user123', 'HACKERNEWS_GET_USER', {
+  modifySchema: (toolSlug, toolkitSlug, tool) => {
+    if (tool.inputParameters?.properties?.userId) {
+      tool.inputParameters.properties.userId.description = 'HackerNews username (e.g., "pg")';
+    }
+    return tool;
+  },
+});
+```
+
+#### Execution Modifiers (Agentic Providers Only)
+```typescript
+const result = await composio.tools.execute(
+  'GITHUB_GET_REPO',
+  {
+    userId: 'user123',
+    arguments: { owner: 'composio', repo: 'sdk' },
+  },
+  {
+    beforeExecute: ({ toolSlug, toolkitSlug, params }) => {
+      console.log(`Executing ${toolSlug} from ${toolkitSlug}`);
+      return params;
+    },
+    afterExecute: ({ toolSlug, toolkitSlug, result }) => {
+      if (result.successful) {
+        result.data.processedAt = new Date().toISOString();
+      }
+      return result;
+    },
+  }
+);
+```
+
+### 9. Triggers and Webhooks
+
+#### Fetching Triggers
+```typescript
+const triggers = await composio.triggers.get({
+  toolkits: ['github']
+});
+```
+
+#### Subscribing to Real-time Events
+```typescript
+composio.triggers.subscribe(
+  triggerData => {
+    console.log('Received trigger:', triggerData);
+  },
+  {
+    toolkits: ['github'],
+    triggerId: 'specific-trigger-id',
+    connectedAccountId: 'connected-account-id',
+    triggerSlug: ['trigger-type'],
+    triggerData: 'custom-data',
+    userId: 'user-id',
+  }
+);
+```
+
+### 10. Telemetry and Monitoring
+
+#### Custom Telemetry Transport
+```typescript
+import { Composio, BaseTelemetryTransport, TelemetryEvent } from '@composio/core';
+
+class CustomTelemetryTransport extends BaseTelemetryTransport {
+  async send(event: TelemetryEvent): Promise<void> {
+    console.log(`Telemetry event: ${event.name}`, event.properties);
+    await yourAnalyticsSystem.track(event.name, event.properties);
+  }
+
+  async flush(): Promise<void> {
+    await yourAnalyticsSystem.flush();
+  }
+}
+
+const composio = new Composio({
+  apiKey: 'your-api-key',
+  telemetryTransport: new CustomTelemetryTransport()
+});
+```
+
+#### Disable Telemetry
+```typescript
+const composio = new Composio({
+  apiKey: 'your-api-key',
+  allowTracking: false // Disable telemetry
+});
+```
+
+## Best Practices
+
+1. **Always use unique user IDs** - Never use 'default' in production
+2. **Implement comprehensive error handling** - Catch specific error types
+3. **Check execution success** - Always verify `result.successful`
+4. **Use appropriate user context** - Individual vs organization-level connections
+5. **Implement proper timeouts** - For connection requests and tool execution
+6. **Use modifiers for customization** - Schema and execution modifiers
+7. **Handle file operations properly** - Use `composio.files` API when needed
+8. **Implement retry logic** - For transient failures
+9. **Use strict mode with Vercel AI SDK** - For better compatibility
+10. **Monitor and log operations** - Use telemetry and custom logging
+
+## Common Patterns
+
+### Multi-User Application Flow
+```typescript
+// 1. User initiates connection
+async function connectUserToGitHub(userId: string) {
+  const connectionRequest = await composio.toolkits.authorize(userId, 'github');
+  return connectionRequest.redirectUrl;
+}
+
+// 2. Get user's connected tools
+async function getUserGitHubTools(userId: string) {
+  return await composio.tools.get(userId, { toolkits: ['github'] });
+}
+
+// 3. Execute tool for specific user
+async function getUserRepos(userId: string) {
+  return await composio.tools.execute('GITHUB_LIST_REPOS', {
+    userId: userId,
+    arguments: { per_page: 10 },
+  });
+}
+```
+
+### API Route Handler
+```typescript
+app.get('/api/github/repos', async (req, res) => {
+  const userId = req.user.id; // Get from your auth system
+
+  try {
+    const repos = await getUserRepos(userId);
+    res.json(repos.data);
+  } catch (error) {
+    handleComposioError(error);
+    res.status(500).json({ error: 'Failed to fetch repos' });
+  }
+});
+```
+description:
+globs:
+alwaysApply: false
+---

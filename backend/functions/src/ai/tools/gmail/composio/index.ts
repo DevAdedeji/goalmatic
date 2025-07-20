@@ -1,26 +1,71 @@
-const { Composio } = require('@composio/core');
-import { goals_db } from '../../../../init.js';
+// Use dynamic import to fix CommonJS/ESM compatibility
+let Composio: any;
+let composioInstance: any = null;
 
-// Initialize Composio client
-const composio = new Composio({
-    apiKey: process.env.COMPOSIO_API_KEY,
-});
+const getComposioInstance = async () => {
+    if (!composioInstance) {
+        if (!Composio) {
+            const composioModule = await import('@composio/core');
+            Composio = composioModule.Composio;
+        }
+        composioInstance = new Composio({
+            apiKey: process.env.COMPOSIO_API_KEY,
+        });
+    }
+    return composioInstance;
+};
+
+import { goals_db } from '../../../../init.js';
+import { Timestamp } from 'firebase-admin/firestore';
+import { v4 as uuidv4 } from 'uuid';
 
 /**
- * Get or create a connected account for the user
+ * Get connected account for the user
+ * Now checks both integrations subcollection and user document for backward compatibility
  */
 export const getComposioGmailConnectedAccount = async (userId: string) => {
     try {
-        // Try to get existing connected account
+        // First, check the integrations subcollection (new approach)
+        const integrationsQuery = await goals_db.collection('users')
+            .doc(userId)
+            .collection('integrations')
+            .where('type', '==', 'EMAIL')
+            .where('provider', '==', 'COMPOSIO')
+            .get();
+
+        if (!integrationsQuery.empty) {
+            const gmailIntegration = integrationsQuery.docs[0].data();
+            return gmailIntegration.composio_connected_account_id || gmailIntegration.id;
+        }
+
+        // Fallback: check the user document (old approach) for backward compatibility
         const userDoc = await goals_db.collection('users').doc(userId).get();
         const userData = userDoc.data();
         
         if (userData?.composio_gmail_connected_account_id) {
+            // User has old-style connection but no integration document
+            // Create the missing integration document for consistency
+            console.log('Migrating old Gmail connection to integrations subcollection for user:', userId);
+            
+            const integrationId = uuidv4();
+            await goals_db.collection('users').doc(userId).collection('integrations').doc(integrationId).set({
+                id: integrationId,
+                type: 'EMAIL',
+                provider: 'COMPOSIO',
+                integration_id: 'GMAIL',
+                user_id: userId,
+                created_at: Timestamp.fromDate(new Date()),
+                updated_at: Timestamp.fromDate(new Date()),
+                composio_connected_account_id: userData.composio_gmail_connected_account_id,
+                connected_at: userData.composio_gmail_connected_at || new Date().toISOString(),
+                migrated_from_user_doc: true, // Flag to indicate this was migrated
+            });
+            
+            console.log('Gmail integration document created during migration with ID:', integrationId);
             return userData.composio_gmail_connected_account_id;
         }
 
-        // If no connected account exists, we need to create one
-        // This would typically involve OAuth flow or using existing Gmail credentials
+        // If no connected account exists, user needs to connect first
         throw new Error('No Composio Gmail connected account found. Please connect your Gmail account first.');
     } catch (error) {
         console.error('Error getting Composio Gmail connected account:', error);
@@ -32,9 +77,11 @@ export const getComposioGmailConnectedAccount = async (userId: string) => {
  * Get Gmail tools for the current user
  */
 export const getComposioGmailTools = async (userId: string) => {
+    const composio = await getComposioInstance();
+    
     try {
         const tools = await composio.tools.get(userId, {
-            toolkits: ['gmail'],
+            toolkits: ['GMAIL'],
         });
         
         return tools;
@@ -53,6 +100,7 @@ export const executeComposioGmailTool = async (
     userId: string
 ) => {
     try {
+        const composio = await getComposioInstance();
         const result = await composio.tools.execute(toolName, {
             userId,
             arguments: params,
@@ -65,60 +113,5 @@ export const executeComposioGmailTool = async (
     }
 };
 
-/**
- * Set up Gmail connection for a user
- */
-export const setupComposioGmailConnection = async (userId: string) => {
-    try {
-        // Initialize connection request
-        const connectionRequest = await composio.toolkits.authorize(userId, "gmail");
-        
-        return {
-            redirectUrl: connectionRequest.redirectUrl,
-            connectionId: connectionRequest.connectionId,
-        };
-    } catch (error) {
-        console.error('Error setting up Composio Gmail connection:', error);
-        throw error;
-    }
-};
 
-/**
- * Wait for Gmail connection to be established
- */
-export const waitForGmailConnection = async (userId: string, connectionId: string) => {
-    try {
-        // This would wait for the connection to be active
-        // Implementation depends on Composio's connection status API
-        const maxAttempts = 30;
-        let attempts = 0;
-        
-        while (attempts < maxAttempts) {
-            try {
-                const tools = await composio.tools.get(userId, {
-                    toolkits: ['gmail'],
-                });
-                
-                if (tools && tools.length > 0) {
-                    // Connection is ready
-                    await goals_db.collection('users').doc(userId).update({
-                        composio_gmail_connected_account_id: connectionId,
-                        composio_gmail_connected_at: new Date().toISOString(),
-                    });
-                    
-                    return true;
-                }
-            } catch (error) {
-                // Connection not ready yet
-            }
-            
-            attempts++;
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
-        }
-        
-        throw new Error('Gmail connection timeout');
-    } catch (error) {
-        console.error('Error waiting for Gmail connection:', error);
-        throw error;
-    }
-}; 
+

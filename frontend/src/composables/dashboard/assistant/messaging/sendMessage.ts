@@ -107,7 +107,7 @@ export const sendMessage = async (currentRoute?: RouteLocationNormalizedLoaded) 
       // If chat session doesn't exist, create it
       chatSessionData.created_at = Timestamp.fromDate(new Date())
       await setFirestoreSubDocument('users', userId.value!, 'chatSessions', sessionId.value!, chatSessionData)
-      loadConversationHistory(sessionId.value!)
+      // loadConversationHistory(sessionId.value!)
     } else {
       await updateFirestoreSubDocument('users', userId.value!, 'chatSessions', sessionId.value!, chatSessionData)
     }

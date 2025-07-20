@@ -112,27 +112,6 @@ const isRouteActive = (menuItem: RouteType) => {
 }
 
 
-/* exact link will show the primary color for only the exact matching link */
-:deep(a.router-link-exact-active.black) {
-	@apply  font-semibold;
-	// color: var(--primary);
-	border-color: var(--primary);
-	background-color: #F4F3FF;
-
-	// & > svg {
-	// 	color: var(--primary);
-	// }
-	& ::before {
-		content: '';
-		@apply absolute left-0 top-0 w-1.5 h-full border border-dark rounded-full;
-		background-color: var(--link-bg-color);
-
-	}
-}
-
-:deep(:focus) {
-	outline: none;
-}
 
 .link {
 	@apply flex items-center gap-2.5  py-3 px-4 rounded-lg hover:bg-tertiary

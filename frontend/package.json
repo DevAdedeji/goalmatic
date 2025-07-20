@@ -18,6 +18,7 @@
   "dependencies": {
     "@ai-sdk/google": "^1.2.12",
     "@ai-sdk/openai": "^1.1.9",
+    "@composio/core": "^0.1.35",
     "@firebasegen/default-connector": "link:dataconnect-generated/js/default-connector",
     "@genkit-ai/googleai": "^0.9.12",
     "@google/generative-ai": "^0.21.0",
@@ -31,6 +32,7 @@
     "@tiptap/extension-text-style": "^2.7.4",
     "@tiptap/pm": "^2.7.4",
     "@tiptap/starter-kit": "^2.7.4",
+    "@tiptap/suggestion": "^2.0.0-beta.75",
     "@tiptap/vue-3": "^2.7.4",
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^9.3.1",
@@ -45,6 +47,7 @@
     "gsap": "^3.13.0",
     "lucide-vue-next": "^0.448.0",
     "marked": "^15.0.6",
+    "marked-more-lists": "^1.0.0",
     "moment": "^2.30.1",
     "motion-v": "^0.10.0",
     "nuxt": "^3.17.1",
@@ -56,15 +59,14 @@
     "sass": "^1.81.0",
     "sortablejs": "^1",
     "split.js": "^1.6.5",
+    "tippy.js": "^6.3.7",
     "uuid": "^9.0.0",
     "vue": "^3.4.27",
     "vue-cal": "^5.0.1-rc.1",
     "vue-datepicker-next": "^1.0.3",
     "vue-draggable-next": "^2.2.1",
     "vue-gtag-next": "^1.14.0",
-    "vue-router": "^4.3.2",
-    "@tiptap/suggestion": "^2.0.0-beta.75",
-    "tippy.js": "^6.3.7"
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@inspira-ui/plugins": "^0.0.1",

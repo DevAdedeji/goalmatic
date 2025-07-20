@@ -1,0 +1,602 @@
+# AI Agent Development Patterns
+
+## Core Agent Architecture
+
+### 1. Agent Definition Pattern
+```typescript
+interface Agent {
+  id: string;
+  name: string;
+  description: string;
+  instructions: string;
+  tools: string[]; // Tool slugs
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Agent creation pattern
+const createAgent = async (agentData: CreateAgentData): Promise<Agent> => {
+  const agent: Agent = {
+    id: generateId(),
+    name: agentData.name,
+    description: agentData.description,
+    instructions: agentData.instructions,
+    tools: agentData.tools,
+    model: agentData.model || 'gpt-4',
+    temperature: agentData.temperature || 0.7,
+    maxTokens: agentData.maxTokens || 4000,
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+  
+  return await saveAgent(agent);
+};
+```
+
+### 2. Tool Integration Pattern
+```typescript
+// Tool configuration for agents
+interface AgentTool {
+  slug: string;
+  toolkit: string;
+  isEnabled: boolean;
+  parameters?: Record<string, any>;
+}
+
+// Get tools for agent with proper error handling
+const getAgentTools = async (agentId: string, userId: string): Promise<Tool[]> => {
+  try {
+    const agent = await getAgent(agentId);
+    if (!agent) {
+      throw new Error('Agent not found');
+    }
+
+    const tools = await composio.tools.get(userId, {
+      tools: agent.tools,
+      strict: true, // For better compatibility
+    });
+
+    return tools;
+  } catch (error) {
+    console.error('Failed to get agent tools:', error);
+    throw new ComposioToolExecutionError('Failed to load agent tools', {
+      originalError: error,
+      meta: { agentId, userId }
+    });
+  }
+};
+```
+
+### 3. Message Handling Pattern
+```typescript
+interface AgentMessage {
+  id: string;
+  agentId: string;
+  userId: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  toolCalls?: ToolCall[];
+  createdAt: Date;
+}
+
+// Process agent message with tool execution
+const processAgentMessage = async (
+  agentId: string,
+  userId: string,
+  message: string
+): Promise<AgentMessage> => {
+  try {
+    // Get agent and tools
+    const agent = await getAgent(agentId);
+    const tools = await getAgentTools(agentId, userId);
+
+    // Create message history
+    const messages = await getMessageHistory(agentId, userId);
+
+    // Execute with AI provider
+    const response = await executeWithAI({
+      model: agent.model,
+      messages: [
+        { role: 'system', content: agent.instructions },
+        ...messages,
+        { role: 'user', content: message }
+      ],
+      tools,
+      temperature: agent.temperature,
+      maxTokens: agent.maxTokens,
+    });
+
+    // Handle tool calls if any
+    if (response.toolCalls && response.toolCalls.length > 0) {
+      const toolResults = await executeToolCalls(userId, response.toolCalls);
+      
+      // Add tool results to conversation
+      const toolMessage: AgentMessage = {
+        id: generateId(),
+        agentId,
+        userId,
+        role: 'assistant',
+        content: 'Tool execution completed',
+        toolCalls: response.toolCalls,
+        createdAt: new Date(),
+      };
+
+      await saveMessage(toolMessage);
+      return toolMessage;
+    }
+
+    // Save and return assistant message
+    const assistantMessage: AgentMessage = {
+      id: generateId(),
+      agentId,
+      userId,
+      role: 'assistant',
+      content: response.content,
+      createdAt: new Date(),
+    };
+
+    await saveMessage(assistantMessage);
+    return assistantMessage;
+
+  } catch (error) {
+    console.error('Failed to process agent message:', error);
+    throw new Error(`Agent processing failed: ${error.message}`);
+  }
+};
+```
+
+## Composio Integration Patterns
+
+### 1. Tool Execution with Composio
+```typescript
+// Execute tool calls using Composio
+const executeToolCalls = async (
+  userId: string,
+  toolCalls: ToolCall[]
+): Promise<ToolResult[]> => {
+  const results: ToolResult[] = [];
+
+  for (const toolCall of toolCalls) {
+    try {
+      const result = await composio.tools.execute(toolCall.name, {
+        userId,
+        arguments: toolCall.arguments,
+      });
+
+      results.push({
+        toolCallId: toolCall.id,
+        successful: result.successful,
+        data: result.data,
+        error: result.error,
+      });
+    } catch (error) {
+      results.push({
+        toolCallId: toolCall.id,
+        successful: false,
+        data: null,
+        error: error.message,
+      });
+    }
+  }
+
+  return results;
+};
+```
+
+### 2. Connection Management
+```typescript
+// Manage user connections for agents
+const ensureUserConnections = async (
+  userId: string,
+  requiredToolkits: string[]
+): Promise<ConnectionStatus[]> => {
+  const statuses: ConnectionStatus[] = [];
+
+  for (const toolkit of requiredToolkits) {
+    try {
+      // Check if user has connection
+      const tools = await composio.tools.get(userId, {
+        toolkits: [toolkit],
+        limit: 1,
+      });
+
+      if (tools.length > 0) {
+        statuses.push({
+          toolkit,
+          connected: true,
+          message: 'Already connected',
+        });
+      } else {
+        // Create connection request
+        const connectionRequest = await composio.toolkits.authorize(userId, toolkit);
+        
+        statuses.push({
+          toolkit,
+          connected: false,
+          message: 'Connection required',
+          redirectUrl: connectionRequest.redirectUrl,
+        });
+      }
+    } catch (error) {
+      statuses.push({
+        toolkit,
+        connected: false,
+        message: `Connection failed: ${error.message}`,
+      });
+    }
+  }
+
+  return statuses;
+};
+```
+
+### 3. Error Handling for AI Operations
+```typescript
+// Comprehensive error handling for AI operations
+const handleAIError = (error: unknown, context: string): never => {
+  if (error instanceof ComposioToolExecutionError) {
+    console.error(`${context} - Tool execution failed:`, error.message);
+    throw new Error(`Tool execution failed: ${error.message}`);
+  }
+  
+  if (error instanceof ComposioToolNotFoundError) {
+    console.error(`${context} - Tool not found:`, error.message);
+    throw new Error(`Required tool not available: ${error.message}`);
+  }
+  
+  if (error instanceof ConnectionRequestFailedError) {
+    console.error(`${context} - Connection failed:`, error.message);
+    throw new Error(`Authentication required: ${error.message}`);
+  }
+  
+  if (error instanceof ValidationError) {
+    console.error(`${context} - Validation error:`, error.message);
+    throw new Error(`Invalid input: ${error.message}`);
+  }
+  
+  console.error(`${context} - Unexpected error:`, error);
+  throw new Error(`AI operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+};
+```
+
+## Agent State Management
+
+### 1. Agent Session Management
+```typescript
+interface AgentSession {
+  id: string;
+  agentId: string;
+  userId: string;
+  status: 'active' | 'idle' | 'error';
+  lastActivity: Date;
+  context: Record<string, any>;
+  messageCount: number;
+}
+
+// Create or resume agent session
+const getOrCreateSession = async (
+  agentId: string,
+  userId: string
+): Promise<AgentSession> => {
+  let session = await getActiveSession(agentId, userId);
+  
+  if (!session) {
+    session = {
+      id: generateId(),
+      agentId,
+      userId,
+      status: 'active',
+      lastActivity: new Date(),
+      context: {},
+      messageCount: 0,
+    };
+    
+    await saveSession(session);
+  } else {
+    // Update last activity
+    session.lastActivity = new Date();
+    await updateSession(session);
+  }
+  
+  return session;
+};
+```
+
+### 2. Context Management
+```typescript
+// Manage conversation context for agents
+const updateAgentContext = async (
+  sessionId: string,
+  context: Record<string, any>
+): Promise<void> => {
+  const session = await getSession(sessionId);
+  if (!session) {
+    throw new Error('Session not found');
+  }
+  
+  session.context = {
+    ...session.context,
+    ...context,
+    lastUpdated: new Date(),
+  };
+  
+  await updateSession(session);
+};
+
+// Get relevant context for agent
+const getAgentContext = async (
+  agentId: string,
+  userId: string,
+  limit: number = 10
+): Promise<AgentMessage[]> => {
+  return await getRecentMessages(agentId, userId, limit);
+};
+```
+
+## Flow Integration Patterns
+
+### 1. Agent-Flow Integration
+```typescript
+interface AgentFlow {
+  id: string;
+  agentId: string;
+  flowId: string;
+  trigger: 'manual' | 'automatic' | 'scheduled';
+  conditions: FlowCondition[];
+  actions: FlowAction[];
+  isActive: boolean;
+}
+
+// Execute agent within flow context
+const executeAgentInFlow = async (
+  flowId: string,
+  agentId: string,
+  userId: string,
+  input: any
+): Promise<FlowResult> => {
+  try {
+    // Get flow configuration
+    const flow = await getFlow(flowId);
+    const agent = await getAgent(agentId);
+    
+    // Prepare flow context
+    const flowContext = {
+      flowId,
+      agentId,
+      userId,
+      input,
+      timestamp: new Date(),
+    };
+    
+    // Execute agent with flow context
+    const result = await processAgentMessage(
+      agentId,
+      userId,
+      JSON.stringify({ ...input, flowContext })
+    );
+    
+    // Update flow execution history
+    await recordFlowExecution(flowId, {
+      agentId,
+      userId,
+      input,
+      result: result.content,
+      timestamp: new Date(),
+    });
+    
+    return {
+      success: true,
+      data: result,
+      flowContext,
+    };
+    
+  } catch (error) {
+    console.error('Flow execution failed:', error);
+    return {
+      success: false,
+      error: error.message,
+      flowContext: { flowId, agentId, userId },
+    };
+  }
+};
+```
+
+### 2. Flow Trigger Patterns
+```typescript
+// Trigger agent based on flow conditions
+const triggerAgentFlow = async (
+  trigger: FlowTrigger,
+  context: any
+): Promise<void> => {
+  const flows = await getFlowsByTrigger(trigger.type);
+  
+  for (const flow of flows) {
+    if (await evaluateFlowConditions(flow.conditions, context)) {
+      await executeAgentInFlow(
+        flow.id,
+        flow.agentId,
+        context.userId,
+        context
+      );
+    }
+  }
+};
+```
+
+## Performance Optimization
+
+### 1. Tool Caching
+```typescript
+// Cache frequently used tools
+const toolCache = new Map<string, Tool>();
+
+const getCachedTool = async (
+  userId: string,
+  toolSlug: string
+): Promise<Tool> => {
+  const cacheKey = `${userId}:${toolSlug}`;
+  
+  if (toolCache.has(cacheKey)) {
+    return toolCache.get(cacheKey)!;
+  }
+  
+  const tool = await composio.tools.get(userId, toolSlug);
+  toolCache.set(cacheKey, tool);
+  
+  // Cache for 5 minutes
+  setTimeout(() => {
+    toolCache.delete(cacheKey);
+  }, 5 * 60 * 1000);
+  
+  return tool;
+};
+```
+
+### 2. Message Batching
+```typescript
+// Batch multiple messages for efficiency
+const batchProcessMessages = async (
+  messages: AgentMessage[]
+): Promise<AgentMessage[]> => {
+  const results: AgentMessage[] = [];
+  
+  // Group messages by agent and user
+  const grouped = groupBy(messages, msg => `${msg.agentId}:${msg.userId}`);
+  
+  for (const [key, groupMessages] of Object.entries(grouped)) {
+    const [agentId, userId] = key.split(':');
+    
+    // Process batch
+    const batchResult = await processMessageBatch(agentId, userId, groupMessages);
+    results.push(...batchResult);
+  }
+  
+  return results;
+};
+```
+
+## Security Patterns
+
+### 1. Input Validation
+```typescript
+// Validate agent inputs
+const validateAgentInput = (input: any): ValidatedInput => {
+  const schema = z.object({
+    message: z.string().min(1).max(10000),
+    context: z.record(z.any()).optional(),
+    options: z.object({
+      temperature: z.number().min(0).max(2).optional(),
+      maxTokens: z.number().min(1).max(8000).optional(),
+    }).optional(),
+  });
+  
+  return schema.parse(input);
+};
+```
+
+### 2. Rate Limiting
+```typescript
+// Implement rate limiting for agent interactions
+const rateLimiter = new Map<string, { count: number; resetTime: number }>();
+
+const checkRateLimit = (userId: string, limit: number = 100): boolean => {
+  const now = Date.now();
+  const userLimit = rateLimiter.get(userId);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimiter.set(userId, { count: 1, resetTime: now + 3600000 }); // 1 hour
+    return true;
+  }
+  
+  if (userLimit.count >= limit) {
+    return false;
+  }
+  
+  userLimit.count++;
+  return true;
+};
+```
+
+## Testing Patterns
+
+### 1. Agent Testing
+```typescript
+// Test agent functionality
+const testAgent = async (
+  agentId: string,
+  testCases: TestCase[]
+): Promise<TestResult[]> => {
+  const results: TestResult[] = [];
+  
+  for (const testCase of testCases) {
+    try {
+      const result = await processAgentMessage(
+        agentId,
+        testCase.userId,
+        testCase.input
+      );
+      
+      const passed = evaluateTestCase(testCase, result);
+      
+      results.push({
+        testCase,
+        result,
+        passed,
+        error: null,
+      });
+    } catch (error) {
+      results.push({
+        testCase,
+        result: null,
+        passed: false,
+        error: error.message,
+      });
+    }
+  }
+  
+  return results;
+};
+```
+
+### 2. Mock Tool Responses
+```typescript
+// Mock tools for testing
+const createMockTool = (name: string, response: any) => {
+  return {
+    name,
+    execute: jest.fn().mockResolvedValue({
+      successful: true,
+      data: response,
+      error: null,
+    }),
+  };
+};
+
+// Use in tests
+const mockGmailTool = createMockTool('GMAIL_SEND_EMAIL', {
+  messageId: 'mock-message-id',
+  sent: true,
+});
+```
+
+## Best Practices
+
+1. **Always validate inputs** before processing
+2. **Implement proper error handling** for all AI operations
+3. **Use connection pooling** for external services
+4. **Cache frequently used data** to improve performance
+5. **Monitor agent performance** and usage patterns
+6. **Implement rate limiting** to prevent abuse
+7. **Use proper logging** for debugging and monitoring
+8. **Test agent functionality** thoroughly
+9. **Handle tool failures** gracefully
+10. **Maintain conversation context** appropriately
+description:
+globs:
+alwaysApply: false
+---

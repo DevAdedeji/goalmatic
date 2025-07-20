@@ -29,3 +29,18 @@ const useDefaultDb = (!is_dev || is_emulator) ? '(default)' : 'goalmatic-dev'
 
 export const goals_db: Firestore = useFirestore(useDefaultDb)
 export const goals_db_string: string = useDefaultDb
+
+// Convex sync configuration
+// By default, sync is disabled in dev mode unless explicitly enabled
+// In production, sync is enabled by default unless explicitly disabled
+export const isConvexSyncEnabled = (): boolean => {
+  const envVar = process.env.ENABLE_CONVEX_SYNC;
+  
+  if (envVar !== undefined) {
+    // If environment variable is explicitly set, use its value
+    return envVar.toLowerCase() === 'true';
+  }
+  
+  // Default behavior: disabled in dev, enabled in production
+  return !is_dev;
+};

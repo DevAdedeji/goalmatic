@@ -1,6 +1,6 @@
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { api } from '../../convex/src/_generated/api';
-import { goals_db_string } from '../init';
+import { goals_db_string, isConvexSyncEnabled } from '../init';
 import { getConvexClient, convertTimestamp } from './utils';
 
 // Transform Firebase user data to Convex format
@@ -31,6 +31,13 @@ export const convexSyncUserCreate = onDocumentCreated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncUserCreate triggered for:', event.params.userId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping user creation sync for:', event.params.userId);
+    return;
+  }
+  
   try {
     const userId = event.params.userId;
     const userData = event.data?.data();
@@ -78,6 +85,13 @@ export const convexSyncUserUpdate = onDocumentUpdated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncUserUpdate triggered for:', event.params.userId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping user update sync for:', event.params.userId);
+    return;
+  }
+  
   try {
     const userId = event.params.userId;
     const beforeData = event.data?.before.data();
@@ -182,6 +196,14 @@ export const convexSyncUserDelete = onDocumentDeleted({
   document: 'users/{userId}',
   database: goals_db_string,
 }, async (event) => {
+  console.log('convexSyncUserDelete triggered for:', event.params.userId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping user deletion sync for:', event.params.userId);
+    return;
+  }
+  
   try {
     const userId = event.params.userId;
     

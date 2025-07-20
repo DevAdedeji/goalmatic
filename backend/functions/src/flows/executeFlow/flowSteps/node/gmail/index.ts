@@ -1,9 +1,9 @@
-import { sendGmailEmailNode } from './sendEmail';
-import { readGmailEmailsNode } from './readEmails';
-import { createGmailDraftNode } from './createDraft';
+import { sendComposioGmailEmailNode } from './sendEmail';
+import { readComposioGmailEmailsNode } from './readEmails';
+import { createComposioGmailDraftNode } from './createDraft';
 
 export {
-    sendGmailEmailNode,
-    readGmailEmailsNode,
-    createGmailDraftNode
+    sendComposioGmailEmailNode,
+    readComposioGmailEmailsNode,
+    createComposioGmailDraftNode
 }; 

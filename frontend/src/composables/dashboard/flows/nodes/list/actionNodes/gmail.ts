@@ -7,11 +7,11 @@ export const gmailActionNodes: FlowNode[] = [
         name: 'Gmail',
         description: 'Send and manage emails through Gmail',
         type: 'action',
-        provider: 'GOOGLE',
+        provider: 'COMPOSIO',
         category: 'EMAIL',
         children: [
             {
-                node_id: 'GMAIL_SEND_EMAIL',
+                node_id: 'COMPOSIO_GMAIL_SEND_EMAIL',
                 type: 'action',
                 name: 'Send Email',
                 description: 'Send an email through Gmail',
@@ -54,7 +54,7 @@ export const gmailActionNodes: FlowNode[] = [
                 ]
             },
             {
-                node_id: 'GMAIL_READ_EMAILS',
+                node_id: 'COMPOSIO_GMAIL_READ_EMAILS',
                 type: 'action',
                 name: 'Read Emails',
                 description: 'Read emails from Gmail inbox',
@@ -79,7 +79,7 @@ export const gmailActionNodes: FlowNode[] = [
                 ]
             },
             {
-                node_id: 'GMAIL_CREATE_DRAFT',
+                node_id: 'COMPOSIO_GMAIL_CREATE_DRAFT',
                 type: 'action',
                 name: 'Create Draft',
                 description: 'Create a draft email in Gmail',

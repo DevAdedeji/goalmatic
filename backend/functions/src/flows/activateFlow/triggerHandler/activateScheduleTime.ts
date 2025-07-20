@@ -9,10 +9,12 @@ const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
 const API_BASE_URL = is_dev ? `${process.env.BASE_URL_DEV}/executeFlow` : `${process.env.BASE_URL}/executeFlow`;
 const FAILURE_CALLBACK_URL = is_dev ? `${process.env.BASE_URL_DEV}/failedScheduleTimeCallback` : `${process.env.BASE_URL}/failedScheduleTimeCallback`;
 
-const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
+
 
 
 export const handleActivateScheduleTimeTrigger = async (flowData: any, userId: string) => {
+  const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
+  
   const { propsData } = flowData.trigger;
 
   if (!propsData || !propsData.date || !propsData.time || !propsData.timezone) {

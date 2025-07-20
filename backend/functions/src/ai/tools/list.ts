@@ -2,9 +2,6 @@ import { GOOGLECALENDAR_READ_EVENT } from "./googleCalendar/fetchEvent";
 import { GOOGLECALENDAR_CREATE_EVENT } from "./googleCalendar/createEvent";
 import { GOOGLECALENDAR_UPDATE_EVENT } from "./googleCalendar/updateEvent";
 import { GOOGLECALENDAR_DELETE_EVENT } from "./googleCalendar/deleteEvent";
-import { GMAIL_SEND_EMAIL } from "./gmail/sendEmail";
-import { GMAIL_READ_EMAILS } from "./gmail/readEmails";
-import { GMAIL_CREATE_DRAFT } from "./gmail/createDraft";
 import { COMPOSIO_GMAIL_SEND_EMAIL } from "./gmail/composio/sendEmail";
 import { COMPOSIO_GMAIL_READ_EMAILS } from "./gmail/composio/readEmails";
 import { COMPOSIO_GMAIL_CREATE_DRAFT } from "./gmail/composio/createDraft";
@@ -32,11 +29,6 @@ export const availableTools: Record<string, ToolSignature> = {
     [GOOGLECALENDAR_CREATE_EVENT.id]: GOOGLECALENDAR_CREATE_EVENT,
     [GOOGLECALENDAR_UPDATE_EVENT.id]: GOOGLECALENDAR_UPDATE_EVENT,
     [GOOGLECALENDAR_DELETE_EVENT.id]: GOOGLECALENDAR_DELETE_EVENT,
-
-    // Gmail tools (Original)
-    [GMAIL_SEND_EMAIL.id]: GMAIL_SEND_EMAIL,
-    [GMAIL_READ_EMAILS.id]: GMAIL_READ_EMAILS,
-    [GMAIL_CREATE_DRAFT.id]: GMAIL_CREATE_DRAFT,
 
     // Gmail tools (Composio)
     [COMPOSIO_GMAIL_SEND_EMAIL.id]: COMPOSIO_GMAIL_SEND_EMAIL,

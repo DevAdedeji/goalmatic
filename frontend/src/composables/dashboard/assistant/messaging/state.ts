@@ -1,12 +1,15 @@
 import { ref, computed } from 'vue'
 
-// Raw conversation data from Firebase
-export const rawConversationData = ref<any>(null)
 
 // Shared state for the messaging system
 export const ai_loading = ref(false) // For message sending operations
 export const history_loading = ref(false) // Specifically for loading conversation history
 export const sessionId = ref<string | null>(null)
+
+// Raw conversation data from Firebase
+export const rawConversationData = ref<any>(null)
+
+
 
 // Computed conversation history with getter and setter
 export const conversationHistory = computed({

@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import { verifyGmailAccess } from "./verify";
 import { getUserUid } from "../../index";
 import { getGmailAuthClient } from './utils/tokenManager';
+import { executeComposioGmailTool } from './composio/index';
 import { tool } from 'ai';
 import { z } from 'zod';
 
@@ -14,8 +15,42 @@ const sendGmailEmail = async (params: {
     const uid = getUserUid();
     // Verify access and get credentials
     const { exists, credentials } = await verifyGmailAccess(uid);
-    if (!exists) throw new Error('Gmail not connected');
+    if (!exists) throw new Error('Gmail not connected. Please connect your Gmail account first.');
 
+    // Check if this is a Composio integration
+    if (credentials.provider === 'COMPOSIO') {
+        console.log('Using Composio Gmail integration');
+        try {
+            const result = await executeComposioGmailTool(
+                'GMAIL_SEND_EMAIL',
+                {
+                    recipient_email: params.to,
+                    subject: params.subject,
+                    body: params.body,
+                    is_html: params.isHtml || false,
+                },
+                uid
+            );
+            
+            return {
+                success: true,
+                messageId: result.data?.id,
+                details: {
+                    to: params.to,
+                    subject: params.subject,
+                    sentAt: new Date().toISOString(),
+                    provider: 'COMPOSIO'
+                }
+            };
+        } catch (error: any) {
+            console.error('Failed to send Gmail email via Composio:', error);
+            throw new Error(`Failed to send email via Composio: ${error.message}`);
+        }
+    }
+
+    // Use direct Google OAuth integration
+    console.log('Using direct Google OAuth Gmail integration');
+    
     // Get authenticated Gmail client
     const { oAuth2Client } = await getGmailAuthClient(credentials);
     
@@ -27,15 +62,14 @@ const sendGmailEmail = async (params: {
         const emailLines = [
             `To: ${params.to}`,
             `Subject: ${params.subject}`,
-            `Content-Type: ${params.isHtml ? 'text/html' : 'text/plain'}; charset=utf-8`,
             '',
             params.body
         ];
 
-        const email = emailLines.join('\r\n');
-        const encodedEmail = Buffer.from(email).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+        const email = emailLines.join('\n');
+        const encodedEmail = Buffer.from(email).toString('base64url');
 
-        console.log('sendGmailEmail', { to: params.to, subject: params.subject });
+        // Send the email
         const response = await gmail.users.messages.send({
             userId: 'me',
             requestBody: {
@@ -43,32 +77,30 @@ const sendGmailEmail = async (params: {
             }
         });
 
-        return response.data;
-    } catch (error) {
-        console.error('Error sending Gmail email:', error);
-        throw new Error('Failed to send email');
+        console.log('Gmail email sent successfully:', response.data);
+        return {
+            success: true,
+            messageId: response.data.id,
+            details: {
+                to: params.to,
+                subject: params.subject,
+                sentAt: new Date().toISOString(),
+                provider: 'GOOGLE'
+            }
+        };
+    } catch (error: any) {
+        console.error('Failed to send Gmail email:', error);
+        throw new Error(`Failed to send email: ${error.message}`);
     }
 };
 
-const sendGmailEmailTool = tool({
-    description: "Sends an email through the user's Gmail account",
+export const sendGmailEmailTool = tool({
+    description: 'Send an email using Gmail (supports both Composio and direct OAuth)',
     parameters: z.object({
-        to: z.string().describe("Recipient email address"),
-        subject: z.string().describe("Email subject line"),
-        body: z.string().describe("Email body content"),
-        isHtml: z.boolean().optional().describe("Whether the email body is HTML format"),
+        to: z.string().describe('Recipient email address'),
+        subject: z.string().describe('Email subject'),
+        body: z.string().describe('Email body content'),
+        isHtml: z.boolean().optional().describe('Whether the body is HTML')
     }),
-    execute: async (input: any) => {
-        try {
-            const result = await sendGmailEmail(input);
-            return result;
-        } catch (error) {
-            throw new Error('Failed to send email');
-        }
-    }
+    execute: sendGmailEmail
 });
-
-export const GMAIL_SEND_EMAIL = {
-    id: "GMAIL_SEND_EMAIL",
-    tool: sendGmailEmailTool
-}; 

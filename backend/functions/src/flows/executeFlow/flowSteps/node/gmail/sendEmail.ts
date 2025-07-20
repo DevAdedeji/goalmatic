@@ -1,16 +1,16 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 
-const sendGmailEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // This is a placeholder for the actual Gmail API integration
+const sendComposioGmailEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+    // This is a placeholder for the actual Composio Gmail integration
     // In a complete implementation, you would:
-    // 1. Get the user's Gmail OAuth token
-    // 2. Use the Gmail API to send the email
+    // 1. Use Composio to send the email through Gmail
+    // 2. Handle authentication via Composio
     // 3. Return the email details
 
     return {
         success: true,
-        messageId: `gmail-message-${Date.now()}`,
+        messageId: `composio-gmail-message-${Date.now()}`,
         sentAt: new Date().toISOString(),
         to: step.propsData?.to,
         subject: step.propsData?.subject,
@@ -18,7 +18,7 @@ const sendGmailEmail = async (context: WorkflowContext, step: FlowNode, previous
     };
 };
 
-export const sendGmailEmailNode = {
-    nodeId: 'GMAIL_SEND_EMAIL',
-    run: sendGmailEmail
+export const sendComposioGmailEmailNode = {
+    nodeId: 'COMPOSIO_GMAIL_SEND_EMAIL',
+    run: sendComposioGmailEmail
 }; 

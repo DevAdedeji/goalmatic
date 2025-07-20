@@ -1,18 +1,18 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 
-const readGmailEmails = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    // This is a placeholder for the actual Gmail API integration
+const readComposioGmailEmails = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+    // This is a placeholder for the actual Composio Gmail integration
     // In a complete implementation, you would:
-    // 1. Get the user's Gmail OAuth token
-    // 2. Use the Gmail API to read emails
+    // 1. Use Composio to read emails through Gmail
+    // 2. Handle authentication via Composio
     // 3. Return the email list
 
     return {
         success: true,
         emails: [
             {
-                id: `gmail-email-${Date.now()}`,
+                id: `composio-gmail-email-${Date.now()}`,
                 subject: 'Sample Email Subject',
                 from: 'example@gmail.com',
                 to: 'user@example.com',
@@ -27,7 +27,7 @@ const readGmailEmails = async (context: WorkflowContext, step: FlowNode, previou
     };
 };
 
-export const readGmailEmailsNode = {
-    nodeId: 'GMAIL_READ_EMAILS',
-    run: readGmailEmails
+export const readComposioGmailEmailsNode = {
+    nodeId: 'COMPOSIO_GMAIL_READ_EMAILS',
+    run: readComposioGmailEmails
 }; 

@@ -1,6 +1,6 @@
 import { onDocumentCreated, onDocumentUpdated, onDocumentDeleted } from 'firebase-functions/v2/firestore';
 import { api } from '../../convex/src/_generated/api';
-import { goals_db_string } from '../init';
+import { goals_db_string, isConvexSyncEnabled } from '../init';
 import { getConvexClient, convertTimestamp } from './utils';
 
 // Transform Firebase table data to Convex format
@@ -25,6 +25,13 @@ export const convexSyncTableCreate = onDocumentCreated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncTableCreate triggered for:', event.params.tableId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping table creation sync for:', event.params.tableId);
+    return;
+  }
+  
   try {
     const tableId = event.params.tableId;
     const tableData = event.data?.data();
@@ -72,6 +79,13 @@ export const convexSyncTableUpdate = onDocumentUpdated({
   database: goals_db_string,
 }, async (event) => {
   console.log('convexSyncTableUpdate triggered for:', event.params.tableId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping table update sync for:', event.params.tableId);
+    return;
+  }
+  
   try {
     const tableId = event.params.tableId;
     const beforeData = event.data?.before.data();
@@ -155,6 +169,14 @@ export const convexSyncTableDelete = onDocumentDeleted({
   document: 'tables/{tableId}',
   database: goals_db_string,
 }, async (event) => {
+  console.log('convexSyncTableDelete triggered for:', event.params.tableId);
+  
+  // Check if Convex sync is enabled
+  if (!isConvexSyncEnabled()) {
+    console.log('Convex sync is disabled, skipping table deletion sync for:', event.params.tableId);
+    return;
+  }
+  
   try {
     const tableId = event.params.tableId;
     

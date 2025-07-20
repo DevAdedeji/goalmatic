@@ -1,18 +1,22 @@
 import { google } from 'googleapis';
 import { goals_db } from '../../../../init';
 
-
 export interface GmailCredentials {
     access_token: string;
     refresh_token: string;
     expiry_date: number;
     id: string;
     user_id: string;
+    email: string;
 }
 
 export const refreshAndUpdateGmailToken = async (credentials: GmailCredentials): Promise<GmailCredentials> => {
-    const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
-    const CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+    const CLIENT_ID = process.env.G_AUTH_CLIENT_ID || process.env.GOOGLE_CALENDAR_CLIENT_ID;
+    const CLIENT_SECRET = process.env.G_AUTH_CLIENT_SECRET || process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+    
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+        throw new Error('Google OAuth credentials not configured');
+    }
     
     const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
     oAuth2Client.setCredentials({
@@ -51,8 +55,12 @@ export const refreshAndUpdateGmailToken = async (credentials: GmailCredentials):
 };
 
 export const getGmailAuthClient = async (credentials: GmailCredentials) => {
-    const CLIENT_ID = process.env.GOOGLE_CALENDAR_CLIENT_ID;
-    const CLIENT_SECRET = process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+    const CLIENT_ID = process.env.G_AUTH_CLIENT_ID || process.env.GOOGLE_CALENDAR_CLIENT_ID;
+    const CLIENT_SECRET = process.env.G_AUTH_CLIENT_SECRET || process.env.GOOGLE_CALENDAR_CLIENT_SECRET;
+    
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+        throw new Error('Google OAuth credentials not configured');
+    }
     
     const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET);
     
@@ -60,6 +68,7 @@ export const getGmailAuthClient = async (credentials: GmailCredentials) => {
     const needsRefresh = credentials.expiry_date <= Date.now() + (5 * 60 * 1000);
     
     if (needsRefresh) {
+        console.log('Access token needs refresh');
         const refreshedCredentials = await refreshAndUpdateGmailToken(credentials);
         oAuth2Client.setCredentials({
             access_token: refreshedCredentials.access_token,
@@ -75,4 +84,4 @@ export const getGmailAuthClient = async (credentials: GmailCredentials) => {
         });
         return { oAuth2Client, credentials };
     }
-}; 
+};
