@@ -8,7 +8,7 @@ import { goals_db } from '../../../init'
 
 const COMPOSIO_API_KEY = is_dev ? process.env.COMPOSIO_API_KEY_DEV : process.env.COMPOSIO_API_KEY_PROD;
 
-const sendGmailEmail = async (params: {
+const createGmailDraft = async (params: {
     to: string;
     subject: string;
     body: string;
@@ -24,9 +24,10 @@ const sendGmailEmail = async (params: {
     const composioIntegration = allIntegrations.docs[0].data()
     const connectionId = composioIntegration.connection_id
 
+    console.log('composioIntegration', composioIntegration);
 
     try {
-        const { data } = await composio.tools.execute('GMAIL_SEND_EMAIL', {
+        const { data } = await composio.tools.execute('GMAIL_CREATE_EMAIL_DRAFT', {
             userId: uid,
             connectedAccountId: connectionId,
             arguments: {
@@ -37,16 +38,14 @@ const sendGmailEmail = async (params: {
             }
         }) as any;
 
-
         return data;
     } catch (error) {
-        console.error('Error sending Gmail email:', error);
-        throw new Error('Failed to send email');
+        throw new Error('Failed to create draft');
     }
 };
 
-const sendGmailEmailTool = tool({
-    description: "Sends an email through the user's Gmail account",
+const createGmailDraftTool = tool({
+    description: "Creates a draft email in the user's Gmail account",
     parameters: z.object({
         to: z.string().describe("Recipient email address"),
         subject: z.string().describe("Email subject line"),
@@ -55,15 +54,15 @@ const sendGmailEmailTool = tool({
     }),
     execute: async (input: any) => {
         try {
-            const result = await sendGmailEmail(input);
+            const result = await createGmailDraft(input);
             return result;
         } catch (error) {
-            throw new Error('Failed to send email');
+            throw new Error('Failed to create draft');
         }
     }
 });
 
-export const GMAIL_SEND_EMAIL = {
-    id: "GMAIL_SEND_EMAIL",
-    tool: sendGmailEmailTool
+export const GMAIL_CREATE_DRAFT = {
+    id: "GMAIL_CREATE_DRAFT",
+    tool: createGmailDraftTool
 }; 

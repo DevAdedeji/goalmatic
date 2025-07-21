@@ -30,7 +30,6 @@ export const useComposioGmail = () => {
                     const checkResult = await callFirebaseFunction('checkComposioGmailConnection', { connectionId }) as { success: boolean, data: any }
                     const { success } = checkResult
 
-                    console.log('checkResult', checkResult.data)
 
                     if (success) {
                         const id = uuidv4()
@@ -42,7 +41,8 @@ export const useComposioGmail = () => {
                         await setFirestoreSubDocument('users', user_id.value!, 'integrations', id, {
                                 id,
                                 access_token: checkResult.data.access_token,
-                                refresh_token: checkResult.data.refresh_token,
+                            refresh_token: checkResult.data.refresh_token,
+                                connection_id: checkResult.data.id,
                                 type: 'EMAIL',
                                 provider: 'GOOGLE_COMPOSIO',
                                 expiry_date: checkResult.data.expires_in,

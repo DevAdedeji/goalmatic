@@ -9,7 +9,7 @@ import { is_dev } from '../../../../init';
 
 const COMPOSIO_API_KEY = is_dev ? process.env.COMPOSIO_API_KEY_DEV : process.env.COMPOSIO_API_KEY_PROD;
 
-const gmailAuthConfigId = 'ac_2-tTrIlhH1J4';
+const gmailAuthConfigId = is_dev ? 'ac_2-tTrIlhH1J4' : 'ac_2-tTrIlhH1J4';
 export const setupComposioGmail = onCall(
     {
         cors: true,
@@ -23,18 +23,14 @@ export const setupComposioGmail = onCall(
             }
 
             const userId = request.auth.uid;
-            console.log(userId);
+
             const composio = new Composio({ apiKey: COMPOSIO_API_KEY });
 
             const response = await composio.connectedAccounts.initiate(userId, gmailAuthConfigId, {
                 allowMultiple: true
             });
 
-            console.log(response);
 
-            // const userId = request.auth.uid;
-
-            // Set up Gmail connection
 
             return {
                 success: true,
@@ -87,11 +83,6 @@ export const checkComposioGmailConnection = onCall({
             }
         }
 
-        
-        // return {
-        //     success: isConnected,
-        //     message: isConnected ? 'Gmail connection established successfully' : 'Gmail connection failed'
-        // };
     } catch (error) {
         console.error('Error checking Composio Gmail connection:', error);
         throw new HttpsError('internal', `Failed to check Gmail connection: ${error instanceof Error ? error.message : 'Unknown error'}`);

@@ -20,7 +20,7 @@ export * from './chat/deleteChatSession'
 export * from './chat/shareChatSession'
 
 // Composio Gmail integration
-export * from './ai/tools/gmail/composio/setup'
+export * from './ai/tools/gmail/utils/setup'
 
 // Convex sync functions
 export * from './convex/index'
