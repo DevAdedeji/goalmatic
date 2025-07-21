@@ -6,6 +6,7 @@ import { deleteGoogleCalendarEventNode } from "./node/googleCalendar/deleteEvent
 import { sendComposioGmailEmailNode, readComposioGmailEmailsNode, createComposioGmailDraftNode } from "./node/gmail";
 import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } from "./node/table";
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
+import { fetchWebContentNode } from "./node/web";
 
 type NodeSignature = {
     nodeId: string;
@@ -31,5 +32,8 @@ export const availableNodes: Record<string, NodeSignature> = {
     [readTableNode.nodeId]: readTableNode,
     [createRecordNode.nodeId]: createRecordNode,
     [updateRecordNode.nodeId]: updateRecordNode,
-    [deleteRecordNode.nodeId]: deleteRecordNode
+    [deleteRecordNode.nodeId]: deleteRecordNode,
+
+    // Web nodes
+    [fetchWebContentNode.nodeId]: fetchWebContentNode
 }

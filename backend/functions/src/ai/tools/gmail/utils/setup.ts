@@ -9,7 +9,7 @@ import { is_dev } from '../../../../init';
 
 const COMPOSIO_API_KEY = is_dev ? process.env.COMPOSIO_API_KEY_DEV : process.env.COMPOSIO_API_KEY_PROD;
 
-const gmailAuthConfigId = is_dev ? 'ac_2-tTrIlhH1J4' : 'ac_2-tTrIlhH1J4';
+const gmailAuthConfigId = is_dev ? 'ac_2-tTrIlhH1J4' : 'ac_w0LEmD1v5fDF';
 export const setupComposioGmail = onCall(
     {
         cors: true,

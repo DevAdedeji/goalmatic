@@ -36,6 +36,7 @@
     "moment-timezone": "^0.5.45",
     "node-fetch": "^2.6.7",
     "openai": "^4.20.1",
+    "playwright": "^1.54.1",
     "redis": "^4.7.0",
     "seamailer-nodejs": "^1.1.6",
     "uuid": "^10.0.0",
