@@ -6,7 +6,9 @@
 					<DropdownMenuRoot :modal="false">
 						<DropdownMenuTrigger as-child>
 							<button class="font-bold flex gap-1 items-center hover:bg-gray-50 px-2 py-1 rounded-md transition-colors">
-								{{ flowDetails.name }} <ChevronDown :size="16" />
+								<Skeleton v-if="!flowDetails?.name" width="128px" height="20px" radius="4px" />
+								<span v-else>{{ flowDetails.name }}</span>
+								<ChevronDown :size="16" />
 							</button>
 						</DropdownMenuTrigger>
 
@@ -20,6 +22,32 @@
 									>
 										<Edit2 :size="16" class="mr-2" />
 										Edit Flow Details
+									</button>
+									<Tooltip v-if="!flowDetails?.public" placement="right">
+										<template #trigger>
+											<button
+												class="flex items-center rounded-md px-4 py-2 text-sm text-gray-400 cursor-not-allowed w-full text-start border border-light opacity-60"
+												role="menuitem"
+												disabled
+											>
+												<Share2 :size="16" class="mr-2" />
+												Share Flow
+											</button>
+										</template>
+										<template #content>
+											<div class="p-2 max-w-xs">
+												<p>Cannot share private flows. Make the flow public first to enable sharing.</p>
+											</div>
+										</template>
+									</Tooltip>
+									<button
+										v-else
+										class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
+										role="menuitem"
+										@click="handleShareFlow"
+									>
+										<Share2 :size="16" class="mr-2" />
+										Share Flow
 									</button>
 									<button
 										class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
@@ -114,7 +142,7 @@
 </template>
 
 <script setup lang="ts">
-import { File, ChevronDown, Edit2, Trash2, Eye, EyeClosed } from 'lucide-vue-next'
+import { File, ChevronDown, Edit2, Trash2, Eye, EyeClosed, Share2 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuContent } from 'radix-vue'
 
@@ -126,8 +154,11 @@ import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
 import { useFlowsModal } from '@/composables/core/modals'
 import { isNodeValid } from '@/composables/dashboard/flows/nodes/nodeOperations'
+import { useCopyToClipboard } from '@/composables/utils/share'
 import Tooltip from '@/components/core/Tooltip.vue'
 import Spinner from '@/components/core/Spinner.vue'
+import Skeleton from '@/components/core/skeleton.vue'
+
 
 const { flowDetails } = useFetchFlowById()
 const { isOwner } = useFlowOwner()
@@ -136,6 +167,7 @@ const { testFlow, loading: testLoading } = useTestFlow()
 const { saveFlow, loading: saveLoading, openVisibilityConfirmation } = useEditFlow()
 const { setDeleteFlowData } = useDeleteFlow()
 const { openCreateWorkflow } = useFlowsModal()
+const { copyData } = useCopyToClipboard()
 
 
 // Handle edit flow
@@ -155,6 +187,18 @@ const handleDeleteFlow = () => {
 // Handle visibility toggle
 const handleToggleVisibility = () => {
 	openVisibilityConfirmation(flowDetails.value)
+}
+
+// Handle share flow
+const handleShareFlow = () => {
+	if (!flowDetails.value) return
+
+	const shareUrl = `${window.location.origin}/flows/${flowDetails.value.id}`
+
+	copyData({
+		info: shareUrl,
+		msg: 'Flow link copied to clipboard!'
+	})
 }
 
 

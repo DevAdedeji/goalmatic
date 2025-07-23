@@ -27,7 +27,7 @@ import TablesHeader from '@/components/tables/Header.vue'
 import TablesLoader from '@/components/tables/Loader.vue'
 import TablesEmptyState from '@/components/tables/EmptyState.vue'
 import TablesList from '@/components/tables/List.vue'
-
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 
 const { userTables, loading, fetchAllUserTables } = useFetchUserTables()
 const { setDeleteTableData } = useDeleteTable()
@@ -40,6 +40,7 @@ const { createTable, loading: createLoading } = useCreateTable()
 definePageMeta({
 	layout: 'dashboard',
 	middleware: ['is-authenticated', () => {
+		useHeaderTitle().setTitle('Tables')
 		usePageHeader().setPageHeader({
 			title: 'Tables',
 			description: 'Manage your data tables',

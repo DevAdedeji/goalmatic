@@ -4,3 +4,4 @@ export * from './executeFlow/index';
 export * from './callbackFlow/failedScheduleTimeCallback';
 export * from './testFlow/index';
 export * from './getFlowDetails';
+export * from './searchFlows';

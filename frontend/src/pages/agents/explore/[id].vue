@@ -19,8 +19,6 @@
     Main Agent Details Section
   ====================== -->
 	<div v-else class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
-		<!-- ===== Header: Agent Title, Owner, Actions ===== -->
-
 		<section id="header" class="flex md:flex-row flex-col items-center justify-between w-full">
 			<div class="flex flex-col w-full items-center md:items-start">
 				<!-- Avatar with Edit Functionality -->
@@ -103,27 +101,67 @@
 						<Copy :size="16" color="#601DED" />
 					</button>
 
-					<IconDropdown
-						v-if="isOwner(agentDetails)"
-						:data="agentDetails"
-						:children="[
-							{
-								name: agentDetails?.public ? 'Make Private' : 'Make Public',
-								icon: agentDetails?.public ? EyeClosed : Eye,
-								func: openVisibilityConfirmation,
-								class: '!text-primary hover:!bg-primary hover:!text-white'
-							},
-							{
-								name: 'Delete Agent',
-								icon: Trash,
-								func: setDeleteAgentData,
-								class: '!text-danger hover:!bg-danger hover:!text-white'
-							}
-						]"
-						btn-class="icon-btn gap-2"
-						class-name="w-40"
-						:index="0"
-					/>
+					<div v-if="isOwner(agentDetails)" class="relative">
+						<DropdownMenuRoot :modal="false">
+							<DropdownMenuTrigger as-child>
+								<button class="icon-btn">
+									<EllipsisIcon class="h-4 w-4 rotate-90" />
+								</button>
+							</DropdownMenuTrigger>
+
+							<DropdownMenuContent align="end" class="z-10">
+								<div class="start-0 z-10 mt-1 rounded-md border border-line bg-white shadow-lg w-52" role="menu">
+									<div class="p-2 gap-0.5 flex flex-col items-start w-full">
+										<Tooltip v-if="!agentDetails?.public" placement="right">
+											<template #trigger>
+												<button
+													class="flex items-center rounded-md px-4 py-2 text-sm text-gray-400 cursor-not-allowed w-full text-start border border-light opacity-60"
+													role="menuitem"
+													disabled
+												>
+													<Share2 :size="16" class="mr-2" />
+													Share Agent
+												</button>
+											</template>
+											<template #content>
+												<div class="p-2 max-w-xs">
+													<p>Cannot share private agents. Make the agent public first to enable sharing.</p>
+												</div>
+											</template>
+										</Tooltip>
+										<button
+											v-else
+											class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
+											role="menuitem"
+											@click="handleShareAgent"
+										>
+											<Share2 :size="16" class="mr-2" />
+											Share Agent
+										</button>
+
+										<button
+											class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
+											role="menuitem"
+											@click="openVisibilityConfirmation(agentDetails)"
+										>
+											<EyeClosed v-if="agentDetails?.public" :size="16" class="mr-2" />
+											<Eye v-else :size="16" class="mr-2" />
+											Make {{ agentDetails?.public ? 'Private' : 'Public' }}
+										</button>
+
+										<button
+											class="flex items-center rounded-md px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-start border border-light"
+											role="menuitem"
+											@click="setDeleteAgentData(agentDetails)"
+										>
+											<Trash :size="16" class="mr-2" />
+											Delete Agent
+										</button>
+									</div>
+								</div>
+							</DropdownMenuContent>
+						</DropdownMenuRoot>
+					</div>
 				</div>
 			</div>
 
@@ -338,7 +376,8 @@
 
 <script setup lang="ts">
 // ===== Imports =====
-import { EyeClosed, Sparkles, Trash, Eye, Search, X, Copy, Edit2 } from 'lucide-vue-next'
+import { EyeClosed, Sparkles, Trash, Eye, Search, X, Copy, Edit2, Share2, EllipsisIcon } from 'lucide-vue-next'
+import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuContent } from 'radix-vue'
 
 import IconDropdown from '@/components/core/IconDropdown.vue'
 import Editor from '@/components/core/Editor.vue'
@@ -354,8 +393,10 @@ import { useEditToolConfig } from '@/composables/dashboard/assistant/agents/tool
 import { useCloneAgent } from '@/composables/dashboard/assistant/agents/clone'
 import { useUser } from '@/composables/auth/user'
 import { useAgentOwner } from '@/composables/dashboard/assistant/agents/owner'
+import { useCopyToClipboard } from '@/composables/utils/share'
 import AgentsIdErrorState from '@/components/agents/id/ErrorState.vue'
 import Spinner from '@/components/core/Spinner.vue'
+import Tooltip from '@/components/core/Tooltip.vue'
 import { useCustomHead } from '@/composables/core/head'
 import { useAgentDetails, isEditingSystemInfo, isEditingTools, toolsModel, toolSearch, filteredTools } from '@/composables/dashboard/assistant/agents/details'
 import { useHeaderTitle } from '@/composables/core/headerTitle'
@@ -370,6 +411,29 @@ const { connectIntegration } = useConnectIntegration()
 const { cloneAgent, loading: cloneLoading, canCloneAgent } = useCloneAgent()
 const { id: user_id } = useUser()
 const { isOwner } = useAgentOwner()
+const { copyData } = useCopyToClipboard()
+
+// Handle share agent
+const handleShareAgent = () => {
+	if (!agentDetails.value) return
+
+	// Only allow sharing for public agents
+	if (!agentDetails.value.public) {
+		// Could show a toast/alert here if needed
+		copyData({
+			info: 'Cannot share private agents. Make the agent public first to enable sharing.',
+			msg: 'Share not available'
+		})
+		return
+	}
+
+	const shareUrl = `${window.location.origin}/agents/explore/${agentDetails.value.id}`
+
+	copyData({
+		info: shareUrl,
+		msg: 'Agent link copied to clipboard!'
+	})
+}
 
 const { setDeleteAgentData } = useDeleteAgent()
 const { selectAgent } = useSelectAgent()
@@ -459,7 +523,7 @@ definePageMeta({
 	@apply  text-base md:text-xl font-semibold;
 }
 :deep(.icon-btn) {
-	@apply size-10 rounded-md p-2 border border-[#E1E6EC] bg-[#F7F9FB];
+	@apply flex items-center justify-center size-11 rounded-md p-2 border border-[#E1E6EC] bg-[#F7F9FB];
 }
 
 .card {

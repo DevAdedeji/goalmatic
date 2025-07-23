@@ -36,6 +36,7 @@ import { formattedAvailableIntegrations } from '@/composables/dashboard/integrat
 import { useConnectIntegration } from '@/composables/dashboard/integrations/connect'
 import { useDisconnectIntegration } from '@/composables/dashboard/integrations/disconnect'
 import { useEditIntegrationsConfig } from '@/composables/dashboard/integrations/editConfig'
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 
 
 const { connectIntegration } = useConnectIntegration()
@@ -60,6 +61,7 @@ definePageMeta({
 	middleware: [
 		'is-authenticated',
 		() => {
+			useHeaderTitle().setTitle('Integrations')
 			usePageHeader().setPageHeader({
 				title: 'Integrations',
 				description: 'Connect your account with other services',

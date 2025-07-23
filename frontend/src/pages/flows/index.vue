@@ -9,7 +9,7 @@
 					Find the best workflows for your usecase
 				</p>
 			</div>
-			<button class="btn-primary !px-3 md:px-6" @click="openCreateWorkflow">
+			<button v-if="isLoggedIn" class="btn-primary !px-3 md:px-6" @click="openCreateWorkflow">
 				Create Workflow
 			</button>
 		</div>
@@ -105,9 +105,11 @@ import { Activity, FileEdit, Search } from 'lucide-vue-next'
 
 import { usePageHeader } from '@/composables/utils/header'
 import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
+import { usePublicFlows } from '@/composables/dashboard/flows/public'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
 import { useHeaderTitle } from '@/composables/core/headerTitle'
 import { useFlowsModal } from '@/composables/core/modals'
+import { useUser } from '@/composables/auth/user'
 import FlowCard from '@/components/flows/Card.vue'
 
 interface Flow {
@@ -142,19 +144,44 @@ definePageMeta({
 	layout: 'dashboard'
 })
 
+// Get user authentication status
+const { id: user_id, isLoggedIn } = useUser()
+
 // Reactive data
 const searchQuery = ref('')
-const activeTab = ref('my')
+const activeTab = isLoggedIn.value ? ref('my') : ref('community')
 
 // Tabs configuration
-const tabs = computed(() => [
-	{ id: 'my', name: 'My Workflows' },
-	{ id: 'community', name: 'Community Workflows' }
-])
+const tabs = computed(() => {
+	const baseTabs: Array<{ id: string; name: string }> = []
+	if (isLoggedIn.value) {
+		baseTabs.push({ id: 'my', name: 'My Workflows' })
+	}
+	baseTabs.push({ id: 'community', name: 'Community Workflows' })
+	return baseTabs
+})
 
-const { userFlows, loading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
+const { userFlows, loading: userFlowsLoading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
+const { communityFlows, loading: publicFlowsLoading, fetchPublicFlows } = usePublicFlows()
 const { setDeleteFlowData } = useDeleteFlow()
 const { openCreateWorkflow } = useFlowsModal()
+
+// Combined loading state
+const loading = computed(() => {
+	if (activeTab.value === 'my') {
+		return userFlowsLoading.value
+	} else if (activeTab.value === 'community') {
+		return publicFlowsLoading.value
+	}
+	return false
+})
+
+// Filter community workflows to exclude user's own workflows
+const filteredCommunityFlows = computed(() => {
+	return communityFlows.value.filter(
+		(flow: Flow) => flow.creator_id !== user_id.value
+	)
+})
 
 // Computed workflows on display
 const workflowsOnDisplay = computed((): Flow[] => {
@@ -162,8 +189,7 @@ const workflowsOnDisplay = computed((): Flow[] => {
 	if (activeTab.value === 'my') {
 		workflows = userFlows.value as Flow[]
 	} else if (activeTab.value === 'community') {
-		// For now, community workflows are empty - this can be expanded later
-		workflows = []
+		workflows = filteredCommunityFlows.value as Flow[]
 	}
 
 	return workflows.filter((workflow: Flow) =>
@@ -173,7 +199,19 @@ const workflowsOnDisplay = computed((): Flow[] => {
 })
 
 onMounted(async () => {
-	await fetchAllFlows()
+	await fetchPublicFlows()
+	if (isLoggedIn.value) {
+		await fetchAllFlows()
+	}
+})
+
+// Watch for tab changes to refresh data if needed
+watch(activeTab, async (newTab) => {
+	if (newTab === 'community' && communityFlows.value.length === 0) {
+		await fetchPublicFlows()
+	} else if (newTab === 'my' && isLoggedIn.value && userFlows.value.length === 0) {
+		await fetchAllFlows()
+	}
 })
 
 useHeaderTitle().setTitle('Workflow Templates')

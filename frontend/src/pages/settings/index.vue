@@ -69,7 +69,7 @@
 import { usePageHeader } from '@/composables/utils/header'
 import { useUser } from '@/composables/auth/user'
 import { useUpdateUserProfile } from '@/composables/auth/profile/edit'
-
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 
 const { user, id: user_id, userProfile } = useUser()
 const { isDisabled, loading: profileLoading, populateData, update, updatePhoto, userProfileForm } = useUpdateUserProfile()
@@ -79,6 +79,7 @@ populateData()
 definePageMeta({
 	layout: 'dashboard',
 	middleware: ['is-authenticated', () => {
+		useHeaderTitle().setTitle('Settings')
 		usePageHeader().setPageHeader({
 			title: 'Settings',
 			description: 'Manage your account settings here'

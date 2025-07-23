@@ -2,11 +2,16 @@
 	<ClientOnly>
 		<NuxtLayout name="custom-header-dashboard">
 			<template #header>
-				<FlowHeader />
+				<FlowHeader v-if="isOwner(flowDetails)" />
+				<DashboadHeader v-else />
 			</template>
 
-			<main class="p-4 sm:p-6 flow-bg h-screen">
-				<FlowsIdToolbar :current-tab="currentTab" :flow-data="flowDetails" @update:current-tab="currentTab = $event" />
+			<main :class="['p-4', 'sm:p-6', 'h-screen', { 'flow-bg': isOwner(flowDetails) }]">
+				<section class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
+					<FlowsIdHeader v-if="!isOwner(flowDetails)" :flow-data="flowDetails" :current-tab="currentTab" :loading="loading" />
+				</section>
+
+				<FlowsIdToolbar v-if="isOwner(flowDetails)" :current-tab="currentTab" :flow-data="flowDetails" @update:current-tab="currentTab = $event" />
 				<FlowsIdLoader v-if="loading" />
 
 				<!-- Flow details -->
@@ -30,6 +35,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import FlowHeader from '@/components/layouts/header/FlowHeader.vue'
+import DashboadHeader from '@/components/layouts/DashboadHeader.vue'
 import FlowsIdHeader from '@/components/flows/id/Header.vue'
 import FlowsIdDetails from '@/components/flows/id/Details.vue'
 import FlowsIdLoader from '@/components/flows/id/Loader.vue'
@@ -37,16 +43,20 @@ import FlowsIdErrorState from '@/components/flows/id/ErrorState.vue'
 import { useFetchFlowById } from '@/composables/dashboard/flows/id'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useCustomHead } from '@/composables/core/head'
-
+import { useFlowOwner } from '@/composables/dashboard/flows/owner'
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 const route = useRoute()
 const flowId = route.params.id as string
 const { fetchFlowById, loading, flowDetails } = useFetchFlowById()
 const { fetchFlowLogs, flowLogs, flowLogsLoading } = useEditFlow()
+const { isOwner } = useFlowOwner()
 
 onMounted(async () => {
 	await fetchFlowById(flowId)
 	await fetchFlowLogs(flowId)
 })
+
+useHeaderTitle().setTitle('Flows')
 
 // Add SEO meta tags
 await useCustomHead({

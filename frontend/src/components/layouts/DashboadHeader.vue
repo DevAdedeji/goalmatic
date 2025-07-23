@@ -54,8 +54,6 @@
 <script setup lang="ts">
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from 'radix-vue'
 import { Mail, MessageSquare, Copy } from 'lucide-vue-next'
-
-import AvatarDropdown from '@/components/core/AvatarDropdown.vue'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
 import { useHeaderTitle } from '@/composables/core/headerTitle'

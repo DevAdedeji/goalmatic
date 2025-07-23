@@ -12,11 +12,10 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
         
         const { 
-            url, 
-            waitForSelector, 
-            textOnly = false, 
-            timeout = 30, 
-            userAgent 
+            url,
+            includeHighlights = false,
+            includeSummary = false,
+            maxCharacters = 10000
         } = processedPropsWithAiContext;
 
         if (!url) {
@@ -36,85 +35,111 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
             };
         }
 
-        // Dynamic import of playwright to avoid issues if not installed
-        let playwright;
-        try {
-            playwright = await import('playwright');
-        } catch (error) {
+        // Get Exa API key from environment variables
+        const exaApiKey = process.env.EXA_API_KEY;
+        if (!exaApiKey) {
             return {
                 success: false,
-                error: 'Playwright is not installed. Please install playwright to use web content fetching.'
+                error: 'EXA_API_KEY environment variable is required'
             };
         }
 
-        const browser = await playwright.chromium.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        // Prepare request body for Exa API
+        const requestBody: any = {
+            urls: [url],
+            text: {
+                maxCharacters,
+                includeHtmlTags: false
+            },
+            livecrawl: 'fallback'
+        };
+
+        // Add highlights if requested
+        if (includeHighlights) {
+            requestBody.highlights = {
+                numSentences: 3,
+                highlightsPerUrl: 2
+            };
+        }
+
+        // Add summary if requested
+        if (includeSummary) {
+            requestBody.summary = {};
+        }
+
+        // Make request to Exa API
+        const response = await fetch('https://api.exa.ai/contents', {
+            method: 'POST',
+            headers: {
+                'x-api-key': exaApiKey,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
         });
 
-        try {
-            const context = await browser.newContext({
-                userAgent: userAgent || undefined
-            });
-
-            const page = await context.newPage();
-
-            // Set timeout
-            page.setDefaultTimeout(timeout * 1000);
-
-            // Navigate to the URL
-            await page.goto(url, { 
-                waitUntil: 'networkidle',
-                timeout: timeout * 1000 
-            });
-
-            // Wait for specific selector if provided
-            if (waitForSelector) {
-                try {
-                    await page.waitForSelector(waitForSelector, { 
-                        timeout: timeout * 1000 
-                    });
-                } catch (error) {
-                    console.warn(`Selector "${waitForSelector}" not found within timeout, continuing anyway`);
-                }
-            }
-
-            // Extract content
-            let content;
-            if (textOnly) {
-                // Extract only text content
-                content = await page.textContent('body') || '';
-                // Clean up whitespace
-                content = content.replace(/\s+/g, ' ').trim();
-            } else {
-                // Extract full HTML content
-                content = await page.content();
-            }
-
-            // Get page title and meta information
-            const title = await page.title();
-            const url_final = page.url(); // In case of redirects
-
-            await context.close();
-
-            console.log(content);
+        if (!response.ok) {
+            const errorText = await response.text();
             return {
-                success: true,
-                content,
-                title,
-                url: url_final,
-                textOnly,
-                fetchedAt: new Date().toISOString(),
-                contentLength: content.length,
-                payload: {...processedPropsWithAiContext, content   }
+                success: false,
+                error: `Exa API error (${response.status}): ${errorText}`
             };
-
-        } finally {
-            await browser.close();
         }
 
+        const data = await response.json();
+
+        // Check if we have results
+        if (!data.results || data.results.length === 0) {
+            return {
+                success: false,
+                error: 'No content could be fetched from the URL'
+            };
+        }
+
+        const result = data.results[0];
+
+        // Check status for any errors
+        const status = data.statuses?.find((s: any) => s.id === url);
+        if (status?.status === 'error') {
+            return {
+                success: false,
+                error: `Failed to fetch content: ${status.error?.tag || 'Unknown error'}`
+            };
+        }
+
+        // Extract the content
+        const content = result.text || '';
+
+        console.log('Fetched content from Exa:', {
+            url: result.url,
+            title: result.title,
+            contentLength: content.length,
+            hasHighlights: !!result.highlights,
+            hasSummary: !!result.summary
+        });
+
+        return {
+            success: true,
+            content,
+            title: result.title,
+            url: result.url,
+            author: result.author,
+            publishedDate: result.publishedDate,
+            fetchedAt: new Date().toISOString(),
+            contentLength: content.length,
+            highlights: result.highlights,
+            summary: result.summary,
+            score: result.score,
+            image: result.image,
+            favicon: result.favicon,
+            payload: {
+                ...processedPropsWithAiContext, 
+                content,
+                exaResult: result
+            }
+        };
+
     } catch (error: any) {
-        console.error('Error fetching web content:', error);
+        console.error('Error fetching web content with Exa:', error);
         return {
             success: false,
             error: error?.message || 'Failed to fetch web content'

@@ -14,7 +14,7 @@ export const webActionNodes: FlowNode[] = [
                 node_id: 'WEB_FETCH_CONTENT',
                 type: 'action',
                 name: 'Fetch Web Content',
-                description: 'Fetch and extract content from a webpage using Playwright',
+                description: 'Fetch and extract content from a webpage using Exa.ai',
                 props: [
                     {
                         name: 'URL',
@@ -26,43 +26,27 @@ export const webActionNodes: FlowNode[] = [
                         cloneable: true
                     },
                     {
-                        name: 'Wait For Selector',
-                        key: 'waitForSelector',
-                        type: 'text',
-                        required: false,
-                        description: 'CSS selector to wait for before extracting content (optional)',
-                        cloneable: true
-                    },
-                    {
-                        name: 'Extract Text Only',
-                        key: 'textOnly',
-                        type: 'checkbox',
-                        required: false,
-                        description: 'Extract only text content, removing HTML tags',
-                        cloneable: true
-                    },
-                    {
-                        name: 'Timeout (seconds)',
-                        key: 'timeout',
+                        name: 'Max Characters',
+                        key: 'maxCharacters',
                         type: 'number',
                         required: false,
-                        description: 'Maximum time to wait for page load (default: 30 seconds)',
+                        description: 'Maximum number of characters to extract (default: 10000)',
                         cloneable: true
                     },
                     {
-                        name: 'User Agent',
-                        key: 'userAgent',
-                        type: 'text',
+                        name: 'Include Highlights',
+                        key: 'includeHighlights',
+                        type: 'checkbox',
                         required: false,
-                        description: 'Custom user agent string (optional)',
+                        description: 'Extract relevant highlights from the content',
                         cloneable: true
                     },
                     {
-                        name: 'Content',
-                        key: 'content',
-                        type: 'text',
+                        name: 'Include Summary',
+                        key: 'includeSummary',
+                        type: 'checkbox',
                         required: false,
-                        description: 'Custom content to include in the request (optional)',
+                        description: 'Generate a summary of the webpage content',
                         cloneable: true
                     }
                 ]
