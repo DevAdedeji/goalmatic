@@ -58,7 +58,7 @@
 
 				<!-- Empty State -->
 				<div
-					v-else-if="workflowsOnDisplay.length === 0"
+					v-else-if="workflowsOnDisplay.length === 0 && !loading"
 					class="flex flex-col items-center justify-center py-8 px-4 text-center min-h-[200px]"
 				>
 					<div class="flex items-center justify-center size-12 bg-gray-100 rounded-full mb-3">
@@ -105,7 +105,6 @@ import { Activity, FileEdit, Search } from 'lucide-vue-next'
 
 import { usePageHeader } from '@/composables/utils/header'
 import { useFetchUserFlows } from '@/composables/dashboard/flows/fetch'
-import { usePublicFlows } from '@/composables/dashboard/flows/public'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
 import { useHeaderTitle } from '@/composables/core/headerTitle'
 import { useFlowsModal } from '@/composables/core/modals'
@@ -161,20 +160,9 @@ const tabs = computed(() => {
 	return baseTabs
 })
 
-const { userFlows, loading: userFlowsLoading, fetchAllFlows, activeFlows, draftFlows } = useFetchUserFlows()
-const { communityFlows, loading: publicFlowsLoading, fetchPublicFlows } = usePublicFlows()
+const { userFlows, loading, fetchUserFlows, communityFlows, fetchAllFlows } = useFetchUserFlows()
 const { setDeleteFlowData } = useDeleteFlow()
 const { openCreateWorkflow } = useFlowsModal()
-
-// Combined loading state
-const loading = computed(() => {
-	if (activeTab.value === 'my') {
-		return userFlowsLoading.value
-	} else if (activeTab.value === 'community') {
-		return publicFlowsLoading.value
-	}
-	return false
-})
 
 // Filter community workflows to exclude user's own workflows
 const filteredCommunityFlows = computed(() => {
@@ -199,18 +187,18 @@ const workflowsOnDisplay = computed((): Flow[] => {
 })
 
 onMounted(async () => {
-	await fetchPublicFlows()
+	await fetchAllFlows()
 	if (isLoggedIn.value) {
-		await fetchAllFlows()
+		await fetchUserFlows()
 	}
 })
 
 // Watch for tab changes to refresh data if needed
 watch(activeTab, async (newTab) => {
 	if (newTab === 'community' && communityFlows.value.length === 0) {
-		await fetchPublicFlows()
-	} else if (newTab === 'my' && isLoggedIn.value && userFlows.value.length === 0) {
 		await fetchAllFlows()
+	} else if (newTab === 'my' && isLoggedIn.value && userFlows.value.length === 0) {
+		await fetchUserFlows()
 	}
 })
 

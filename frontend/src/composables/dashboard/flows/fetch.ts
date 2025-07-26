@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { useFlowSearch } from './search'
 import { useUser } from '@/composables/auth/user'
 import { getFirestoreCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useAlert } from '@/composables/core/notification'
@@ -9,13 +10,17 @@ const userFlows = ref([] as any[])
 const flowData = ref<any>(null)
 const loading = ref(false)
 
+// Store for all flows (previously public flows)
+const allFlows = ref<any[]>([])
+
 // Track fetched states
 const hasInitialFetch = ref(false)
 
 export const useFetchUserFlows = () => {
   const { id: user_id } = useUser()
+  const { getPublicFlowsFromConvex } = useFlowSearch()
 
-  const fetchAllFlows = async () => {
+  const fetchUserFlows = async () => {
     if (!user_id.value) return
     userFlows.value = []
     loading.value = true
@@ -34,25 +39,45 @@ export const useFetchUserFlows = () => {
     }
   }
 
+  // Fetch all flows (previously public flows)
+  const fetchAllFlows = async () => {
+    loading.value = true
+    try {
+      const flows = await getPublicFlowsFromConvex()
+      allFlows.value = flows
+    } catch (error) {
+      console.error('Error fetching all flows:', error)
+      allFlows.value = []
+    } finally {
+      loading.value = false
+    }
+  }
 
-
-  // Computed property for active flows
-  const activeFlows = computed(() => {
-    return userFlows.value.filter((flow) => flow.status === 1)
+  // Get community flows (all flows not created by the current user)
+  const communityFlows = computed(() => {
+    return allFlows.value.filter(
+      (flow) => flow.creator_id !== user_id.value
+    )
   })
 
-  // Computed property for draft flows
-  const draftFlows = computed(() => {
-    return userFlows.value.filter((flow) => flow.status === 0)
+  // Get all flows (renamed from allPublicFlows)
+  const publicFlows = computed(() => {
+    return allFlows.value
   })
+
+
+
 
   return {
     flowData,
     userFlows,
     loading,
-    fetchAllFlows,
-    activeFlows,
-    draftFlows,
-    hasInitialFetch
+    fetchUserFlows,
+    hasInitialFetch,
+    // All flows state (previously public flows)
+    publicFlows,
+    communityFlows,
+    // All flows functions (previously public flows functions)
+    fetchAllFlows
   }
 }

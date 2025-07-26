@@ -12,6 +12,13 @@ export type FlowNodeProp = {
   cloneable?: boolean
 }
 
+export type FlowNodeOutputProp = {
+  name: string
+  key: string
+  type: string
+  description?: string
+}
+
 export type FlowNode = {
   id?: string
   node_id?: string
@@ -21,8 +28,10 @@ export type FlowNode = {
   icon?: string
   provider?: string
   category?: string
+  isTestable?: boolean
   children?: FlowNode[]
   props?: FlowNodeProp[]
+  outputProps?: FlowNodeOutputProp[]
 }
 
 export type TriggerNodeType = 'SCHEDULED' | 'MANUAL' | 'EVENT'

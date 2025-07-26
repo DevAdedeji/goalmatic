@@ -11,6 +11,8 @@
 				class="tooltip-content"
 				:class="placementClass"
 				:style="positionStyle"
+				@mouseenter="openTooltip"
+				@mouseleave="closeTooltip"
 			>
 				<slot name="content" />
 				<div v-if="showArrow" class="tooltip-arrow" :style="arrowStyle" />
@@ -255,7 +257,8 @@ onMounted(() => {
   font-size: 14px;
   max-width: 250px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: default;
 }
 
 .tooltip-arrow {

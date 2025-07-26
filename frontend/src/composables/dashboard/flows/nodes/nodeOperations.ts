@@ -184,7 +184,7 @@ export const useSelectNodeLogic = (props: any) => {
       parent_node_id: parentNode.node_id,
       name: `${parentNode.name}: ${childNode.name}`,
       description: childNode.description,
-      icon: parentNode.icon
+      icon: childNode.icon
     }
 
     // Add the node to the flow

@@ -13,9 +13,7 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
         
         const { 
             url,
-            includeHighlights = false,
-            includeSummary = false,
-            maxCharacters = 10000
+            extractorFunction
         } = processedPropsWithAiContext;
 
         if (!url) {
@@ -25,14 +23,28 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
             };
         }
 
-        // Validate URL format
-        try {
-            new URL(url);
-        } catch (error) {
+        // Parse URLs - handle both single URL and comma-separated URLs
+        const urlStrings = url.split(',').map((u: string) => u.trim()).filter((u: string) => u.length > 0);
+        
+        if (urlStrings.length === 0) {
             return {
                 success: false,
-                error: 'Invalid URL format'
+                error: 'At least one valid URL is required'
             };
+        }
+
+        // Validate URL formats
+        const validUrls: string[] = [];
+        for (const urlString of urlStrings) {
+            try {
+                new URL(urlString);
+                validUrls.push(urlString);
+            } catch (error) {
+                return {
+                    success: false,
+                    error: `Invalid URL format: ${urlString}`
+                };
+            }
         }
 
         // Get Exa API key from environment variables
@@ -46,26 +58,10 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
 
         // Prepare request body for Exa API
         const requestBody: any = {
-            urls: [url],
-            text: {
-                maxCharacters,
-                includeHtmlTags: false
-            },
-            livecrawl: 'fallback'
+            urls: validUrls,
+            text: true,
+            livecrawl: 'preferred'
         };
-
-        // Add highlights if requested
-        if (includeHighlights) {
-            requestBody.highlights = {
-                numSentences: 3,
-                highlightsPerUrl: 2
-            };
-        }
-
-        // Add summary if requested
-        if (includeSummary) {
-            requestBody.summary = {};
-        }
 
         // Make request to Exa API
         const response = await fetch('https://api.exa.ai/contents', {
@@ -91,50 +87,120 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
         if (!data.results || data.results.length === 0) {
             return {
                 success: false,
-                error: 'No content could be fetched from the URL'
+                error: 'No content could be fetched from the URLs'
             };
         }
 
-        const result = data.results[0];
+        const results = data.results;
 
         // Check status for any errors
-        const status = data.statuses?.find((s: any) => s.id === url);
-        if (status?.status === 'error') {
-            return {
-                success: false,
-                error: `Failed to fetch content: ${status.error?.tag || 'Unknown error'}`
-            };
+        if (data.statuses) {
+            for (const status of data.statuses) {
+                if (status.status === 'error') {
+                    return {
+                        success: false,
+                        error: `Failed to fetch content from ${status.id}: ${status.error?.tag || 'Unknown error'}`
+                    };
+                }
+            }
         }
 
-        // Extract the content
-        const content = result.text || '';
+        // Extract the content from all results
+        let allContent = '';
+        let allExtractedData: any[] = [];
+        let contentByUrl: { [key: string]: any } = {};
+
+        for (let i = 0; i < results.length; i++) {
+            const result = results[i];
+            const resultUrl = result.url || validUrls[i];
+            
+            let content = result.text || '';
+            let extractedData = null;
+
+            // Apply extractor function if provided
+            if (extractorFunction && extractorFunction.trim()) {
+                try {
+                    console.log(`Applying extractor function to content from ${resultUrl}`);
+                    
+                    // Create a safe execution environment for the extractor function
+                    const extractorWrapper = new Function('content', `
+                        try {
+                            const extractorFn = ${extractorFunction};
+                            if (typeof extractorFn === 'function') {
+                                return extractorFn(content);
+                            } else {
+                                throw new Error('Extractor must be a function');
+                            }
+                        } catch (error) {
+                            console.error('Extractor function execution error:', error);
+                            throw new Error('Extractor function error: ' + error.message);
+                        }
+                    `);
+                    
+                    const extractedContent = extractorWrapper(content);
+                    extractedData = extractedContent; // Store the raw extracted data
+                    
+                    // Handle different types of extracted content
+                    if (typeof extractedContent === 'string') {
+                        content = extractedContent;
+                    } else if (Array.isArray(extractedContent) || typeof extractedContent === 'object') {
+                        // For arrays and objects, stringify them properly for display
+                        content = JSON.stringify(extractedContent, null, 2);
+                    } else {
+                        content = String(extractedContent);
+                    }
+                    
+                } catch (extractorError: any) {
+                    console.error(`Error applying extractor function for ${resultUrl}:`, extractorError);
+                    return {
+                        success: false,
+                        error: `Extractor function error for ${resultUrl}: ${extractorError.message || 'Unknown error in extractor function'}`
+                    };
+                }
+            }
+
+            // Store content by URL
+            contentByUrl[resultUrl] = {
+                originalContent: result.text || '',
+                extractedContent: content,
+                extractedData: extractedData,
+                title: result.title,
+                url: resultUrl
+            };
+
+            // Append to combined content (with URL separator for multiple URLs)
+            if (validUrls.length > 1) {
+                allContent += `\n--- Content from ${resultUrl} ---\n${content}\n`;
+            } else {
+                allContent = content;
+            }
+
+            if (extractedData !== null) {
+                allExtractedData.push({
+                    url: resultUrl,
+                    data: extractedData
+                });
+            }
+        }
 
         console.log('Fetched content from Exa:', {
-            url: result.url,
-            title: result.title,
-            contentLength: content.length,
-            hasHighlights: !!result.highlights,
-            hasSummary: !!result.summary
+            urls: validUrls,
+            totalResults: results.length,
+            contentLength: allContent.length,
+            contentByUrl: Object.keys(contentByUrl),
+            hasExtractedData: allExtractedData.length > 0
         });
 
         return {
-            success: true,
-            content,
-            title: result.title,
-            url: result.url,
-            author: result.author,
-            publishedDate: result.publishedDate,
-            fetchedAt: new Date().toISOString(),
-            contentLength: content.length,
-            highlights: result.highlights,
-            summary: result.summary,
-            score: result.score,
-            image: result.image,
-            favicon: result.favicon,
+            success: true,        
             payload: {
                 ...processedPropsWithAiContext, 
-                content,
-                exaResult: result
+                content: allContent,
+                extractorContent: allContent,
+                extractedData: allExtractedData.length === 1 ? allExtractedData[0].data : allExtractedData,
+                contentByUrl: contentByUrl,
+                urls: validUrls,
+                totalResults: results.length
             }
         };
 
@@ -148,6 +214,6 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
 };
 
 export const fetchWebContentNode = {
-    nodeId: 'WEB_FETCH_CONTENT',
+    nodeId: 'WEB_FETCH_CONTENT_EXA',
     run: fetchWebContent
 };

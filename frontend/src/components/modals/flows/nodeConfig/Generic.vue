@@ -176,6 +176,76 @@
 				</p>
 			</div>
 
+			<!-- Test Node Section (only for testable nodes) -->
+			<div v-if="isTestableNode" class="border-t border-gray-200 pt-4 mt-4">
+				<div class="flex items-center justify-between mb-3">
+					<h3 class="text-sm font-medium text-gray-700">
+						Test Node
+					</h3>
+					<button
+						type="button"
+						class="btn-outline !px-3 !py-1 text-sm"
+						:disabled="testLoading || !canTestNode"
+						@click="handleTestNode"
+					>
+						<span v-if="!testLoading">Test</span>
+						<span v-else class="flex items-center gap-2">
+							<svg class="animate-spin h-3 w-3" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+							</svg>
+							Testing...
+						</span>
+					</button>
+				</div>
+
+				<!-- Test Result Display -->
+				<div v-if="testResult" class="mt-3 p-3 border rounded-md text-sm" :class="testResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'">
+					<div class="flex justify-between items-start mb-2">
+						<h4 class="font-medium" :class="testResult.success ? 'text-green-800' : 'text-red-800'">
+							{{ testResult.success ? 'Test Successful' : 'Test Failed' }}
+						</h4>
+						<button
+							type="button"
+							class="text-gray-400 hover:text-gray-600"
+							@click="clearTestResult"
+						>
+							<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+					</div>
+
+					<p class="text-xs mb-2" :class="testResult.success ? 'text-green-600' : 'text-red-600'">
+						Duration: {{ testResult.duration }}
+					</p>
+
+					<!-- Success Result -->
+					<div v-if="testResult.success && testResult.result" class="max-h-40 overflow-y-auto bg-white border rounded p-2">
+						<div v-if="testResult.result.payload?.extractedData" class="mb-2">
+							<h5 class="text-xs font-medium mb-1">
+								Extracted Data:
+							</h5>
+							<pre class="text-xs whitespace-pre-wrap bg-gray-50 p-2 rounded">{{ JSON.stringify(testResult.result.payload.extractedData, null, 2) }}</pre>
+						</div>
+						<div v-if="testResult.result.payload?.extractorContent && testResult.result.payload.extractorContent !== JSON.stringify(testResult.result.payload.extractedData, null, 2)">
+							<h5 class="text-xs font-medium mb-1">
+								Formatted Output:
+							</h5>
+							<pre class="text-xs whitespace-pre-wrap bg-gray-50 p-2 rounded">{{ testResult.result.payload.extractorContent }}</pre>
+						</div>
+						<div v-if="!testResult.result.payload?.extractedData">
+							<pre class="text-xs whitespace-pre-wrap">{{ JSON.stringify(testResult.result, null, 2) }}</pre>
+						</div>
+					</div>
+
+					<!-- Error Result -->
+					<div v-else-if="!testResult.success" class="text-red-700">
+						{{ testResult.error || 'Unknown error occurred' }}
+					</div>
+				</div>
+			</div>
+
 			<div class="flex justify-end gap-2 mt-4">
 				<button
 					type="button"
@@ -201,6 +271,7 @@
 import { ref, onMounted, computed, reactive } from 'vue'
 import { Info as InfoIcon } from 'lucide-vue-next'
 import { useUser } from '@/composables/auth/user'
+import { useTestNode } from '@/composables/dashboard/flows/nodes/test'
 import Tooltip from '@/components/core/Tooltip.vue'
 import MentionEditor from '@/components/core/MentionEditor/index.vue'
 import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
@@ -242,6 +313,48 @@ const aiMode = reactive<Record<string, 'manual' | 'ai'>>({})
 const showValidation = ref(false)
 const hasValidationErrors = ref(false)
 const validationMessages = ref<Record<string, string>>({})
+
+// Test node functionality
+const { loading: testLoading, testResult, testNode, clearTestResult } = useTestNode()
+
+// Check if this node is testable
+const isTestableNode = computed(() => {
+	return props.payload?.isTestable === true
+})
+
+// Check if we can test the node (all required fields filled)
+const canTestNode = computed(() => {
+	if (!isTestableNode.value) return false
+
+	// Check that all required fields are filled
+	const requiredProps = props.nodeProps.filter((prop) => prop.required)
+	return requiredProps.every((prop) => {
+		const value = props.formValues[prop.key]
+		return value !== undefined && value !== null && value !== ''
+	})
+})
+
+// Handle test node button click
+const handleTestNode = async () => {
+	if (!isTestableNode.value || !canTestNode.value) return
+
+	// Prepare the props data for testing
+	const testPropsData: Record<string, any> = {}
+	for (const key in props.formValues) {
+		testPropsData[key] = props.formValues[key]
+	}
+
+	// Create AI enabled fields list for testing
+	const aiEnabledFields = Object.keys(aiMode).filter((key) => {
+		const prop = props.nodeProps.find((p) => p.key === key)
+		return prop?.ai_enabled && aiMode[key] === 'ai'
+	})
+
+	await testNode(props.payload?.node_id, props.payload, {
+		...testPropsData,
+		aiEnabledFields
+	})
+}
 
 // Handle AI mode change
 const handleAiModeChange = (propKey: string) => {
