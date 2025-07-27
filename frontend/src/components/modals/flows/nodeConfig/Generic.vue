@@ -115,24 +115,20 @@
 					>
 
 					<!-- Select Dropdown -->
-					<select
-						v-else-if="prop.type === 'select'"
+					<SearchableSelect
+						v-else-if="prop.type === 'select' || prop.type === 'agent_selector'"
 						v-model="formValues[prop.key]"
+						:options="getSelectOptions(prop)"
+						:placeholder="prop.ai_enabled && aiMode[prop.key] === 'ai' ? 'AI will select based on context' : 'Select an option'"
 						:required="prop.required && (!prop.ai_enabled || aiMode[prop.key] === 'manual')"
 						:disabled="prop.disabled"
-						:class="getInputClasses(prop)"
-					>
-						<option value="" disabled selected>
-							{{ prop.ai_enabled && aiMode[prop.key] === 'ai' ? 'AI will select based on context' : 'Select an option' }}
-						</option>
-						<option
-							v-for="(option, optionIndex) in prop.options"
-							:key="optionIndex"
-							:value="typeof option === 'object' ? option.value : option"
-						>
-							{{ typeof option === 'object' ? option.name : option }}
-						</option>
-					</select>
+						:loading="prop.type === 'agent_selector' && agentsLoading"
+						:load-options="prop.type === 'agent_selector' ? loadAgentOptions : undefined"
+						:searchable="prop.type === 'agent_selector'"
+						:input-class="getInputClasses(prop)"
+						loading-text="Loading agents..."
+						search-placeholder="Search agents..."
+					/>
 
 					<!-- Email Input -->
 					<input
@@ -274,6 +270,7 @@ import { useUser } from '@/composables/auth/user'
 import { useTestNode } from '@/composables/dashboard/flows/nodes/test'
 import Tooltip from '@/components/core/Tooltip.vue'
 import MentionEditor from '@/components/core/MentionEditor/index.vue'
+import SearchableSelect from '@/components/core/SearchableSelect.vue'
 import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
 
 const props = defineProps({
@@ -309,10 +306,16 @@ const emit = defineEmits(['save', 'cancel'])
 // AI mode tracking for each prop
 const aiMode = reactive<Record<string, 'manual' | 'ai'>>({})
 
+// Agent selector state
+const agentsLoading = ref(false)
+
 // Validation state
 const showValidation = ref(false)
 const hasValidationErrors = ref(false)
 const validationMessages = ref<Record<string, string>>({})
+
+// User composable for getting user's agents
+const { user } = useUser()
 
 // Test node functionality
 const { loading: testLoading, testResult, testNode, clearTestResult } = useTestNode()
@@ -547,6 +550,94 @@ onMounted(() => {
 		})
 	}, 100)
 })
+
+// Helper methods for SearchableSelect
+const getSelectOptions = (prop: FlowNodeProp) => {
+	if (prop.type === 'agent_selector') {
+		// For agent selector, options will be loaded dynamically
+		return []
+	}
+
+	// For regular select, convert options to the format expected by SearchableSelect
+	if (!prop.options) return []
+
+	return prop.options.map((option: any) => {
+		if (typeof option === 'object') {
+			return {
+				value: option.value,
+				label: option.name || option.label || String(option.value),
+				description: option.description
+			}
+		}
+		return {
+			value: option,
+			label: String(option)
+		}
+	})
+}
+
+const loadAgentOptions = async (query: string) => {
+	agentsLoading.value = true
+	try {
+		// TODO: Replace with actual agent loading logic
+		// For now, simulate the agents array structure
+		const mockAgents = [
+			{
+				id: 'agent1',
+				name: 'Job Analyzer',
+				description: 'Analyzes job postings and extracts key information',
+				tools: ['table_management', 'web_search'],
+				isUserAgent: true
+			},
+			{
+				id: 'agent2',
+				name: 'Content Creator',
+				description: 'Creates engaging content for social media',
+				tools: ['text_generation'],
+				isUserAgent: true
+			},
+			{
+				id: 'agent3',
+				name: 'Data Processor',
+				description: 'Processes and transforms data efficiently',
+				tools: ['data_processing', 'analytics'],
+				isUserAgent: false
+			}
+		]
+
+		// Filter agents based on search query
+		const filteredAgents = query
+			? mockAgents.filter((agent) =>
+				agent.name.toLowerCase().includes(query.toLowerCase()) ||
+				agent.description.toLowerCase().includes(query.toLowerCase())
+			)
+			: mockAgents
+
+		// Convert to SearchableSelect format
+		return filteredAgents.map((agent) => ({
+			value: agent.id,
+			label: agent.name,
+			description: agent.description,
+			badges: [
+				{
+					text: agent.isUserAgent ? 'Your Agent' : 'Community',
+					class: agent.isUserAgent ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+				},
+				...(agent.tools.length > 0
+					? [{
+						text: `${agent.tools.length} tool${agent.tools.length !== 1 ? 's' : ''}`,
+						class: 'bg-gray-100 text-gray-800'
+					}]
+					: [])
+			]
+		}))
+	} catch (error) {
+		console.error('Error loading agents:', error)
+		return []
+	} finally {
+		agentsLoading.value = false
+	}
+}
 </script>
 
 

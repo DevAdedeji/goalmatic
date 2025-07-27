@@ -7,6 +7,7 @@ import { sendComposioGmailEmailNode, readComposioGmailEmailsNode, createComposio
 import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } from "./node/table";
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
 import { fetchWebContentNode } from "./node/web";
+import { processWithAgentNode } from "./node/aiAgent";
 
 type NodeSignature = {
     nodeId: string;
@@ -35,5 +36,8 @@ export const availableNodes: Record<string, NodeSignature> = {
     [deleteRecordNode.nodeId]: deleteRecordNode,
 
     // Web nodes
-    [fetchWebContentNode.nodeId]: fetchWebContentNode
+    [fetchWebContentNode.nodeId]: fetchWebContentNode,
+
+    // AI Agent nodes
+    [processWithAgentNode.nodeId]: processWithAgentNode
 }

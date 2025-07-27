@@ -25,7 +25,7 @@ export type FlowNode = {
   name: string
   description: string
   type: string
-  icon?: string
+  icon: string
   provider?: string
   category?: string
   isTestable?: boolean

@@ -15,6 +15,7 @@ export const scheduleTriggerNodes: FlowNode[] = [
             {
                 node_id: 'SCHEDULE_TIME',
                 type: 'trigger',
+                icon: '/icons/dateTime.svg',
                 name: 'Schedule Time',
                 description: 'Schedule a flow to run at a specific time',
                 props: [
@@ -53,6 +54,7 @@ export const scheduleTriggerNodes: FlowNode[] = [
             {
                 node_id: 'SCHEDULE_INTERVAL',
                 type: 'trigger',
+                icon: '/icons/dateTime.svg',
                 name: 'Schedule Interval',
                 description: 'Schedule a flow to run at a specific interval',
                 props: [

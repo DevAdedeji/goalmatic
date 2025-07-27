@@ -3,7 +3,7 @@ import { FlowNode } from '../../types'
 export const gmailActionNodes: FlowNode[] = [
     {
         node_id: 'GMAIL',
-        icon: '/icons/mail.svg',
+        icon: '/icons/gmail.svg',
         name: 'Gmail',
         description: 'Send and manage emails through Gmail',
         type: 'action',
@@ -13,6 +13,7 @@ export const gmailActionNodes: FlowNode[] = [
             {
                 node_id: 'COMPOSIO_GMAIL_SEND_EMAIL',
                 type: 'action',
+                icon: '/icons/gmail.svg',
                 name: 'Send Email',
                 description: 'Send an email through Gmail',
                 props: [
@@ -56,6 +57,7 @@ export const gmailActionNodes: FlowNode[] = [
             {
                 node_id: 'COMPOSIO_GMAIL_READ_EMAILS',
                 type: 'action',
+                icon: '/icons/gmail.svg',
                 name: 'Read Emails',
                 description: 'Read emails from Gmail inbox',
                 props: [
@@ -81,6 +83,7 @@ export const gmailActionNodes: FlowNode[] = [
             {
                 node_id: 'COMPOSIO_GMAIL_CREATE_DRAFT',
                 type: 'action',
+                icon: '/icons/gmail.svg',
                 name: 'Create Draft',
                 description: 'Create a draft email in Gmail',
                 props: [
