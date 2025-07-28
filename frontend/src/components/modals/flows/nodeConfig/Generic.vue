@@ -58,7 +58,7 @@
 						v-model="formValues[prop.key]"
 						:mention-items="props.previousNodeOutputs"
 						:class-node="[
-							prop.type === 'mentionTextarea' ? 'input-textarea' : 'input-field',
+							prop.type === 'mentionTextarea' ? 'input-textarea min-h-[110px]' : 'input-field',
 							prop.ai_enabled && aiMode[prop.key] === 'ai' ? 'ai-mode-input' : ''
 						].filter(Boolean).join(' ')"
 					/>
@@ -114,20 +114,32 @@
 						:class="getInputClasses(prop)"
 					>
 
-					<!-- Select Dropdown -->
-					<SearchableSelect
-						v-else-if="prop.type === 'select' || prop.type === 'agent_selector'"
+					<!-- Regular Select Dropdown -->
+					<Select
+						v-else-if="prop.type === 'select'"
 						v-model="formValues[prop.key]"
 						:options="getSelectOptions(prop)"
 						:placeholder="prop.ai_enabled && aiMode[prop.key] === 'ai' ? 'AI will select based on context' : 'Select an option'"
 						:required="prop.required && (!prop.ai_enabled || aiMode[prop.key] === 'manual')"
 						:disabled="prop.disabled"
-						:loading="prop.type === 'agent_selector' && agentsLoading"
-						:load-options="prop.type === 'agent_selector' ? loadAgentOptions : undefined"
-						:searchable="prop.type === 'agent_selector'"
+						:class="getInputClasses(prop)"
+					/>
+
+					<!-- Searchable Select with API calls -->
+					<SearchableSelect
+						v-else-if="prop.type === 'searchableSelect'"
+						v-model="formValues[prop.key]"
+						:options="prop.options || []"
+						:placeholder="prop.ai_enabled && aiMode[prop.key] === 'ai' ? 'AI will select based on context' : 'Select an option'"
+						:required="prop.required && (!prop.ai_enabled || aiMode[prop.key] === 'manual')"
+						:disabled="prop.disabled"
+						:loading="prop.loading || false"
+						:load-options="prop.loadOptions || undefined"
+						:searchable="true"
 						:input-class="getInputClasses(prop)"
-						loading-text="Loading agents..."
-						search-placeholder="Search agents..."
+						:loading-text="prop.loadingText || 'Loading...'"
+						:search-placeholder="prop.searchPlaceholder || 'Search...'"
+						:min-search-length="prop.minSearchLength || 0"
 					/>
 
 					<!-- Email Input -->
@@ -271,6 +283,7 @@ import { useTestNode } from '@/composables/dashboard/flows/nodes/test'
 import Tooltip from '@/components/core/Tooltip.vue'
 import MentionEditor from '@/components/core/MentionEditor/index.vue'
 import SearchableSelect from '@/components/core/SearchableSelect.vue'
+import Select from '@/components/core/Select.vue'
 import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
 
 const props = defineProps({
@@ -305,9 +318,6 @@ const emit = defineEmits(['save', 'cancel'])
 
 // AI mode tracking for each prop
 const aiMode = reactive<Record<string, 'manual' | 'ai'>>({})
-
-// Agent selector state
-const agentsLoading = ref(false)
 
 // Validation state
 const showValidation = ref(false)
@@ -551,14 +561,14 @@ onMounted(() => {
 	}, 100)
 })
 
-// Helper methods for SearchableSelect
+// Helper methods for Select and SearchableSelect
 const getSelectOptions = (prop: FlowNodeProp) => {
-	if (prop.type === 'agent_selector') {
-		// For agent selector, options will be loaded dynamically
+	// For searchableSelect with loadOptions, options will be loaded dynamically
+	if (prop.type === 'searchableSelect' && prop.loadOptions) {
 		return []
 	}
 
-	// For regular select, convert options to the format expected by SearchableSelect
+	// For regular select and searchableSelect with static options
 	if (!prop.options) return []
 
 	return prop.options.map((option: any) => {
@@ -574,69 +584,6 @@ const getSelectOptions = (prop: FlowNodeProp) => {
 			label: String(option)
 		}
 	})
-}
-
-const loadAgentOptions = async (query: string) => {
-	agentsLoading.value = true
-	try {
-		// TODO: Replace with actual agent loading logic
-		// For now, simulate the agents array structure
-		const mockAgents = [
-			{
-				id: 'agent1',
-				name: 'Job Analyzer',
-				description: 'Analyzes job postings and extracts key information',
-				tools: ['table_management', 'web_search'],
-				isUserAgent: true
-			},
-			{
-				id: 'agent2',
-				name: 'Content Creator',
-				description: 'Creates engaging content for social media',
-				tools: ['text_generation'],
-				isUserAgent: true
-			},
-			{
-				id: 'agent3',
-				name: 'Data Processor',
-				description: 'Processes and transforms data efficiently',
-				tools: ['data_processing', 'analytics'],
-				isUserAgent: false
-			}
-		]
-
-		// Filter agents based on search query
-		const filteredAgents = query
-			? mockAgents.filter((agent) =>
-				agent.name.toLowerCase().includes(query.toLowerCase()) ||
-				agent.description.toLowerCase().includes(query.toLowerCase())
-			)
-			: mockAgents
-
-		// Convert to SearchableSelect format
-		return filteredAgents.map((agent) => ({
-			value: agent.id,
-			label: agent.name,
-			description: agent.description,
-			badges: [
-				{
-					text: agent.isUserAgent ? 'Your Agent' : 'Community',
-					class: agent.isUserAgent ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-				},
-				...(agent.tools.length > 0
-					? [{
-						text: `${agent.tools.length} tool${agent.tools.length !== 1 ? 's' : ''}`,
-						class: 'bg-gray-100 text-gray-800'
-					}]
-					: [])
-			]
-		}))
-	} catch (error) {
-		console.error('Error loading agents:', error)
-		return []
-	} finally {
-		agentsLoading.value = false
-	}
 }
 </script>
 

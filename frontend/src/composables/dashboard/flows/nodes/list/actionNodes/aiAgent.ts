@@ -1,10 +1,28 @@
 import type { FlowNode } from '../../types'
+import { useFetchAgents, useFetchUserAgents } from '@/composables/dashboard/assistant/agents/fetch'
+
 
 // Function to fetch user agents for dropdown
 const fetchUserAgentsForConfig = async () => {
-  // This will be implemented to fetch user's agents + community agents
-  // For now, return empty array - will be implemented when needed
-  return []
+  const { fetchAllAgents, fetchedAllAgents } = useFetchAgents()
+  const { fetchUserAgents, fetchedUserAgents } = useFetchUserAgents()
+  await fetchAllAgents()
+  await fetchUserAgents()
+
+  // Map agents to required format
+  const allAgents = [...fetchedAllAgents.value, ...fetchedUserAgents.value].map((agent) => ({
+    id: agent.id,
+    name: agent.name,
+    description: agent.description || 'AI agent for processing and analysis',
+    tools: agent.spec?.tools || [],
+    isUserAgent: !agent.public
+  }))
+
+  // Remove duplicates based on agent ID
+  const uniqueAgents = allAgents.filter((agent, index, self) =>
+    index === self.findIndex((a) => a.id === agent.id)
+  )
+  return uniqueAgents
 }
 
 export const aiActionNodes: FlowNode[] = [
@@ -22,15 +40,19 @@ export const aiActionNodes: FlowNode[] = [
         type: 'action',
         name: 'Agent Process',
         description: 'Process data using a selected AI agent with custom configuration',
-        icon: '/icons/ai-agent.svg',
+        icon: '/icons/ai.svg',
         props: [
           {
             name: 'Agent',
             key: 'selectedAgent',
-            type: 'agent_selector',
+            type: 'searchableSelect',
             required: true,
             description: 'Select an AI agent to process the data',
-            cloneable: false
+            cloneable: false,
+            loadOptions: fetchUserAgentsForConfig,
+            loadingText: 'Loading agents...',
+            searchPlaceholder: 'Search agents...',
+            minSearchLength: 0
           },
           {
             name: 'Input Data',

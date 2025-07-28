@@ -107,8 +107,8 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 
 interface Option {
-	value: string | number
-	label: string
+	id: string | number
+	name: string
 	description?: string
 	badges?: Array<{
 		text: string
@@ -129,8 +129,8 @@ interface Props {
 	// Function to load options dynamically (for async data like agents)
 	loadOptions?: (query: string) => Promise<Option[]>
 	// Custom option handling
-	optionValueKey?: string
-	optionLabelKey?: string
+	optionIdKey?: string
+	optionNameKey?: string
 	optionDescriptionKey?: string
 	optionBadgesKey?: string
 	// Styling
@@ -144,8 +144,8 @@ const props = withDefaults(defineProps<Props>(), {
 	placeholder: 'Select an option...',
 	searchPlaceholder: 'Search...',
 	loadingText: 'Loading...',
-	optionValueKey: 'value',
-	optionLabelKey: 'label',
+	optionIdKey: 'id',
+	optionNameKey: 'name',
 	optionDescriptionKey: 'description',
 	optionBadgesKey: 'badges',
 	searchable: true,
@@ -181,9 +181,9 @@ const filteredOptions = computed(() => {
 
 	const query = searchQuery.value.toLowerCase()
 	return allOptions.value.filter((option) => {
-		const label = getOptionLabel(option).toLowerCase()
+		const name = getOptionLabel(option).toLowerCase()
 		const description = getOptionDescription(option)?.toLowerCase() || ''
-		return label.includes(query) || description.includes(query)
+		return name.includes(query) || description.includes(query)
 	})
 })
 
@@ -205,11 +205,11 @@ const hasCustomOptions = computed(() => {
 
 // Helper functions
 const getOptionValue = (option: Option): string | number => {
-	return option[props.optionValueKey] || option.value
+	return option[props.optionIdKey] || option.id
 }
 
 const getOptionLabel = (option: Option): string => {
-	return option[props.optionLabelKey] || option.label || String(getOptionValue(option))
+	return option[props.optionNameKey] || option.name || String(getOptionValue(option))
 }
 
 const getOptionDescription = (option: Option): string | undefined => {

@@ -10,6 +10,12 @@ export type FlowNodeProp = {
   disabled?: boolean
   ai_enabled?: boolean
   cloneable?: boolean
+  // Properties for searchableSelect type
+  loading?: boolean
+  loadOptions?: (query: string) => Promise<any[]>
+  loadingText?: string
+  searchPlaceholder?: string
+  minSearchLength?: number
 }
 
 export type FlowNodeOutputProp = {

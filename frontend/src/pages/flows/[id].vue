@@ -8,11 +8,13 @@
 
 			<main :class="['p-4', 'sm:p-6', 'h-screen', { 'flow-bg': isOwner(flowDetails) }]">
 				<section class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
-					<FlowsIdHeader v-if="!isOwner(flowDetails)" :flow-data="flowDetails" :current-tab="currentTab" :loading="loading" />
+					<FlowsIdHeader v-if="!isOwner(flowDetails) && flowDetails.id" :flow-data="flowDetails" :loading="loading" />
 				</section>
 
 				<FlowsIdToolbar v-if="isOwner(flowDetails)" :current-tab="currentTab" :flow-data="flowDetails" @update:current-tab="currentTab = $event" />
-				<FlowsIdLoader v-if="loading" />
+				<section v-if="loading" class="flex flex-col gap-4 pt-10 px-4 md:px-10 w-full max-w-5xl mx-auto">
+					<FlowsIdLoader />
+				</section>
 
 				<!-- Flow details -->
 				<div v-else-if="flowDetails && Object.keys(flowDetails).length > 0">
