@@ -1,9 +1,11 @@
 <template>
-	<TablesIdStructureSection v-if="currentTab === 'structure'" />
-	<TablesIdDataSection
-		v-if="currentTab === 'data'"
-		@switch-tab="$emit('switchTab', $event)"
-	/>
+	<section>
+		<TablesIdStructureSection v-if="currentTab === 'structure'" />
+		<TablesIdDataSection
+			v-if="currentTab === 'data'"
+			@switch-tab="$emit('switchTab', $event)"
+		/>
+	</section>
 </template>
 
 <script setup lang="ts">

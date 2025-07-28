@@ -202,7 +202,7 @@ const emit = defineEmits<{(e: 'edit', flow: Flow): void
 }
 
 .card-body {
-    @apply bg-white border-b border-[#EFE8FD] p-4 rounded-xl;
+    @apply bg-white border-b border-[#EFE8FD] p-4 rounded-xl flex-1;
 }
 
 .card-header {

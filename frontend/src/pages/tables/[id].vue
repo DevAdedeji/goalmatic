@@ -10,6 +10,7 @@
 
 				<TablesIdDetails
 					:current-tab="currentTab"
+					class="mt-5"
 					@switch-tab="currentTab = $event"
 				/>
 			</div>
@@ -26,6 +27,7 @@ import TablesIdHeader from '@/components/tables/id/Header.vue'
 import TablesIdDetails from '@/components/tables/id/Details.vue'
 import TablesIdLoader from '@/components/tables/id/Loader.vue'
 import TablesIdErrorState from '@/components/tables/id/ErrorState.vue'
+import { useHeaderTitle } from '@/composables/core/headerTitle'
 
 const route = useRoute()
 const router = useRouter()
@@ -39,7 +41,7 @@ const { fetchTableById, tableData, loading } = useFetchUserTables()
 const currentTab = ref('structure')
 
 await fetchTableById(tableId)
-
+useHeaderTitle().setTitle(`Table: ${tableData.value?.name || 'Loading...'}`)
 definePageMeta({
 	layout: 'dashboard',
 	middleware: ['is-authenticated']

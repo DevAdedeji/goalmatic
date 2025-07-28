@@ -20,16 +20,16 @@
 				</button>
 			</div>
 			<button
-				class="btn-primary flex items-center gap-2 px-4 py-2 rounded-md text-sm"
+				class="btn-outline gap-2"
 				:disabled="loading || !tableData.fields || tableData.fields.length === 0"
 				@click="addNewRecord"
 			>
-				<PlusCircle :size="16" />
+				<Plus :size="16" />
 				Add Record
 			</button>
 		</div>
 
-		<div v-if="!tableData.fields || tableData.fields.length === 0" class="text-center py-12 border border-dashed border-border rounded-lg">
+		<div v-if="!tableData.fields || tableData.fields.length === 0" class="flex flex-col items-center text-center py-12 border border-dashed border-border rounded-lg">
 			<Database :size="48" class="mx-auto mb-4 text-text-secondary opacity-40" />
 			<h3 class="text-lg font-medium text-headline mb-2">
 				No Fields Defined
@@ -38,14 +38,14 @@
 				You need to define fields in the Structure tab before adding records
 			</p>
 			<button
-				class="btn-outline border border-border px-4 py-2 rounded-md text-sm mx-auto"
+				class="btn-outline "
 				@click="$emit('switchTab', 'structure')"
 			>
 				Go to Structure Tab
 			</button>
 		</div>
 
-		<div v-else-if="!tableRecords || tableRecords.length === 0" class="text-center py-12 border border-dashed border-border rounded-lg">
+		<div v-else-if="!tableRecords || tableRecords.length === 0" class="flex flex-col items-center text-center py-12 border border-dashed border-border rounded-lg">
 			<Database :size="48" class="mx-auto mb-4 text-text-secondary opacity-40" />
 			<h3 class="text-lg font-medium text-headline mb-2">
 				No Records Yet
@@ -54,10 +54,10 @@
 				Add your first record to start populating the table
 			</p>
 			<button
-				class="btn-primary flex items-center gap-2 px-4 py-2 rounded-md text-sm mx-auto"
+				class="btn-outline gap-2"
 				@click="addNewRecord"
 			>
-				<PlusCircle :size="16" />
+				<Plus :size="16" />
 				Add First Record
 			</button>
 		</div>
@@ -124,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
+import { Plus, Edit2, Trash2, Database } from 'lucide-vue-next'
 import { computed, onMounted } from 'vue'
 import { formatDate } from '@/composables/utils/formatter'
 import { useTableDataSection } from '@/composables/dashboard/tables/dataSection'

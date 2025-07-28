@@ -5,15 +5,15 @@
 				Fields Definition
 			</h2>
 			<button
-				class="btn-primary flex items-center gap-2 px-4 py-2 rounded-md text-sm"
+				class="btn-outline gap-2"
 				@click="addNewField"
 			>
-				<PlusCircle :size="16" />
+				<Plus :size="16" />
 				Add Field
 			</button>
 		</div>
 
-		<div v-if="!tableData.fields || tableData.fields.length === 0" class="text-center py-12 border border-dashed border-border rounded-lg">
+		<div v-if="!tableData.fields || tableData.fields.length === 0" class="flex flex-col justify-center items-center text-center py-12 border border-dashed border-border rounded-lg">
 			<Database :size="48" class="mx-auto mb-4 text-text-secondary opacity-40" />
 			<h3 class="text-lg font-medium text-headline mb-2">
 				No Fields Defined
@@ -22,10 +22,10 @@
 				Define fields to structure your table
 			</p>
 			<button
-				class="btn-primary flex items-center gap-2 px-4 py-2 rounded-md text-sm mx-auto"
+				class="btn-outline gap-2"
 				@click="addNewField"
 			>
-				<PlusCircle :size="16" />
+				<Plus :size="16" />
 				Add First Field
 			</button>
 		</div>
@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { PlusCircle, Edit2, Trash2, Database } from 'lucide-vue-next'
+import { Plus, Edit2, Trash2, Database } from 'lucide-vue-next'
 import { useTableStructureSection } from '@/composables/dashboard/tables/structureSection'
 
 

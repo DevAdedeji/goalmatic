@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { v4 as uuidv4 } from 'uuid'
 import { Timestamp } from 'firebase/firestore'
 import type { TableField } from './types'
@@ -8,20 +8,22 @@ import { useAlert } from '@/composables/core/notification'
 
 // Form for creating a new table
 const createTableForm = reactive({
-  name: 'Untitled Table',
-  description: 'A new table for organizing your data',
-  type: 'standard',
+  name: '',
+  description: '',
   fields: [] as TableField[]
 })
 
 export const useCreateTable = () => {
-  const { id: user_id } = useUser()
+  const { id: user_id, userProfile } = useUser()
   const loading = ref(false)
 
+  const isDisabled = computed(() => {
+    return !createTableForm.name.trim()
+  })
+
   const resetForm = () => {
-    createTableForm.name = 'Untitled Table'
-    createTableForm.description = 'A new table for organizing your data'
-    createTableForm.type = 'standard'
+    createTableForm.name = ''
+    createTableForm.description = ''
     createTableForm.fields = []
   }
 
@@ -37,7 +39,7 @@ export const useCreateTable = () => {
         creator_id: user_id.value,
         created_at: Timestamp.fromDate(new Date()),
         updated_at: Timestamp.fromDate(new Date()),
-        visibility: 'private',
+        public: false,
         allowed_users: [user_id.value]
       }
 
@@ -92,6 +94,24 @@ export const useCreateTable = () => {
     return false
   }
 
+  const createNewTable = async () => {
+    const id = await createTable()
+    if (id) {
+      await useRouter().push(`/tables/${id}`)
+    }
+  }
+
+  const createTableModal = async () => {
+    const id = await createTable()
+    if (id) {
+      // Import and close modal
+      const { useTablesModal } = await import('@/composables/core/modals')
+      await useRouter().push(`/tables/${id}`)
+      useTablesModal().closeCreateTable()
+      resetForm()
+    }
+  }
+
   return {
     createTable,
     createTableForm,
@@ -99,6 +119,10 @@ export const useCreateTable = () => {
     resetForm,
     addField,
     removeField,
-    updateField
+    updateField,
+    isDisabled,
+    createTableModal,
+    createNewTable
   }
 }
+

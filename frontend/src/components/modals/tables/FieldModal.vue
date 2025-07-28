@@ -1,6 +1,6 @@
 <template>
 	<Modal
-		modal="$atts.modal"
+		modal="$attrs.modal"
 		:title="editingFieldIndex === -1 ? 'Add New Field' : 'Edit Field'"
 		:is-full-height="false"
 		:props-modal="propsModal"
@@ -107,17 +107,27 @@
 				</div>
 			</div>
 
-			<div class="mt-6 flex justify-end gap-3">
+			<div class="mt-6 flex justify-end gap-3 w-full">
 				<button
+					v-if="editingFieldIndex === -1"
 					type="button"
-					class="btn-outline border border-border px-4 py-2 rounded-md"
+					class="btn-outline flex-1 !px-2 text-sm"
+					:disabled="!isFormValid"
+					@click="saveAndCreateAnother"
+				>
+					Add and Create Another
+				</button>
+				<button
+					v-else
+					type="button"
+					class="btn-outline flex-1 !px-2 text-sm"
 					@click="closeModal"
 				>
 					Cancel
 				</button>
 				<button
 					type="submit"
-					class="btn-primary px-4 py-2 rounded-md"
+					class="btn-primary flex-1 text-sm"
 					:disabled="!isFormValid"
 				>
 					{{ editingFieldIndex === -1 ? 'Add Field' : 'Save Changes' }}
@@ -146,12 +156,39 @@ const props = defineProps({
 
 // Extract data from payload
 const fieldForm = computed(() => props.payload?.fieldForm || {})
-const editingFieldIndex = computed(() => props.payload?.editingFieldIndex || -1)
+const editingFieldIndex = computed(() => props.payload?.editingFieldIndex ?? -1)
 
 
 // Close the modal
 const closeModal = () => {
 	useTablesModal().closeFieldModal()
+}
+
+// Save current field and create another
+const saveAndCreateAnother = async () => {
+	try {
+		// Save the current field without closing the modal
+		await props.payload?.onSaveOnly()
+
+		// Reset the form for creating a new field
+		if (props.payload?.fieldForm) {
+			// Reset all form fields with a new ID
+			Object.assign(props.payload.fieldForm, {
+				id: crypto.randomUUID(),
+				name: '',
+				type: 'text',
+				description: '',
+				required: false,
+				optionsText: '',
+				options: []
+			})
+		}
+
+		// Keep the modal open for creating another field
+	} catch (error) {
+		console.error('Error saving field:', error)
+		// Optionally show an error message to the user
+	}
 }
 
 

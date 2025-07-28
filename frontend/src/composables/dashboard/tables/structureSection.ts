@@ -47,7 +47,8 @@ export const useTableStructureSection = () => {
     useTablesModal().openFieldModal({
       fieldForm: fieldForm.value,
       editingFieldIndex: editingFieldIndex.value,
-      onSave: saveField
+      onSave: saveField,
+      onSaveOnly: saveFieldOnly
     })
   }
 
@@ -68,7 +69,8 @@ export const useTableStructureSection = () => {
     useTablesModal().openFieldModal({
       fieldForm: fieldForm.value,
       editingFieldIndex: editingFieldIndex.value,
-      onSave: saveField
+      onSave: saveField,
+      onSaveOnly: saveFieldOnly
     })
   }
 
@@ -96,6 +98,31 @@ export const useTableStructureSection = () => {
 
     // Close the modal
     useTablesModal().closeFieldModal()
+  }
+
+  const saveFieldOnly = async () => {
+    // Process options if it's a select field
+    if (fieldForm.value.type === 'select') {
+      fieldForm.value.options = fieldForm.value.optionsText
+        .split('\n')
+        .map((option) => option.trim())
+        .filter((option) => option)
+    }
+
+    // Check if we're adding a new field or updating an existing one
+    if (editingFieldIndex.value === -1) {
+      // Add new field
+      await addFieldToTable(tableData.value, fieldForm.value)
+    } else if (tableData.value.fields && tableData.value.fields[editingFieldIndex.value]) {
+      // Update existing field
+      await updateFieldInTable(
+        tableData.value,
+        tableData.value.fields[editingFieldIndex.value].id,
+        fieldForm.value
+      )
+    }
+
+    // Don't close the modal - this is for "add and create another"
   }
 
   const deleteField = async (index: number) => {
@@ -130,6 +157,7 @@ export const useTableStructureSection = () => {
     addNewField,
     editField,
     saveField,
+    saveFieldOnly,
     deleteField,
     tableData
   }

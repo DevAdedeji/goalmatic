@@ -31,6 +31,7 @@ import CreateWorkflow from '@/components/modals/assistant/CreateWorkflow.vue'
 // ==================== TABLES ===============================
 import TablesIdFieldModal from '@/components/modals/tables/FieldModal.vue'
 import TablesIdRecordModal from '@/components/modals/tables/RecordModal.vue'
+import CreateTable from '@/components/modals/tables/CreateTable.vue'
 
 type OptionalPayload = Record<string, any> | null;
 
@@ -41,7 +42,7 @@ type BottombarTypes = 'BottomMenu'
 type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal' | 'ShareChat'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
 type FlowsTypes = 'SelectNode' | 'EditNode' | 'CreateWorkflow'
-type TablesTypes = 'FieldModal' | 'RecordModal'
+type TablesTypes = 'FieldModal' | 'RecordModal' | 'CreateTable'
 
 // Define helper function types with payload
 type ModalHelpers<Keys extends string> = Record<
@@ -58,7 +59,7 @@ const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
 const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal, ShareChat } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>
 const FlowsModals = { SelectNode, EditNode, CreateWorkflow } as Record<FlowsTypes, any>
-const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal } as Record<TablesTypes, any>
+const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal, CreateTable } as Record<TablesTypes, any>
 
 
 const authModal = modal.register('Auth', AuthModals)

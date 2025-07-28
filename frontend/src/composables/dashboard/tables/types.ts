@@ -29,12 +29,17 @@ export interface Table {
 	fields: Field[];
 	records?: Record[];
 	creator_id: string;
+	creator_name?: string;
+	creator_avatar?: string;
 	created_at: any;
 	updated_at: any;
+	visibility?: string;
+	allowed_users?: string[];
 }
 
 export interface TableField extends Field {
 	required: boolean;
 	default?: any;
+	optionsText?: string; // For UI handling of select field options
 	[key: string]: any; // Allow for additional properties
 }
