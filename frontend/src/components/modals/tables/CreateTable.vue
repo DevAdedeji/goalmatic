@@ -23,21 +23,18 @@
 		</template>
 
 		<!-- Tab Navigation (only show for create mode) -->
-		<div v-if="!isEditMode" class="tabs mx-6 mt-6">
+		<div v-if="!isEditMode" class="tabs mx-2.5 mt-4">
 			<button
 				type="button"
-				class="tab-btn"
+				class="tab-btn flex-1"
 				:class="activeTab === 'manual' ? 'active' : ''"
 				@click="activeTab = 'manual'"
 			>
-				Manual Setup
-				<span v-if="createTableForm.fields.length > 0" class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 ml-1">
-					{{ createTableForm.fields.length }}
-				</span>
+				Manual
 			</button>
 			<button
 				type="button"
-				class="tab-btn"
+				class="tab-btn flex-1"
 				:class="activeTab === 'ai' ? 'active' : ''"
 				@click="activeTab = 'ai'"
 			>
@@ -99,14 +96,31 @@
 
 					<!-- AI Mode Content -->
 					<div v-else-if="activeTab === 'ai'" class="mt-6">
-						<div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-							<p class="text-sm text-blue-800">
-								✨ <strong>AI Table Creator:</strong> Describe the data you want to store and AI will automatically generate a complete table with appropriate fields, types, and validation - then create it for you instantly.
-							</p>
-						</div>
-
 						<div class="field relative">
-							<label for="ai-prompt">Describe your table</label>
+							<div class="flex items-center gap-2">
+								<label for="ai-prompt">Describe your table</label>
+								<Tooltip>
+									<template #trigger>
+										<Info class="size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+									</template>
+									<template #content>
+										<div class="max-w-md p-3 bg-transparent rounded-lg shadow-lg">
+											<p class="text-xs">
+												💡 <strong>Tip:</strong> The AI will analyze your description and create a complete table with:
+											</p>
+											<ul class="text-xs mt-1 ml-4 list-disc">
+												<li>Automatically generated table name</li>
+												<li>Appropriate field types (text, number, date, select, etc.)</li>
+												<li>Required field validation where needed</li>
+												<li>Dropdown options for categorization fields</li>
+											</ul>
+											<p class="text-xs mt-2">
+												After creation, you can edit fields and add records on the table page.
+											</p>
+										</div>
+									</template>
+								</Tooltip>
+							</div>
 							<textarea
 								id="ai-prompt"
 								v-model="formData.description"
@@ -120,21 +134,6 @@ Examples:
 • Customer orders with product details, quantities, prices, and shipping addresses"
 								required
 							/>
-						</div>
-
-						<div class="mt-4 p-3 bg-gray-50 rounded-lg border">
-							<p class="text-xs text-gray-600">
-								💡 <strong>Tip:</strong> The AI will analyze your description and create a complete table with:
-							</p>
-							<ul class="text-xs text-gray-600 mt-1 ml-4 list-disc">
-								<li>Automatically generated table name</li>
-								<li>Appropriate field types (text, number, date, select, etc.)</li>
-								<li>Required field validation where needed</li>
-								<li>Dropdown options for categorization fields</li>
-							</ul>
-							<p class="text-xs text-gray-600 mt-2">
-								After creation, you can edit fields and add records on the table page.
-							</p>
 						</div>
 					</div>
 				</section>
@@ -173,7 +172,7 @@ Examples:
 </template>
 
 <script setup lang="ts">
-import { X } from 'lucide-vue-next'
+import { X, Info } from 'lucide-vue-next'
 import { reactive, computed, watch, ref, type PropType } from 'vue'
 import { Timestamp } from 'firebase/firestore'
 import { useTablesModal } from '@/composables/core/modals'
@@ -182,6 +181,7 @@ import { useEditTable } from '@/composables/dashboard/tables/edit'
 import { useAITableGeneration } from '@/composables/dashboard/tables/aiGeneration'
 import { useAlert } from '@/composables/core/notification'
 import Spinner from '@/components/core/Spinner.vue'
+import Tooltip from '@/components/core/Tooltip.vue'
 
 const { closeCreateTable } = useTablesModal()
 const { createTableModal, loading: createLoading, createTableForm, isDisabled: createDisabled, resetForm, addField } = useCreateTable()
