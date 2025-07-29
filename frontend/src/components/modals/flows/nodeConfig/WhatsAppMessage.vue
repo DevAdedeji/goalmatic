@@ -24,7 +24,7 @@
 			<MentionEditor
 				v-model="form.message"
 				:mention-items="props.previousNodeOutputs"
-				:class-node="['input-textarea', aiMode.message === 'ai' ? 'ai-mode-input' : ''].filter(Boolean).join(' ')"
+				:class-node="['input-textarea min-h-[110px]', aiMode.message === 'ai' ? 'ai-mode-input' : ''].filter(Boolean).join(' ')"
 				:placeholder="aiMode.message === 'ai' ? 'Enter prompt for message content' : 'Enter your message'"
 			/>
 			<div v-if="aiMode.message === 'ai'" class="mb-2 rounded-md  text-sm text-primary italic">

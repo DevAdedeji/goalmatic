@@ -16,6 +16,7 @@ export const messagingActionNodes:FlowNode[] = [
                 node_id: 'SEND_WHATSAPP_MESSAGE',
                 type: 'action',
                 name: 'Send WhatsApp Message',
+                icon: '/icons/whatsapp.svg',
                 description: 'Send a message via WhatsApp',
                 props: [
                     {
@@ -53,6 +54,7 @@ export const messagingActionNodes:FlowNode[] = [
                 node_id: 'SEND_EMAIL',
                 type: 'action',
                 name: 'Send Email',
+                icon: '/icons/mail.svg',
                 description: 'Send an email to your linked email address',
                 props: [
                     {
