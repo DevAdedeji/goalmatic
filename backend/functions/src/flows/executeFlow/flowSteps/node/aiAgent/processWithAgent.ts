@@ -106,13 +106,15 @@ const processWithAgent = async (context: WorkflowContext, step: FlowNode, previo
                 content: `
                 Please process the following data according to your instructions:
                 
-                INPUT DATA:
-                ${JSON.stringify(parsedInputData, null, 2)}
-                
                 ${customInstructions ? `
                 SPECIFIC TASK:
                 ${customInstructions}
                 ` : ''}
+
+                INPUT DATA:
+                ${JSON.stringify(parsedInputData, null, 2)}
+                
+            
                 
                 Please process this data and provide your response in the ${outputFormat} format.
                 `

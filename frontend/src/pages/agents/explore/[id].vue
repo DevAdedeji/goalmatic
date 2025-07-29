@@ -229,7 +229,6 @@
 			</div>
 			<section class="flex flex-col">
 				<div :class="[( systemInfoExpanded || isEditingSystemInfo) ? '!max-h-[none] overflow-visible' : '!max-h-[200px] overflow-hidden']">
-					{{ systemInfoModel }}
 					<Editor v-model="systemInfoModel" :enable-mentions="true" :mention-items="['agenttools']" :editable="isEditingSystemInfo && isOwner(agentDetails)" :class="{
 						'bg-white rounded-lg border p-4 ': isEditingSystemInfo && isOwner(agentDetails),
 						'view-only': !isEditingSystemInfo || !isOwner(agentDetails),

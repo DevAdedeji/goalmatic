@@ -13,7 +13,7 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
     // Generate AI content for AI-enabled fields and get updated props
     const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
     
-    // Use the AI-updated props instead of just processed props
+    // Use the AI-updated props instead of just processed props if available
     const { subject, message, emailType, recipientEmail } = processedPropsWithAiContext;
 
     const emailMessage = {

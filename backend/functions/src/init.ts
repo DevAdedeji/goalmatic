@@ -44,3 +44,8 @@ export const isConvexSyncEnabled = (): boolean => {
   // Default behavior: disabled in dev, enabled in production
   return !is_dev;
 };
+
+export const formatSystemInfo = (text: string): string => {
+  // Sanitize HTML to allow only specific safe tags
+  return text.replace(/<(?!\/?(p|br|strong|em|u|s|ul|ol|li|h[1-6]|blockquote)(?=>|\s.*>))\/?.*?>/g, '')
+}

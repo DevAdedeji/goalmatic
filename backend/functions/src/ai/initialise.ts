@@ -3,6 +3,8 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google"
 import { generateAgentTools } from './tools';
 import { setUserToolConfig } from ".";
 import { HttpsError } from "firebase-functions/https";
+import { formatSystemInfo } from "../init";
+
 
 /**
  * Initialize AI chat with conversation history and agent configuration
@@ -62,13 +64,17 @@ export const initialiseAIChat = async (
 
 
 const customSystemInfo = (agentTools: Record<string, any>[], agentSystemInfo: string) => {
+    const formattedAgentSystemInfo = formatSystemInfo(agentSystemInfo);
+
+    console.log(formattedAgentSystemInfo, 'formattedAgentSystemInfo');
+    
     return `
     <Available Tools>
     ${agentTools.map((tool) => tool.id)}
     </Available Tools>
 
     <Agent System Info>
-    ${agentSystemInfo}
+    ${formattedAgentSystemInfo}
     </Agent System Info>
     `
 }

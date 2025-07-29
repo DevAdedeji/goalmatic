@@ -39,7 +39,8 @@ export const useEditAgent = () => {
             await updateFirestoreDocument('agents', id, {
                 spec: {
                     ...spec,
-                    systemInfo: systemInfoModel.value.replace(/<(?!\/?(p|br|strong|em|u|s|ul|ol|li|h[1-6]|blockquote)(?=>|\s.*>))\/?.*?>/g, '')
+                    systemInfo: systemInfoModel.value
+                    // .replace(/<(?!\/?(p|br|strong|em|u|s|ul|ol|li|h[1-6]|blockquote)(?=>|\s.*>))\/?.*?>/g, '')
                 }
             })
 
