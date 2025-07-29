@@ -116,7 +116,7 @@ export const migrateAgentsToConvex = onCall({
         results.migrated++;
 
       } catch (error: any) {
-        results.errors++;
+        results.errors = (results.errors || 0) + 1;
         const errorMsg = `Error migrating agent ${agentDoc.id}: ${error.message}`;
         results.errorDetails.push(errorMsg);
         console.error(errorMsg);
