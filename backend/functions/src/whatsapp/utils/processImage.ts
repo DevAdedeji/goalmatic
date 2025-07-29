@@ -104,7 +104,6 @@ export async function processWhatsAppImageWithStorage(
         // Upload to Firebase Storage
         try {
             filePath = await uploadMediaToStorage(buffer, contentType, userId, 'image', sessionId);
-            console.log(`Image uploaded to storage: ${filePath}`);
         } catch (storageError) {
             console.error('Failed to upload image to storage:', storageError);
             // Continue without file path - don't fail the entire process

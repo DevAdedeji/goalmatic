@@ -49,7 +49,6 @@ export const deleteChatSession = onCall({cors: true, region: 'us-central1'}, asy
       }
     }
 
-    console.log(`Found ${filePaths.length} files to delete for session ${sessionId}`);
 
     // Delete storage files
     const bucket = storage.bucket();
@@ -74,8 +73,6 @@ export const deleteChatSession = onCall({cors: true, region: 'us-central1'}, asy
 
     // Delete the chat session document
     await chatSessionRef.delete();
-
-    console.log(`Successfully deleted chat session ${sessionId} and ${filePaths.length} associated files for user ${userId}`);
 
     return {
       success: true,

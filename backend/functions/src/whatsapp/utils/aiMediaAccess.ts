@@ -24,8 +24,6 @@ export async function generateSignedUrlsForChatHistory(
         }
     }
     
-    console.log(`Found ${filePaths.size} media files to process for user ${requestingUserId}`);
-    
     // Generate signed URLs for each file path
     for (const filePath of filePaths) {
         try {
@@ -39,7 +37,6 @@ export async function generateSignedUrlsForChatHistory(
             // Generate signed URL (valid for 24 hours)
             const signedUrl = await getSignedMediaUrl(filePath, 24);
             filePathToSignedUrl.set(filePath, signedUrl);
-            console.log(`Successfully generated URL for: ${filePath}`);
             
         } catch (error) {
             console.warn(`Failed to generate signed URL for ${filePath}, skipping:`, error instanceof Error ? error.message : error);
@@ -47,7 +44,7 @@ export async function generateSignedUrlsForChatHistory(
         }
     }
     
-    console.log(`Successfully generated ${filePathToSignedUrl.size} media URLs for AI access`);
+
     return filePathToSignedUrl;
 }
 
@@ -87,7 +84,7 @@ export async function prepareChatHistoryForAI(
         
         // If no signed URLs were generated, return original history
         if (filePathToSignedUrl.size === 0) {
-            console.log('No media URLs generated, returning original chat history');
+
             return chatHistory;
         }
         

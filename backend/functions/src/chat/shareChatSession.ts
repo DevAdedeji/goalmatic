@@ -114,11 +114,10 @@ export const shareChatSession = onCall({cors: true, region: 'us-central1'}, asyn
     // Generate the shareable URL
     const baseUrl = process.env.FUNCTIONS_EMULATOR === 'true' 
       ? 'http://localhost:3000' 
-      : 'https://goalmatic.com';  // Replace with your actual domain
+      : 'https://goalmatic.io';  // Replace with your actual domain
     
     const shareUrl = `${baseUrl}/share/${publicId}`;
 
-    console.log(`Successfully created public chat session ${publicSessionId} from session ${sessionId} for user ${userId}`);
 
     return {
       success: true,

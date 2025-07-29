@@ -1,13 +1,9 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getAuth } from 'firebase-admin/auth';
 import { goalmatic_whatsapp_integration_otp } from '../whatsapp/templates/goalmatic_whatsapp_integration_otp';
 import { send_WA_Message } from '../whatsapp/utils/sendMessage';
 import { goals_db } from '../init';
-import firebaseServer from '../init';
 import { normalizePhoneNumber, normalizePhoneForWhatsApp, getPhoneQueryFormats } from '../utils/phoneUtils';
 
-// Initialize Firebase Admin Auth
-const auth = getAuth(firebaseServer()!);
 
 // Helper function to check if phone number is linked to a different user
 const isPhoneLinkedToAnotherUser = async (phoneNumber: string, currentUserId: string): Promise<{ isLinked: boolean; message?: string }> => {
@@ -226,8 +222,7 @@ export const sendWhatsappOTPForLogin = onCall(
             try {
                 const userId = userData.id;
 
-                // Verify user exists in Firebase Auth
-                const userRecord = await auth.getUser(userId);
+
                 
                 // Update last login attempt
                 await goals_db.collection('users').doc(userId).update({
@@ -235,7 +230,6 @@ export const sendWhatsappOTPForLogin = onCall(
                     updated_at: new Date(),
                 });
 
-                console.log(`User ${userRecord.uid} (${phoneFormats.normalized}) verified for OTP login`);
             } catch (authError) {
                 console.error('User verification failed during OTP login:', authError);
                 return { 

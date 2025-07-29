@@ -133,7 +133,6 @@ export const processMessageContent = async (
         messageTypeForAgent = 'image';
     } else if (message.type === 'interactive' && message.interactive?.type === 'nfm_reply') {
         // Handle WhatsApp Flow completion
-        console.log("Received WhatsApp Flow completion:", JSON.stringify(message.interactive.nfm_reply, null, 2));
         
         const responseJson = message.interactive.nfm_reply.response_json;
         let flowData: any = {};
@@ -152,12 +151,10 @@ export const processMessageContent = async (
             // For signup flow completion, return a welcome message
             msg_body_for_agent = "__SKIP_AI_RESPONSE_SIGNUP__";
             messageTypeForAgent = 'flow_completion_signup';
-            console.log("Signup flow completed for user:", from);
         } else {
             // For other flows, we'll skip responding by returning a special flag
             msg_body_for_agent = "__SKIP_AI_RESPONSE__";
             messageTypeForAgent = 'flow_completion_other';
-            console.log("Flow completed - skipping AI response for:", from);
         }
     } else {
         msg_body_for_agent = "Received an unhandled message type.";
@@ -310,7 +307,6 @@ export async function isDuplicateMessage(messageId: string): Promise<boolean> {
         const doc = await processedMessageRef.get();
         
         if (doc.exists) {
-            console.log(`Duplicate message detected: ${messageId}`);
             return true;
         }
         

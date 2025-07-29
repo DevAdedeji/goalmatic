@@ -55,7 +55,6 @@ const createGoogleCalendarEvent = async (params: {
             },
         };
 
-        console.log('createGoogleCalendarEvent', event);
         const response = await calendar.events.insert({
             calendarId: 'primary',
             requestBody: event,

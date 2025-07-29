@@ -151,13 +151,7 @@ const processWithAgent = async (context: WorkflowContext, step: FlowNode, previo
             }
         }
 
-        console.log('AI Agent Processing completed:', {
-            agentId: agentData.id,
-            agentName: agentData.name,
-            outputFormat,
-            responseLength: agentResponse.length,
-            hasProcessedData: !!processedData
-        });
+
 
         return {
             success: true,

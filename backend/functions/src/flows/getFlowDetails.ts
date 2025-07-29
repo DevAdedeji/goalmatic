@@ -55,7 +55,6 @@ export const getFlowDetails = onCall({
         }
 
     } catch (error: any) {
-        console.log(error);
         throw new HttpsError('internal', `${error.message || 'An error occurred'}`)
     }
 })

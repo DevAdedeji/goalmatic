@@ -42,7 +42,7 @@ const updateGoogleCalendarEvent = async (params: {
     // Initialize calendar service
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
-    console.log('updateGoogleCalendarEvent', params);
+
 
     try {
         // First, get the existing event to preserve fields that aren't being updated
@@ -76,7 +76,6 @@ const updateGoogleCalendarEvent = async (params: {
             };
         }
 
-        console.log('eventUpdate', eventUpdate);
         const response = await calendar.events.patch({
             calendarId: 'primary',
             eventId: params.eventId,

@@ -11,7 +11,6 @@ export const cleanupProcessedMessages = onSchedule({
     timeZone: 'UTC'
 }, async (event) => {
     try {
-        console.log('Starting cleanup of expired processed messages...');
         
         const now = new Date();
         const cutoffTime = new Date(now.getTime() - (24 * 60 * 60 * 1000)); // 24 hours ago
@@ -24,11 +23,9 @@ export const cleanupProcessedMessages = onSchedule({
         const snapshot = await expiredMessagesQuery.get();
         
         if (snapshot.empty) {
-            console.log('No expired processed messages to clean up');
             return;
         }
-        
-        console.log(`Found ${snapshot.size} expired processed messages to delete`);
+
         
         // Batch delete for better performance
         const batch = goals_db.batch();
@@ -38,8 +35,7 @@ export const cleanupProcessedMessages = onSchedule({
         });
         
         await batch.commit();
-        
-        console.log(`Successfully cleaned up ${snapshot.size} expired processed messages`);
+
         
     } catch (error) {
         console.error('Error during processed messages cleanup:', error);

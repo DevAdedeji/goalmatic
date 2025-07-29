@@ -74,7 +74,6 @@ export async function getSignedMediaUrl(
                       process.env.NODE_ENV === 'development';
     
     if (isEmulator) {
-        console.log(`Emulator environment detected, using authenticated URL for: ${filePath}`);
         return getAuthenticatedMediaUrl(filePath);
     }
     
@@ -87,7 +86,6 @@ export async function getSignedMediaUrl(
             expires: Date.now() + expirationHours * 60 * 60 * 1000 // Convert hours to milliseconds
         });
         
-        console.log(`Generated signed URL for: ${filePath}`);
         return signedUrl;
     } catch (error) {
         console.warn(`Failed to generate signed URL for ${filePath}, falling back to authenticated URL:`, error instanceof Error ? error.message : error);

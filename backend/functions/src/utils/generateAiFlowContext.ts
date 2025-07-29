@@ -44,7 +44,6 @@ export const generateAiFlowContext = async (
     const { aiEnabledFields, name, description, propsData } = step;
 
 
-    console.log(aiEnabledFields, 'aiEnabledFields');
     // If no AI-enabled fields are specified, return original props
     if (!aiEnabledFields || !Array.isArray(aiEnabledFields) || aiEnabledFields.length === 0) {
         return {

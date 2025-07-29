@@ -66,7 +66,7 @@ export const initialiseAIChat = async (
 const customSystemInfo = (agentTools: Record<string, any>[], agentSystemInfo: string) => {
     const formattedAgentSystemInfo = formatSystemInfo(agentSystemInfo);
 
-    console.log(formattedAgentSystemInfo, 'formattedAgentSystemInfo');
+    // console.log(formattedAgentSystemInfo, 'formattedAgentSystemInfo');
     
     return `
     <Available Tools>

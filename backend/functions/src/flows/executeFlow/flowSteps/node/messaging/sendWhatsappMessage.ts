@@ -52,7 +52,6 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         if (isCSWOpen) {
             const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
-            console.log('waMsg', waMsg);
             await send_WA_Message(waMsg);
         } else {
             const uniqueTemplateMessageId = uuidv4();
@@ -61,7 +60,6 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
                 recipientNumber: recipientNumber,
                 uniqueTemplateMessageId: uniqueTemplateMessageId
             });
-            console.log('waMsg', waMsg);
             await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, message);
             await send_WA_Message(waMsg);
 

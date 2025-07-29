@@ -120,7 +120,6 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
             // Apply extractor function if provided
             if (extractorFunction && extractorFunction.trim()) {
                 try {
-                    console.log(`Applying extractor function to content from ${resultUrl}`);
                     
                     // Create a safe execution environment for the extractor function
                     const extractorWrapper = new Function('content', `
@@ -183,13 +182,7 @@ const fetchWebContent = async (context: WorkflowContext, step: FlowNode, previou
             }
         }
 
-        console.log('Fetched content from Exa:', {
-            urls: validUrls,
-            totalResults: results.length,
-            contentLength: allContent.length,
-            contentByUrl: Object.keys(contentByUrl),
-            hasExtractedData: allExtractedData.length > 0
-        });
+    
 
         return {
             success: true,        

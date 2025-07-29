@@ -37,6 +37,5 @@ export const generateAgentTools = (agentToolSpec: Record<string, any>[], session
         }
     })
 
-    console.log(includedTools);
     return includedTools
 }

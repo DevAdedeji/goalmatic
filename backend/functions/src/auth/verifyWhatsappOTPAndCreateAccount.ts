@@ -21,7 +21,6 @@ export const verifyWhatsappOTPAndCreateAccount = onCall(
             // Normalize phone number
             const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
-            console.log('Received signup data:', { phoneNumber: normalizedPhone, otp: '****', fullName }); // Debug log
 
             if (!normalizedPhone || !otp || !fullName) {
                 throw new Error('Missing required parameters: phoneNumber, otp, and fullName');
@@ -87,7 +86,6 @@ export const verifyWhatsappOTPAndCreateAccount = onCall(
                 const shouldCreateIntegration = !otpData.whatsapp_integration_exists;
                 
                 if (shouldCreateIntegration) {
-                    console.log(`Creating new WhatsApp integration for ${normalizedPhone}`);
                     const integrationId = uuidv4();
                     await goals_db.collection('users').doc(userRecord.uid).collection('integrations').doc(integrationId).set({
                         id: integrationId,

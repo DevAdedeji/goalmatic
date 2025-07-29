@@ -190,7 +190,6 @@ export async function transcribeWhatsAppAudioWithStorage(
         try {
             // Use audio/ogg as default content type for WhatsApp voice messages
             filePath = await uploadMediaToStorage(audioBuffer, 'audio/ogg', userId, 'audio', sessionId);
-            console.log(`Audio uploaded to storage: ${filePath}`);
         } catch (storageError) {
             console.error('Failed to upload audio to storage:', storageError);
             // Continue without file path - don't fail the entire process

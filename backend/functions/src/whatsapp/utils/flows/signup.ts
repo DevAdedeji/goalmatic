@@ -156,7 +156,6 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
   
   // handle health check request
   if (action === "ping") {
-    console.log("📱 Ping request received");
     return {
       data: {
         status: "active",
@@ -194,7 +193,6 @@ export const getNextScreen = async (decryptedBody: FlowRequest & { webhook_phone
                                    data.phone_number || 
                                    extractPhoneFromContext(flow_token);
           
-          console.log("📱 Signup using phone number:", actualPhoneNumber);
           
           // Validation
           if (!full_name || full_name.trim().length === 0) {

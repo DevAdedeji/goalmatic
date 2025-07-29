@@ -24,36 +24,24 @@ export const goals_WA_message_webhook = onRequest({
         handleGetRequest(req, res);
         return;
     }
-    console.log('req.body', JSON.stringify(req.body, null, 2));
 
     if (req.method === 'POST') {
         try {
-            const { message, phone_number_id, from, contactName, status, webhookType } = parseWebhookEvent(req);
-
-            console.log('message', message);
-            console.log('phone_number_id', phone_number_id);
-            console.log('from', from);
-            console.log('contactName', contactName);
-            console.log('status', status);
-            console.log('webhookType', webhookType);
+            const { message, phone_number_id, from, contactName, webhookType } = parseWebhookEvent(req);
 
             // Handle status webhooks (delivery receipts, read receipts, etc.)
             if (webhookType === 'status') {
-                console.log("Received status webhook:", JSON.stringify(status, null, 2));
-                console.log(`Status update for recipient ${from}: ${status.status}`);
                 res.sendStatus(200);
                 return;
             }
 
             if (!message) {
-                console.log("Webhook received non-message event or malformed body:", JSON.stringify(req.body));
                 res.sendStatus(200);
                 return;
             }
 
             // Check for duplicate messages early to prevent reprocessing
             if (message.id && await isDuplicateMessage(message.id)) {
-                console.log(`Duplicate message ${message.id} from ${from} - skipping processing`);
                 res.sendStatus(200);
                 return;
             }
@@ -63,7 +51,6 @@ export const goals_WA_message_webhook = onRequest({
 
             const skipCheck = shouldSkipMessageForDevProd(from);
             if (skipCheck.shouldSkip) {
-                console.log(skipCheck.reason);
                 res.sendStatus(200);
                 return;
             }
@@ -107,10 +94,10 @@ export const goals_WA_message_webhook = onRequest({
                     recipientNumber: from,
                 });
 
-                console.log('Sending signup flow template:', signup_flow_template);
+
                 try {
                 await send_WA_Message(signup_flow_template);
-                    console.log('Signup flow template sent successfully');
+
                 } catch (sendError: any) {
                     console.error('Error sending signup flow template:');
                     console.error('Status:', sendError.response?.status);
@@ -152,10 +139,9 @@ export const goals_WA_message_webhook = onRequest({
             const gpt_response = await WhatsappAgent(userDetails, msg_body_for_agent, agentData!, messageTypeForAgent, undefined, message);
             const responseData = get_WA_TextMessageInput(from, gpt_response.msg);
             
-            console.log('Sending AI response message:', responseData);
             try {
             await send_WA_Message(responseData, phone_number_id);
-                console.log('AI response message sent successfully');
+
             } catch (sendError: any) {
                 console.error('Error sending AI response message:');
                 console.error('Status:', sendError.response?.status);

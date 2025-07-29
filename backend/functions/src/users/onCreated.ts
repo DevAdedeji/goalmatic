@@ -47,11 +47,9 @@ export const welcomeNewGoalmaticUser = onDocumentCreated({
       const referrer = await findUserByReferralCode(userData.referred_by)
       if (referrer && referrer.id !== event.params.userId) {
         updates.referred_by = referrer.id
-        console.log(`User ${event.params.userId} was referred by user ${referrer.id} with code ${userData.referred_by}`)
       } else {
         // Invalid referral code or self-referral, remove it
         updates.referred_by = null
-        console.log(`Invalid referral code ${userData.referred_by} for user ${event.params.userId}`)
       }
     } catch (error) {
       console.error('Error processing referral:', error)

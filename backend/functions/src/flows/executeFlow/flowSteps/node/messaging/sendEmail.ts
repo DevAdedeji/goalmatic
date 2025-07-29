@@ -5,7 +5,6 @@ import { processMentionsProps } from "../../../../../utils/processMentions";
 import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
 
 const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
-    console.log('sendEmail', previousStepResult);
 
     // Process all string fields in propsData first
     const processedProps = processMentionsProps(step.propsData, previousStepResult);
@@ -35,7 +34,6 @@ const sendEmail = async (context: WorkflowContext, step: FlowNode, previousStepR
     try {
         // Send the email
         const result = await notifyUser(emailMessage);
-        console.log('Email sending result:', result);
         return { 
             success: result, 
             sentAt: new Date().toISOString(),  

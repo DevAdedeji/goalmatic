@@ -84,7 +84,6 @@ export const migrateAgentsToConvex = onCall({
     const agentsSnapshot = await goals_db.collection('agents').get();
     results.total = agentsSnapshot.size;
 
-    console.log(`Starting migration of ${results.total} agents (dryRun: ${dryRun})`);
 
     for (const agentDoc of agentsSnapshot.docs) {
       try {
@@ -100,12 +99,11 @@ export const migrateAgentsToConvex = onCall({
             
             if (existingAgent) {
               results.skipped++;
-              console.log(`Skipping existing agent: ${agentId}`);
               continue;
             }
-          } catch (error) {
+          } catch (error:any) {
             // If query fails, assume agent doesn't exist and continue
-            console.log(`Could not check existing agent ${agentId}, proceeding with migration`);
+            console.warn(`Error checking existing agent ${agentId}: ${error.message}`);
           }
         }
 
@@ -116,7 +114,6 @@ export const migrateAgentsToConvex = onCall({
         }
 
         results.migrated++;
-        console.log(`${dryRun ? '[DRY RUN] ' : ''}Migrated agent: ${agentId} - ${convexData.name}`);
 
       } catch (error: any) {
         results.errors++;
@@ -126,7 +123,7 @@ export const migrateAgentsToConvex = onCall({
       }
     }
 
-    console.log(`Migration ${dryRun ? 'dry run ' : ''}completed:`, results);
+
     return {
       success: true,
       results,

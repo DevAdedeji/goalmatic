@@ -19,7 +19,6 @@ export const verifyWhatsappOTPAndLogin = onCall(
             // Normalize phone number to match OTP storage format
             const normalizedPhone = normalizePhoneNumber(phoneNumber);
 
-            console.log('Received login data:', { phoneNumber: normalizedPhone, otp: '****' }); // Debug log
 
             if (!normalizedPhone || !otp) {
                 throw new Error('Missing required parameters: phoneNumber and otp');

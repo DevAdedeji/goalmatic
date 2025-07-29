@@ -146,20 +146,13 @@ Checkout README.md to start.</pre>`);
             }
 
             const { aesKeyBuffer, initialVectorBuffer, decryptedBody } = decryptedRequest;
-            console.log("💬 Decrypted Request:", JSON.stringify(decryptedBody, null, 2));
-            
-            console.log("🔍 Raw request body:", JSON.stringify(req.body, null, 2));
-            console.log("📋 Decrypted Flow data:", JSON.stringify(decryptedBody, null, 2));
-            
-            // Extract phone number from flow_token if encoded there
-            // This is the recommended approach - encode phone number in flow_token when sending Flow
+
             let phoneNumber: string | null = null;
             
             try {
                 // Try to extract phone number from flow_token
                 phoneNumber = extractPhoneFromFlowToken(decryptedBody.flow_token);
                 if (phoneNumber) {
-                    console.log("📱 Phone number extracted from flow_token:", phoneNumber);
                     decryptedBody.webhook_phone_number = phoneNumber;
                 } else {
                     console.warn("❌ No phone number found in flow_token. You need to encode it when sending the Flow message.");
@@ -172,7 +165,6 @@ Checkout README.md to start.</pre>`);
             let screenResponse;
             try {
                 screenResponse = await getNextScreen(decryptedBody);
-                console.log("👉 Response to Encrypt:", JSON.stringify(screenResponse, null, 2));
             } catch (screenError: any) {
                 console.error('Screen processing error:', screenError);
                 // Return a generic error response

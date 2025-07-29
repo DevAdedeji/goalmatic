@@ -112,14 +112,11 @@ export const WhatsappAgent = async (
         if (forceNewSession) {
             currentSessionId = `whatsapp_${uuidv4()}`;
             sessionNeedsCreation = true;
-            console.log(`Forcing new session for user ${userDetails.user_id}: ${currentSessionId}`);
         } else if (!currentSessionId) {
             currentSessionId = `whatsapp_${uuidv4()}`;
             sessionNeedsCreation = true;
-            console.log(`No active session for user ${userDetails.user_id}, creating new: ${currentSessionId}`);
-        } else {
-            console.log(`Continuing session ${currentSessionId} for user ${userDetails.user_id}`);
-        }
+
+        } 
 
         
         

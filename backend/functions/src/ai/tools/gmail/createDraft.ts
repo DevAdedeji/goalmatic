@@ -24,7 +24,6 @@ const createGmailDraft = async (params: {
     const composioIntegration = allIntegrations.docs[0].data()
     const connectionId = composioIntegration.connection_id
 
-    console.log('composioIntegration', composioIntegration);
 
     try {
         const { data } = await composio.tools.execute('GMAIL_CREATE_EMAIL_DRAFT', {
