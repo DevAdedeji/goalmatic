@@ -10,6 +10,8 @@ import { SEARCH_TOOL } from "../../toolCalls/utils/search";
 import type { Tool } from 'ai';
 import { TABLE_CREATE } from "./table/createRecord";
 import { TABLE_READ } from "./table/readRecord";
+import { SEND_WHATSAPP_MESSAGE_TOOL } from './whatsapp/sendMessage';
+import { SEND_EMAIL_TOOL } from './email/sendEmail';
 
 
 
@@ -34,6 +36,10 @@ export const availableTools: Record<string, ToolSignature> = {
     [GMAIL_SEND_EMAIL.id]: GMAIL_SEND_EMAIL,
     [GMAIL_READ_EMAILS.id]: GMAIL_READ_EMAILS,
     [GMAIL_CREATE_DRAFT.id]: GMAIL_CREATE_DRAFT,
+
+    // Messaging tools
+    [SEND_WHATSAPP_MESSAGE_TOOL.id]: SEND_WHATSAPP_MESSAGE_TOOL,
+    [SEND_EMAIL_TOOL.id]: SEND_EMAIL_TOOL,
 
     // Table tools
     [TABLE_CREATE.id]: TABLE_CREATE,

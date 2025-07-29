@@ -95,7 +95,7 @@ watch(conversationHistory, () => {
 	nextTick(() => {
 		const main1 = document.getElementById('main1')!
 
-		main1.scrollTo({
+		main1?.scrollTo({
 			top: main1.scrollHeight,
 			behavior: 'smooth'
 		})

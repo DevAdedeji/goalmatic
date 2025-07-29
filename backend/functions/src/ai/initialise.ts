@@ -77,6 +77,8 @@ const customSystemInfo = (agentToolSpec: Record<string, any>[], agentSystemInfo:
     console.log(toolsSection, 'formattedAgentSystemInfo');
     
     return `
+    always use the tools provided by the user in the agent configuration AvailableTools. Even if the system prompt says you have access to other tools,
+    if it's not in the agent configuration AvailableTools below, you do not have access to it.
     <AvailableTools>
 ${toolsSection}
     </AvailableTools>
