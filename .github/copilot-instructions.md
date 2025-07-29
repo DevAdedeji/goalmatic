@@ -173,3 +173,5 @@ Focus on maintaining the dual-database architecture integrity and following esta
 
 
 Stop creating .md file for every new feature 
+
+Think through each request step by step before writing code and feel free to check the web and documentation for best practices and patterns. and github incase someone else has already implemented a similar feature.

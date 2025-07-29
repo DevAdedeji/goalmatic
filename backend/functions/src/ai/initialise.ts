@@ -1,6 +1,6 @@
 import {  InvalidPromptError, generateText } from "ai"
 import { createGoogleGenerativeAI } from "@ai-sdk/google"
-import { generateAgentTools } from './tools';
+import { generateAgentTools, generateDetailedAgentToolsInfo } from './tools';
 import { setUserToolConfig } from ".";
 import { HttpsError } from "firebase-functions/https";
 import { formatSystemInfo } from "../init";
@@ -44,6 +44,7 @@ export const initialiseAIChat = async (
 
         // Pass the sessionId to generateAgentTools for tool call logging
         const agentTools = generateAgentTools(agent.spec.tools, sessionId);
+        console.log(agentTools, 'agentTools');
         const agentSystemInfo = customSystemInfo(agent.spec.tools, agent.spec.systemInfo);
         const result = await generateText({
             model: google("gemini-2.5-flash"),
@@ -63,15 +64,22 @@ export const initialiseAIChat = async (
 };
 
 
-const customSystemInfo = (agentTools: Record<string, any>[], agentSystemInfo: string) => {
+const customSystemInfo = (agentToolSpec: Record<string, any>[], agentSystemInfo: string) => {
     const formattedAgentSystemInfo = formatSystemInfo(agentSystemInfo);
+    
+    // Generate detailed tool information dynamically
+    const detailedToolsInfo = generateDetailedAgentToolsInfo(agentToolSpec);
+    
+    
 
-    // console.log(formattedAgentSystemInfo, 'formattedAgentSystemInfo');
+    const toolsSection = detailedToolsInfo.length > 0 ? detailedToolsInfo : 'No tools available';
+
+    console.log(toolsSection, 'formattedAgentSystemInfo');
     
     return `
-    <Available Tools>
-    ${agentTools.map((tool) => tool.id)}
-    </Available Tools>
+    <AvailableTools>
+${toolsSection}
+    </AvailableTools>
 
     <Agent System Info>
     ${formattedAgentSystemInfo}

@@ -85,19 +85,21 @@ export default {
 }
 </script>
 
-<style lang="scss">
-/* Dropdown menu */
+<style lang="scss" scoped>
 .dropdown-menu {
-  background: var(--white);
-  border: 1px solid var(--gray-1);
+  max-height: 300px;
+  background: var(--light);
+  border: 1px solid var(--line);
   border-radius: 0.7rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0px 12px 33px 0px rgba(0, 0, 0, .06), 0px 3.618px 9.949px 0px rgba(0, 0, 0, .04);
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
   overflow: auto;
   padding: 0.4rem;
   position: relative;
+
+
 
   button {
     align-items: center;
@@ -109,12 +111,25 @@ export default {
 
     &:hover,
     &:hover.is-selected {
-      background-color: var(--gray-3);
+      background-color: var(--hover);
     }
 
     &.is-selected {
-      background-color: var(--gray-2);
+      background-color: var(--line);
     }
   }
+}
+
+button {
+  background: rgba(61, 37, 20, .08);
+  border-radius: .5rem;
+  border: none;
+  color: var(--dark);
+  font-family: inherit;
+  font-size: .875rem;
+  line-height: 1.15;
+  margin: none;
+  padding: .375rem .625rem;
+  transition: all .2s cubic-bezier(.65, .05, .36, 1);
 }
 </style>
