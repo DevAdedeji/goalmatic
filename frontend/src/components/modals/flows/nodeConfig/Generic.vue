@@ -7,7 +7,7 @@
 			</div>
 
 			<template v-else>
-				<div v-for="(prop, index) in nodeProps" :key="index" class="flex flex-col gap-2">
+				<div v-for="(prop, index) in processedNodeProps" :key="`${index}-${prop.disabled}`" class="flex flex-col gap-2">
 					<!-- AI Mode Toggle -->
 					<div class="flex items-center justify-between mb-1">
 						<label class="text-sm flex items-center">
@@ -340,12 +340,39 @@ const canTestNode = computed(() => {
 	if (!isTestableNode.value) return false
 
 	// Check that all required fields are filled
-	const requiredProps = props.nodeProps.filter((prop) => prop.required)
+	const requiredProps = processedNodeProps.value.filter((prop) => prop.required)
 	return requiredProps.every((prop) => {
 		const value = props.formValues[prop.key]
 		return value !== undefined && value !== null && value !== ''
 	})
 })
+
+// Process node props with conditional disabling logic
+const processedNodeProps = computed(() => {
+	// Create a copy of formValues to ensure reactivity
+	const currentFormValues = { ...props.formValues }
+
+	return props.nodeProps.map((prop) => {
+		// If prop has a disabledFunc, evaluate it with current form values
+		if (prop.disabledFunc && typeof prop.disabledFunc === 'function') {
+			try {
+				const shouldDisable = prop.disabledFunc(currentFormValues)
+
+				return {
+					...prop,
+					disabled: Boolean(shouldDisable)
+				}
+			} catch (error) {
+				console.error(`Error evaluating disabledFunc for ${prop.key}:`, error)
+				return prop
+			}
+		}
+
+		// Return prop as-is for other cases
+		return prop
+	})
+})
+
 
 // Handle test node button click
 const handleTestNode = async () => {
@@ -397,7 +424,7 @@ const getInputClasses = (prop: FlowNodeProp) => {
 const isValidField = (fieldKey: string) => {
 	const value = props.formValues[fieldKey]
 	// Find the corresponding prop
-	const prop = props.nodeProps.find((p) => p.key === fieldKey)
+	const prop = processedNodeProps.value.find((p) => p.key === fieldKey)
 
 	// If the field has a custom validation function, use it
 	if (prop?.validate) {
@@ -441,11 +468,11 @@ const validateAndSave = () => {
 	validationMessages.value = {}
 
 	// Check for required fields (only in manual mode)
-	const requiredProps = props.nodeProps.filter((prop) => prop.required)
+	const requiredProps = processedNodeProps.value.filter((prop) => prop.required)
 	const invalidFields = requiredProps.filter((prop) => !isValidField(prop.key))
 
 	// Also check any fields with custom validation
-	const customValidationProps = props.nodeProps.filter((prop) => prop.validate && !invalidFields.includes(prop))
+	const customValidationProps = processedNodeProps.value.filter((prop) => prop.validate && !invalidFields.includes(prop))
 	customValidationProps.forEach((prop) => {
 		if (props.formValues[prop.key] !== undefined && props.formValues[prop.key] !== null) {
 			isValidField(prop.key)
@@ -541,7 +568,12 @@ onMounted(() => {
 						// For select, use first option or empty string
 						if (prop.options && prop.options.length > 0) {
 							const firstOption = prop.options[0]
-							props.formValues[prop.key] = typeof firstOption === 'object' ? firstOption.value : firstOption
+							// Handle boolean values properly
+							if (typeof firstOption === 'object') {
+								props.formValues[prop.key] = firstOption.value
+							} else {
+								props.formValues[prop.key] = firstOption
+							}
 						} else {
 							props.formValues[prop.key] = ''
 						}

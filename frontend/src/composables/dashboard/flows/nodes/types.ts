@@ -8,6 +8,7 @@ export type FlowNodeProp = {
   value?: any
   options?: any[]
   disabled?: boolean
+  disabledFunc?: (formValues: Record<string, any>) => boolean
   ai_enabled?: boolean
   cloneable?: boolean
   // Properties for searchableSelect type

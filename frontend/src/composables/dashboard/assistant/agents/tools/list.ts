@@ -12,8 +12,11 @@ export const fetchUserTablesForConfig = async () => {
 
 	// Format tables for dropdown
 	return userTables.value.map((table) => ({
+		label: table.name,
 		name: table.name,
+		id: table.id,
 		value: table.id
+
 	}))
 }
 

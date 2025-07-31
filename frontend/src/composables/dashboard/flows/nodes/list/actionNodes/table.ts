@@ -1,6 +1,13 @@
 import type { FlowNode } from '../../types'
+import { fetchUserTablesForConfig } from '@/composables/dashboard/assistant/agents/tools/list'
 
 
+
+const isAllRowsDisabled = (formValues: Record<string, any>) => {
+    const value = formValues.fieldAllRows
+    // Handle both boolean true and string 'true'
+    return value === true || value === 'true'
+}
 
 export const tableActionNodes:FlowNode[] = [
         {
@@ -20,12 +27,28 @@ export const tableActionNodes:FlowNode[] = [
                 description: 'Read records from a table',
                 props: [
                     {
-                        name: 'Table ID',
-                        key: 'tableId',
-                        type: 'text',
+                        name: 'Table',
+                        key: 'id',
+                        type: 'searchableSelect',
                         required: true,
-                        description: 'ID of the table to read from',
-                        cloneable: false
+                        description: 'Select the table to read from',
+                        cloneable: false,
+                        loadOptions: fetchUserTablesForConfig,
+                        loadingText: 'Loading tables...',
+                        searchPlaceholder: 'Search tables...',
+                        minSearchLength: 0
+                    },
+                    {
+                        name: 'Fetch All Rows',
+                        key: 'fieldAllRows',
+                        type: 'select',
+                        options: [
+                            { name: 'False', value: false },
+                            { name: 'True', value: true }
+                        ],
+                        required: false,
+                        description: 'When enabled, retrieves all rows (disables limit, sort options)',
+                        cloneable: true
                     },
                     {
                         name: 'Limit',
@@ -33,7 +56,8 @@ export const tableActionNodes:FlowNode[] = [
                         type: 'number',
                         required: false,
                         description: 'Maximum number of records to retrieve (default: 10)',
-                        cloneable: true
+                        cloneable: true,
+                        disabledFunc: isAllRowsDisabled
                     },
                     {
                         name: 'Sort Field',
@@ -41,7 +65,8 @@ export const tableActionNodes:FlowNode[] = [
                         type: 'text',
                         required: false,
                         description: 'Field name to sort by (default: created_at)',
-                        cloneable: true
+                        cloneable: true,
+                        disabledFunc: isAllRowsDisabled
                     },
                     {
                         name: 'Sort Order',
@@ -53,7 +78,8 @@ export const tableActionNodes:FlowNode[] = [
                         ],
                         required: false,
                         description: 'Sort order (default: desc)',
-                        cloneable: true
+                        cloneable: true,
+                        disabledFunc: isAllRowsDisabled
                     }
                 ]
             },
