@@ -15,6 +15,7 @@ export const tableActionNodes:FlowNode[] = [
             {
                 node_id: 'TABLE_READ',
                 type: 'action',
+                icon: '/icons/table.svg',
                 name: 'Read Table',
                 description: 'Read records from a table',
                 props: [
@@ -59,6 +60,7 @@ export const tableActionNodes:FlowNode[] = [
             {
                 node_id: 'TABLE_CREATE',
                 type: 'action',
+                icon: '/icons/table.svg',
                 name: 'Create Record',
                 description: 'Create a new record in a table',
                 props: [
@@ -84,6 +86,7 @@ export const tableActionNodes:FlowNode[] = [
             {
                 node_id: 'TABLE_UPDATE',
                 type: 'action',
+                icon: '/icons/table.svg',
                 name: 'Update Record',
                 description: 'Update an existing record in a table',
                 props: [
@@ -117,6 +120,7 @@ export const tableActionNodes:FlowNode[] = [
             {
                 node_id: 'TABLE_DELETE',
                 type: 'action',
+                icon: '/icons/table.svg',
                 name: 'Delete Record',
                 description: 'Delete a record from a table',
                 props: [

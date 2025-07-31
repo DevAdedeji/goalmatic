@@ -17,8 +17,8 @@
 
 
 			<div class="grid grid-cols-1 gap-4 mt-6 w-full ">
-				<button class="btn-primary text-light" :disabled="loading">
-					<span v-if="!loading"> {{ step === 1 ? 'Send OTP to whatsapp' : 'Confirm OTP and link' }} </span>
+				<button class="btn-primary text-light" :disabled="verificationLoading">
+					<span v-if="!verificationLoading"> {{ step === 1 ? 'Send OTP to whatsapp' : 'Confirm OTP and link' }} </span>
 					<Spinner v-else />
 				</button>
 			</div>
@@ -29,7 +29,7 @@
 <script setup lang="ts">
 import { useLinkWhatsapp } from '@/composables/dashboard/integrations/whatsapp/link'
 
-const { loading, step, sendOTP, confirmOTP, phoneNumber, otp } = useLinkWhatsapp()
+const { verificationLoading, step, sendOTP, confirmOTP, phoneNumber, otp } = useLinkWhatsapp()
 
 defineProps({
 	payload: {

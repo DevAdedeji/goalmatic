@@ -11,6 +11,7 @@ const loading = ref(false)
 const step = ref(1)
 const phoneNumber = ref('')
 const otp = ref([])
+const verificationLoading = ref(false)
 
 export const useLinkWhatsapp = () => {
     const { id: user_id } = useUser()
@@ -25,7 +26,7 @@ export const useLinkWhatsapp = () => {
             useAlert().openAlert({ type: 'ERROR', msg: 'Invalid phone number' })
             return
         }
-        loading.value = true
+        verificationLoading.value = true
         const res = await callFirebaseFunction('sendWhatsappOTP', { phoneNumber: phoneNumber.value }) as any
         if (res.code === 200) {
             step.value = 2
@@ -33,7 +34,7 @@ export const useLinkWhatsapp = () => {
         } else {
             useAlert().openAlert({ type: 'ERROR', msg: res?.msg || 'Failed to send OTP' })
         }
-        loading.value = false
+        verificationLoading.value = false
     }
 
     const confirmOTP = async () => {
@@ -63,7 +64,7 @@ export const useLinkWhatsapp = () => {
         useAlert().openAlert({ type: 'SUCCESS', msg: 'Whatsapp connected successfully' })
     }
 
-    return { loading, link, sendOTP, confirmOTP, step, phoneNumber, otp }
+    return { loading, verificationLoading, link, sendOTP, confirmOTP, step, phoneNumber, otp }
 }
 
 const validatePhoneNumber = (phone: string): boolean => {
