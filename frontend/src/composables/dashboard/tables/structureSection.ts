@@ -3,6 +3,7 @@ import { useTablesModal } from '@/composables/core/modals'
 import { useConfirmationModal } from '@/composables/core/confirmation'
 import type { Field } from '@/composables/dashboard/tables/types'
 import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
+import { generateUniqueFieldId } from '@/composables/utils/fieldId'
 
 
 // Define field form interface
@@ -30,7 +31,7 @@ export const useTableStructureSection = () => {
 
   const resetFieldForm = () => {
     fieldForm.value = {
-      id: crypto.randomUUID(),
+      id: '', // Will be generated from name
       name: '',
       type: 'text',
       description: '',
@@ -75,6 +76,11 @@ export const useTableStructureSection = () => {
   }
 
   const saveField = async () => {
+    // Generate field ID from name if not set or empty
+    if (!fieldForm.value.id) {
+      fieldForm.value.id = generateUniqueFieldId(fieldForm.value.name, tableData.value.fields || [])
+    }
+
     // Process options if it's a select field
     if (fieldForm.value.type === 'select') {
       fieldForm.value.options = fieldForm.value.optionsText
@@ -101,6 +107,11 @@ export const useTableStructureSection = () => {
   }
 
   const saveFieldOnly = async () => {
+    // Generate field ID from name if not set or empty
+    if (!fieldForm.value.id) {
+      fieldForm.value.id = generateUniqueFieldId(fieldForm.value.name, tableData.value.fields || [])
+    }
+
     // Process options if it's a select field
     if (fieldForm.value.type === 'select') {
       fieldForm.value.options = fieldForm.value.optionsText

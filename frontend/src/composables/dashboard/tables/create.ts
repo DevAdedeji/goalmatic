@@ -5,6 +5,7 @@ import type { TableField } from './types'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
+import { generateUniqueFieldId, isUuidFieldId } from '@/composables/utils/fieldId'
 
 // Form for creating a new table
 const createTableForm = reactive({
@@ -66,9 +67,19 @@ export const useCreateTable = () => {
   }
 
   const addField = (field: TableField) => {
+    // Generate field ID based on name, ensuring uniqueness
+    let fieldId = field.id
+
+    // If no ID exists or it's empty, generate from name
+    if (!fieldId) {
+      fieldId = generateUniqueFieldId(field.name, createTableForm.fields)
+    }
+    // If ID exists but is UUID and field has a name, optionally update to name-based ID
+    // (keeping UUID for backward compatibility if user prefers)
+
     const newField = {
       ...field,
-      id: field.id || uuidv4()
+      id: fieldId
     }
     createTableForm.fields.push(newField)
     return newField.id

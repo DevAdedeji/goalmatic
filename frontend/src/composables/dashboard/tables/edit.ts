@@ -6,6 +6,7 @@ import { setFirestoreSubDocument } from '@/firebase/firestore/create'
 import { deleteFirestoreSubCollectionDocument } from '@/firebase/firestore/delete'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
+import { generateUniqueFieldId } from '@/composables/utils/fieldId'
 
 // Store the selected table for editing
 
@@ -49,9 +50,9 @@ export const useEditTable = () => {
   const addFieldToTable = async (table: Record<string, any>, field: Record<string, any>) => {
     const fields = [...(table.fields || [])]
 
-    // Add a unique ID if it doesn't exist
+    // Generate field ID from name if not set, ensuring uniqueness
     if (!field.id) {
-      field.id = uuidv4()
+      field.id = generateUniqueFieldId(field.name, fields)
     }
 
     fields.push(field)

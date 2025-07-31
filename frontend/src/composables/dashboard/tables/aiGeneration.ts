@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import type { TableField } from './types'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { useAlert } from '@/composables/core/notification'
+import { generateUniqueFieldId } from '@/composables/utils/fieldId'
 
 export const useAITableGeneration = () => {
   const loading = ref(false)
@@ -32,17 +33,22 @@ export const useAITableGeneration = () => {
 
       console.log('Generated Table Data:', generatedTableData.value)
 
-      // Transform fields to match our frontend structure
-      const transformedFields: TableField[] = result.fields.map((field: any) => ({
-        id: field.id || crypto.randomUUID(),
-        name: field.name,
-        type: field.type,
-        description: field.description || '',
-        required: field.required || false,
-        options: field.options || [],
-        // For select fields, also create optionsText for the UI
-        optionsText: field.type === 'select' && field.options ? field.options.join('\n') : ''
-      }))
+      // Transform fields to match our frontend structure with name-based IDs
+      const transformedFields: TableField[] = result.fields.map((field: any, index: number, fields: any[]) => {
+        // Generate field ID from name, ensuring uniqueness across all generated fields
+        const fieldId = generateUniqueFieldId(field.name, fields.slice(0, index).map((f) => ({ id: generateUniqueFieldId(f.name, []) })))
+
+        return {
+          id: fieldId,
+          name: field.name,
+          type: field.type,
+          description: field.description || '',
+          required: field.required || false,
+          options: field.options || [],
+          // For select fields, also create optionsText for the UI
+          optionsText: field.type === 'select' && field.options ? field.options.join('\n') : ''
+        }
+      })
 
       generatedFields.value = transformedFields
       useAlert().openAlert({

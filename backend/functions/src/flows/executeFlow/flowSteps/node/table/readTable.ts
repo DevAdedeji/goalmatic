@@ -14,11 +14,13 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
 
         // Extract query parameters from props
         const {
-            tableId,
-            recordId,
-            limit = 10
+            id: tableId,
+            fieldAllRows = false,
+            limit = 10,
+            sortField = 'created_at',
+            sortOrder = 'desc'
         } = step.propsData;
-
+console.log(step.propsData);
         if (!tableId) {
             return {
                 success: false,
@@ -49,16 +51,25 @@ const readTable = async (context: WorkflowContext, step: FlowNode, previousStepR
         }
 
         // Query records
-        let query = goals_db.collection('tables').doc(tableId).collection('records');
-        if (recordId) {
-            query = query.where('id', '==', recordId) as any;
+        let query: any = goals_db.collection('tables').doc(tableId).collection('records');
+        
+        // Apply sorting if not fetching all rows
+        if (!fieldAllRows) {
+            query = query.orderBy(sortField, sortOrder);
+            query = query.limit(limit);
         }
-        const recordsSnap = await query.limit(limit).get();
-        const records = recordsSnap.docs.map(doc => doc.data());
+        
+        const recordsSnap = await query.get();
+        const records = recordsSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
 
         return {
             success: true,
-            records,
+            payload: {
+                records,
+                totalRecords: records.length,
+                tableId,
+            
+            }
         };
     } catch (error: any) {
         return {

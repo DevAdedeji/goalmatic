@@ -12,6 +12,14 @@
 					<div v-if="field.type === 'text' || field.type === 'email' || field.type === 'url'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -27,6 +35,14 @@
 					<div v-else-if="field.type === 'number'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -42,6 +58,14 @@
 					<div v-else-if="field.type === 'date'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -56,6 +80,14 @@
 					<div v-else-if="field.type === 'time'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<input
 							:id="`field-${field.id}`"
@@ -77,6 +109,14 @@
 							>
 							<label :for="`field-${field.id}`" class="ml-2 block text-sm text-text-secondary">
 								{{ field.name }}
+								<Tooltip v-if="field.description" :open-delay="200" placement="top">
+									<template #trigger>
+										<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+									</template>
+									<template #content>
+										{{ field.description }}
+									</template>
+								</Tooltip>
 							</label>
 						</div>
 					</div>
@@ -85,6 +125,14 @@
 					<div v-else-if="field.type === 'select'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<select
 							:id="`field-${field.id}`"
@@ -105,6 +153,14 @@
 					<div v-else-if="field.type === 'textarea'">
 						<label :for="`field-${field.id}`" class="block text-sm font-medium text-text-secondary mb-1">
 							{{ field.name }} <span v-if="field.required" class="text-danger">*</span>
+							<Tooltip v-if="field.description" :open-delay="200" placement="top">
+								<template #trigger>
+									<Info class="ml-1 size-4 text-gray-400 hover:text-gray-600 cursor-help" />
+								</template>
+								<template #content>
+									{{ field.description }}
+								</template>
+							</Tooltip>
 						</label>
 						<textarea
 							:id="`field-${field.id}`"
@@ -114,11 +170,6 @@
 							:required="field.required"
 						/>
 					</div>
-
-					<!-- Field description if available -->
-					<p v-if="field.description" class="text-xs text-text-secondary mt-1">
-						{{ field.description }}
-					</p>
 				</div>
 			</div>
 
@@ -144,7 +195,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Timestamp } from 'firebase/firestore'
+import { Info } from 'lucide-vue-next'
 import Modal from '@/components/core/modal/Modal.vue'
+import Tooltip from '@/components/core/Tooltip.vue'
 import { useTablesModal } from '@/composables/core/modals'
 import { formatTimeWithSeconds } from '@/composables/utils/formatter'
 import type { Field } from '@/composables/dashboard/tables/types'
@@ -225,4 +278,7 @@ const onSave = async () => {
 </script>
 
 <style scoped>
+label{
+	@apply flex items-center gap-2
+}
 </style>

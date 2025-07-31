@@ -4,6 +4,56 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 
 /**
+ * Generates a field ID from a field name by converting to lowercase, trimming, and replacing spaces with underscores
+ * @param name The field name
+ * @returns A normalized field ID
+ */
+const generateFieldId = (name: string): string => {
+  if (!name || typeof name !== 'string') {
+    return crypto.randomUUID();
+  }
+
+  const normalized = name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '_')
+    .replace(/[^a-z0-9_]/g, ''); // Remove any non-alphanumeric characters except underscores
+
+  // If after normalization we have an empty string, fallback to UUID
+  if (!normalized) {
+    return crypto.randomUUID();
+  }
+
+  return normalized;
+};
+
+/**
+ * Ensures field ID uniqueness within a list of fields
+ * @param name The field name
+ * @param existingFields Array of existing fields
+ * @returns A unique field ID
+ */
+const generateUniqueFieldId = (name: string, existingFields: { id: string }[] = []): string => {
+  const baseId = generateFieldId(name);
+  const existingIds = existingFields.map((field) => field.id);
+  
+  if (!existingIds.includes(baseId)) {
+    return baseId;
+  }
+
+  // If base ID exists, append a number
+  let counter = 1;
+  let uniqueId = `${baseId}_${counter}`;
+  
+  while (existingIds.includes(uniqueId)) {
+    counter++;
+    uniqueId = `${baseId}_${counter}`;
+  }
+  
+  return uniqueId;
+};
+
+/**
  * Firebase callable function to generate table fields from natural language description.
  * Expects { description: string }
  * Returns { fields: TableField[] }
@@ -25,7 +75,7 @@ export const generateTableFields = onCall({ cors: true, region: 'us-central1' },
 
     // Define the field schema
     const fieldSchema = z.object({
-      id: z.string().describe('A unique identifier for the field (UUID format)'),
+      id: z.string().optional().describe('A unique identifier for the field (will be generated from name)'),
       name: z.string().describe('The field name (user-friendly label)'),
       type: z.enum(['text', 'number', 'date', 'time', 'boolean', 'select', 'email', 'url', 'textarea']).describe('The field type'),
       description: z.string().optional().describe('Optional description of what this field is for'),
@@ -56,12 +106,11 @@ export const generateTableFields = onCall({ cors: true, region: 'us-central1' },
       throw new HttpsError('internal', 'AI did not generate any fields');
     }
 
-    // Ensure all fields have proper UUIDs and validate structure
-    const processedFields = result.object.fields.map((field: any) => {
-      // Generate UUID if not present or invalid
-      if (!field.id || !field.id.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        field.id = crypto.randomUUID();
-      }
+    // Generate fields with name-based IDs for consistency
+    const processedFields = result.object.fields.map((field: any, index: number) => {
+      // Generate field ID from name, ensuring uniqueness
+      const previousFields = result.object.fields.slice(0, index).map((f: any) => ({ id: generateFieldId(f.name) }));
+      field.id = generateUniqueFieldId(field.name, previousFields);
       
       // Ensure options array exists for select fields
       if (field.type === 'select' && !field.options) {

@@ -25,6 +25,7 @@ export const tableActionNodes:FlowNode[] = [
                 icon: '/icons/table.svg',
                 name: 'Read Table',
                 description: 'Read records from a table',
+                isTestable: true,
                 props: [
                     {
                         name: 'Table',
@@ -80,6 +81,32 @@ export const tableActionNodes:FlowNode[] = [
                         description: 'Sort order (default: desc)',
                         cloneable: true,
                         disabledFunc: isAllRowsDisabled
+                    }
+                ],
+                outputProps: [
+                    {
+                        name: 'Records',
+                        key: 'records',
+                        type: 'array',
+                        description: 'Array of records retrieved from the table'
+                    },
+                    {
+                        name: 'Total Records',
+                        key: 'totalRecords',
+                        type: 'number',
+                        description: 'Number of records retrieved'
+                    },
+                    {
+                        name: 'Table ID',
+                        key: 'tableId',
+                        type: 'text',
+                        description: 'ID of the table that was queried'
+                    },
+                    {
+                        name: 'All Rows Fetched',
+                        key: 'allRowsFetched',
+                        type: 'boolean',
+                        description: 'Whether all rows were fetched or limited'
                     }
                 ]
             },
