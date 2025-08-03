@@ -83,7 +83,13 @@ export const tableActionNodes:FlowNode[] = [
                         disabledFunc: isAllRowsDisabled
                     }
                 ],
-                outputProps: [
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the operation completed successfully'
+                    },
                     {
                         name: 'Records',
                         key: 'records',
@@ -99,14 +105,8 @@ export const tableActionNodes:FlowNode[] = [
                     {
                         name: 'Table ID',
                         key: 'tableId',
-                        type: 'text',
+                        type: 'string',
                         description: 'ID of the table that was queried'
-                    },
-                    {
-                        name: 'All Rows Fetched',
-                        key: 'allRowsFetched',
-                        type: 'boolean',
-                        description: 'Whether all rows were fetched or limited'
                     }
                 ]
             },
@@ -133,6 +133,32 @@ export const tableActionNodes:FlowNode[] = [
                         description: 'JSON object with field values for the new record',
                         ai_enabled: true,
                         cloneable: true
+                    }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the record was created successfully'
+                    },
+                    {
+                        name: 'Record ID',
+                        key: 'recordId',
+                        type: 'string',
+                        description: 'ID of the newly created record'
+                    },
+                    {
+                        name: 'Created At',
+                        key: 'created_at',
+                        type: 'string',
+                        description: 'Timestamp when the record was created'
+                    },
+                    {
+                        name: 'Record',
+                        key: 'record',
+                        type: 'object',
+                        description: 'The created record data'
                     }
                 ]
             },
@@ -168,6 +194,26 @@ export const tableActionNodes:FlowNode[] = [
                         ai_enabled: true,
                         cloneable: true
                     }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the record was updated successfully'
+                    },
+                    {
+                        name: 'Message',
+                        key: 'message',
+                        type: 'string',
+                        description: 'Success message for the update operation'
+                    },
+                    {
+                        name: 'Updated Record',
+                        key: 'record',
+                        type: 'object',
+                        description: 'The updated record data'
+                    }
                 ]
             },
             {
@@ -192,6 +238,26 @@ export const tableActionNodes:FlowNode[] = [
                         required: true,
                         description: 'ID of the record to delete',
                         cloneable: false
+                    }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the record was deleted successfully'
+                    },
+                    {
+                        name: 'Message',
+                        key: 'message',
+                        type: 'string',
+                        description: 'Success message for the delete operation'
+                    },
+                    {
+                        name: 'Deleted Record',
+                        key: 'record',
+                        type: 'object',
+                        description: 'Information about the deleted record'
                     }
                 ]
             }

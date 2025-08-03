@@ -52,6 +52,32 @@ export const gmailActionNodes: FlowNode[] = [
                         description: 'Send email as HTML format',
                         cloneable: true
                     }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the email was sent successfully'
+                    },
+                    {
+                        name: 'Message ID',
+                        key: 'messageId',
+                        type: 'string',
+                        description: 'Unique identifier of the sent email'
+                    },
+                    {
+                        name: 'Sent At',
+                        key: 'sentAt',
+                        type: 'string',
+                        description: 'Timestamp when the email was sent'
+                    },
+                    {
+                        name: 'Email Details',
+                        key: 'emailDetails',
+                        type: 'object',
+                        description: 'Complete details of the sent email'
+                    }
                 ]
             },
             {
@@ -77,6 +103,26 @@ export const gmailActionNodes: FlowNode[] = [
                         required: false,
                         description: 'Maximum number of emails to retrieve (default: 10)',
                         cloneable: true
+                    }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the emails were retrieved successfully'
+                    },
+                    {
+                        name: 'Emails',
+                        key: 'emails',
+                        type: 'array',
+                        description: 'Array of retrieved emails with their details'
+                    },
+                    {
+                        name: 'Retrieved At',
+                        key: 'retrievedAt',
+                        type: 'string',
+                        description: 'Timestamp when the emails were retrieved'
                     }
                 ]
             },
@@ -121,6 +167,32 @@ export const gmailActionNodes: FlowNode[] = [
                         required: false,
                         description: 'Create draft as HTML format',
                         cloneable: true
+                    }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the draft was created successfully'
+                    },
+                    {
+                        name: 'Draft ID',
+                        key: 'draftId',
+                        type: 'string',
+                        description: 'Unique identifier of the created draft'
+                    },
+                    {
+                        name: 'Created At',
+                        key: 'createdAt',
+                        type: 'string',
+                        description: 'Timestamp when the draft was created'
+                    },
+                    {
+                        name: 'Draft Details',
+                        key: 'draftDetails',
+                        type: 'object',
+                        description: 'Complete details of the created draft'
                     }
                 ]
             }

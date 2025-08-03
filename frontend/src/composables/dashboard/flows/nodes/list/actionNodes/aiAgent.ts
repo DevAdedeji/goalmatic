@@ -36,9 +36,62 @@ export const aiActionNodes: FlowNode[] = [
     category: 'AI',
     children: [
       {
-        node_id: 'AI_AGENT_PROCESS',
+        node_id: 'ASK_AI',
         type: 'action',
-        name: 'Agent Process',
+        name: 'Ask AI',
+        description: 'Ask AI a question or request text generation with simple prompt-based interaction',
+        icon: '/icons/ai.svg',
+        props: [
+          {
+            name: 'Input Data',
+            key: 'inputData',
+            type: 'mentionTextarea',
+            required: true,
+            description: 'Data to be processed by the AI (can reference previous step outputs)',
+            ai_enabled: false,
+            cloneable: true
+          },
+          {
+            name: 'Custom Instructions',
+            key: 'customInstructions',
+            type: 'textarea',
+            required: false,
+            description: 'Additional instructions or context for the AI (will be added to the system prompt)',
+            ai_enabled: true,
+            cloneable: true
+          }
+        ],
+        expectedOutput: [
+          {
+            name: 'Success',
+            key: 'success',
+            type: 'boolean',
+            description: 'Whether the operation completed successfully'
+          },
+          {
+            name: 'AI Response',
+            key: 'aiResponse',
+            type: 'string',
+            description: 'The AI\'s response to your prompt'
+          },
+          {
+            name: 'Processed Data',
+            key: 'processedData',
+            type: 'object',
+            description: 'Additional processed data from the AI response (if applicable)'
+          },
+          {
+            name: 'Session ID',
+            key: 'sessionId',
+            type: 'string',
+            description: 'Unique session identifier for this request'
+          }
+        ]
+      },
+      {
+        node_id: 'ASK_AGENT',
+        type: 'action',
+        name: 'Ask Agent',
         description: 'Process data using a selected AI agent with custom configuration',
         icon: '/icons/ai.svg',
         props: [
@@ -71,19 +124,38 @@ export const aiActionNodes: FlowNode[] = [
             description: 'Additional instructions or context for the agent (will be added to the agent\'s system prompt)',
             ai_enabled: true,
             cloneable: true
+          }
+        ],
+        expectedOutput: [
+          {
+            name: 'Success',
+            key: 'success',
+            type: 'boolean',
+            description: 'Whether the operation completed successfully'
           },
           {
-            name: 'Expected Output Format',
-            key: 'outputFormat',
-            type: 'select',
-            options: [
-              { name: 'Text Response', value: 'text' },
-              { name: 'JSON Object', value: 'json' },
-              { name: 'Array/List', value: 'array' }
-            ],
-            required: false,
-            description: 'Expected format of the agent\'s response',
-            cloneable: true
+            name: 'Agent Response',
+            key: 'agentResponse',
+            type: 'string',
+            description: 'Raw response from the AI agent'
+          },
+          {
+            name: 'Processed Data',
+            key: 'processedData',
+            type: 'object',
+            description: 'Additional processed data from the AI response (if applicable)'
+          },
+          {
+            name: 'Agent Info',
+            key: 'agentInfo',
+            type: 'object',
+            description: 'Information about the agent used (id, name, description)'
+          },
+          {
+            name: 'Session ID',
+            key: 'sessionId',
+            type: 'string',
+            description: 'Unique session identifier for this processing request'
           }
         ]
       }

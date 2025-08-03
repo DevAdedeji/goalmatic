@@ -48,6 +48,20 @@ export const messagingActionNodes:FlowNode[] = [
                         description: 'Phone number with country code (e.g., +1234567890)',
                         cloneable: false
                     }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the message was sent successfully'
+                    },
+                    {
+                        name: 'Sent At',
+                        key: 'sentAt',
+                        type: 'string',
+                        description: 'Timestamp when the message was sent'
+                    }
                 ]
             },
             {
@@ -92,6 +106,20 @@ export const messagingActionNodes:FlowNode[] = [
                         value: 'USER_EMAIL',
                         description: 'The email address to send the email to. For security reasons, emails will be sent to your account email address only.',
                         cloneable: false
+                    }
+                ],
+                expectedOutput: [
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the email was sent successfully'
+                    },
+                    {
+                        name: 'Sent At',
+                        key: 'sentAt',
+                        type: 'string',
+                        description: 'Timestamp when the email was sent'
                     }
                 ]
             }

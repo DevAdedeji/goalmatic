@@ -39,6 +39,7 @@ export type FlowNode = {
   children?: FlowNode[]
   props?: FlowNodeProp[]
   outputProps?: FlowNodeOutputProp[]
+  expectedOutput?: FlowNodeOutputProp[]
 }
 
 export type TriggerNodeType = 'SCHEDULED' | 'MANUAL' | 'EVENT'

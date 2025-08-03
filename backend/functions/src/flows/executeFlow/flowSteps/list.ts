@@ -6,8 +6,8 @@ import { deleteGoogleCalendarEventNode } from "./node/googleCalendar/deleteEvent
 import { sendComposioGmailEmailNode, readComposioGmailEmailsNode, createComposioGmailDraftNode } from "./node/gmail";
 import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } from "./node/table";
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
-import { fetchWebContentNode } from "./node/web";
-import { processWithAgentNode } from "./node/aiAgent";
+import { fetchWebContentNode, callWebApiNode, jobScraperNode } from "./node/web";
+import { askAgentNode, askAiNode } from "./node/ai";
 
 type NodeSignature = {
     nodeId: string;
@@ -37,7 +37,10 @@ export const availableNodes: Record<string, NodeSignature> = {
 
     // Web nodes
     [fetchWebContentNode.nodeId]: fetchWebContentNode,
+    [callWebApiNode.nodeId]: callWebApiNode,
+    [jobScraperNode.nodeId]: jobScraperNode,
 
     // AI Agent nodes
-    [processWithAgentNode.nodeId]: processWithAgentNode
+    [askAgentNode.nodeId]: askAgentNode,
+    [askAiNode.nodeId]: askAiNode
 }
