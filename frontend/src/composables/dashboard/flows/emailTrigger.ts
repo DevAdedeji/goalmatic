@@ -54,13 +54,13 @@ export const useEmailTrigger = () => {
    */
   const copyEmailToClipboard = async (email: string): Promise<boolean> => {
     if (!email) {
-      showAlert("error", "No email address to copy");
+      openAlert({ type: "ERROR", msg: "No email address to copy" });
       return false;
     }
 
     try {
       await navigator.clipboard.writeText(email);
-      showAlert("success", "Email address copied to clipboard");
+      openAlert({ type: "SUCCESS", msg: "Email address copied to clipboard" });
       return true;
     } catch (error) {
       console.error("Error copying to clipboard:", error);
@@ -77,10 +77,10 @@ export const useEmailTrigger = () => {
         textArea.select();
         document.execCommand("copy");
         document.body.removeChild(textArea);
-        showAlert("success", "Email address copied to clipboard");
+        openAlert({ type: "SUCCESS", msg: "Email address copied to clipboard" });
         return true;
       } catch (fallbackError) {
-        showAlert("error", "Failed to copy email address to clipboard");
+        openAlert({ type: "ERROR", msg: "Failed to copy email address to clipboard" });
         return false;
       }
     }

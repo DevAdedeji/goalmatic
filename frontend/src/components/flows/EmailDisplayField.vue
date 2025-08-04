@@ -232,7 +232,7 @@ const emailStatusColor = computed(() => getEmailStatusColor(emailStatus.value))
 // Methods
 const handleGenerate = async () => {
   if (!props.flowId) {
-    console.error('Flow ID is required to generate email address')
+    console.error('EmailDisplayField: Flow ID is required to generate email address')
     return
   }
 

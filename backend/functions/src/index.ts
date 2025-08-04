@@ -32,3 +32,7 @@ export * from "./agents/searchAgents";
 // Email trigger functions
 export * from "./email/zohoWebhookHandler";
 export * from "./email/generateEmailAddress";
+export * from "./email/cleanupEmailTriggerLogs";
+
+// Debug functions
+export * from "./debug/testEmailTrigger";

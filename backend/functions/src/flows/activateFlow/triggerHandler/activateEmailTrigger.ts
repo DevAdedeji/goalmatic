@@ -7,24 +7,8 @@ import { goals_db } from "../../../init";
 import { Timestamp } from "firebase-admin/firestore";
 
 interface EmailTriggerProps {
-  // Email filtering settings
-  allowed_senders?: string;
-  blocked_senders?: string;
-  subject_contains?: string;
-  subject_excludes?: string;
-
-  // Rate limiting
-  max_triggers_per_hour?: number;
-  max_triggers_per_day?: number;
-
-  // Processing options
-  include_attachments?: boolean;
-  max_attachment_size_mb?: number;
-  allowed_file_types?: string;
-
-  // Auto-reply
-  send_auto_reply?: boolean;
-  auto_reply_message?: string;
+  // Unique email address (auto-generated, read-only)
+  unique_email?: string;
 }
 
 export const handleActivateEmailTrigger = async (
@@ -32,7 +16,9 @@ export const handleActivateEmailTrigger = async (
   userId: string,
 ) => {
   try {
+    console.log(`Activating email trigger for flow ${flowData.id}, user ${userId}`);
     const { propsData } = flowData.trigger;
+    console.log('Trigger propsData:', JSON.stringify(propsData, null, 2));
 
     // Check if email trigger already exists for this flow
     const existingTrigger = await getEmailTriggerByFlowId(flowData.id, userId);
@@ -76,7 +62,7 @@ export const handleActivateEmailTrigger = async (
     const existingEmail = propsData.unique_email;
     const existingTriggerId = propsData.trigger_id;
 
-    let emailTrigger;
+    let emailTrigger: any;
 
     if (existingEmail && existingTriggerId) {
       // Use existing email address and create trigger with it
@@ -98,10 +84,12 @@ export const handleActivateEmailTrigger = async (
       };
 
       // Save to database
+      console.log(`Creating email trigger with ID: ${existingTriggerId}`);
       await goals_db
         .collection("emailTriggers")
         .doc(existingTriggerId)
         .set(emailTrigger);
+      console.log(`Email trigger saved to database: ${existingTriggerId}`);
     } else {
       // Parse and validate trigger settings from propsData
       const settings = parseEmailTriggerSettings(
@@ -125,6 +113,7 @@ export const handleActivateEmailTrigger = async (
     console.log(
       `Email trigger activated for flow ${flowData.id}: ${emailTrigger.unique_email}`,
     );
+    console.log(`Trigger ID: ${emailTrigger.id}, Status: ${emailTrigger.status}`);
 
     return {
       success: true,
@@ -152,87 +141,9 @@ export const handleActivateEmailTrigger = async (
 };
 
 /**
- * Parse and validate email trigger settings from flow props
+ * Parse and validate email trigger settings from flow props (simplified)
  */
-function parseEmailTriggerSettings(propsData: EmailTriggerProps) {
-  const settings: any = {};
-
-  // Parse email lists
-  if (propsData.allowed_senders) {
-    settings.allowed_senders = propsData.allowed_senders
-      .split(",")
-      .map((email) => email.trim())
-      .filter((email) => email.length > 0);
-  }
-
-  if (propsData.blocked_senders) {
-    settings.blocked_senders = propsData.blocked_senders
-      .split(",")
-      .map((email) => email.trim())
-      .filter((email) => email.length > 0);
-  }
-
-  // Parse subject filters
-  if (propsData.subject_contains || propsData.subject_excludes) {
-    settings.subject_filters = {};
-
-    if (propsData.subject_contains) {
-      settings.subject_filters.include = propsData.subject_contains
-        .split(",")
-        .map((keyword) => keyword.trim())
-        .filter((keyword) => keyword.length > 0);
-    }
-
-    if (propsData.subject_excludes) {
-      settings.subject_filters.exclude = propsData.subject_excludes
-        .split(",")
-        .map((keyword) => keyword.trim())
-        .filter((keyword) => keyword.length > 0);
-    }
-  }
-
-  // Parse rate limiting
-  if (propsData.max_triggers_per_hour) {
-    settings.max_triggers_per_hour = Math.min(
-      Math.max(1, parseInt(propsData.max_triggers_per_hour.toString()) || 60),
-      1000,
-    );
-  }
-
-  if (propsData.max_triggers_per_day) {
-    settings.max_triggers_per_day = Math.min(
-      Math.max(1, parseInt(propsData.max_triggers_per_day.toString()) || 500),
-      5000,
-    );
-  }
-
-  // Parse attachment settings
-  if (propsData.include_attachments !== undefined) {
-    settings.include_attachments = Boolean(propsData.include_attachments);
-  }
-
-  if (propsData.max_attachment_size_mb) {
-    settings.max_attachment_size_mb = Math.min(
-      Math.max(1, parseInt(propsData.max_attachment_size_mb.toString()) || 10),
-      50,
-    );
-  }
-
-  if (propsData.allowed_file_types) {
-    settings.allowed_attachment_types = propsData.allowed_file_types
-      .split(",")
-      .map((type) => type.trim().toLowerCase())
-      .filter((type) => type.length > 0);
-  }
-
-  // Parse auto-reply settings
-  if (propsData.send_auto_reply !== undefined) {
-    settings.send_auto_reply = Boolean(propsData.send_auto_reply);
-  }
-
-  if (propsData.auto_reply_message) {
-    settings.auto_reply_message = propsData.auto_reply_message.trim();
-  }
-
-  return settings;
+function parseEmailTriggerSettings(_propsData: EmailTriggerProps) {
+  // Return empty settings object - defaults will be applied by validateSettings
+  return {};
 }

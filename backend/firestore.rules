@@ -204,9 +204,34 @@ service cloud.firestore {
     match /publicChats/{publicChatId} {
       // Allow anyone to read public chat sessions
       allow read: if true;
-      
+
       // Only Cloud Functions can create/update/delete public chats
       allow create, update, delete: if false;
+    }
+
+    // Email trigger logs collection: logs for email trigger testing and debugging
+    match /emailTriggerLogs/{logId} {
+      // Only Cloud Functions can create logs
+      allow create: if false;
+
+      // Allow authenticated users to read and list logs
+      // We'll rely on the application logic to only query for logs they own
+      allow read, list: if isSignedIn();
+
+      // Users can delete logs (for cleanup)
+      allow delete: if isSignedIn();
+
+      // No updates allowed
+      allow update: if false;
+    }
+
+    // Email triggers collection: email trigger configurations
+    match /emailTriggers/{triggerId} {
+      // Only Cloud Functions can create/update/delete email triggers
+      allow create, update, delete: if false;
+
+      // Users can read and list their own email triggers
+      allow read, list: if isSignedIn() && resource.data.creator_id == request.auth.uid;
     }
 
     // Deny access to any other documents not explicitly covered above.

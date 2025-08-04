@@ -3,21 +3,14 @@ import { v4 as uuidv4 } from "uuid";
 import { Timestamp } from "firebase-admin/firestore";
 import { HttpsError } from "firebase-functions/v2/https";
 
-// Types
+// Types (simplified)
 interface EmailTriggerSettings {
-  allowed_senders?: string[];
-  blocked_senders?: string[];
-  subject_filters?: {
-    include?: string[];
-    exclude?: string[];
-  };
   max_triggers_per_hour?: number;
   max_triggers_per_day?: number;
   include_attachments: boolean;
   max_attachment_size_mb: number;
   allowed_attachment_types?: string[];
   send_auto_reply: boolean;
-  auto_reply_message?: string;
 }
 
 interface EmailTrigger {
@@ -151,32 +144,7 @@ function validateSettings(
     }
   }
 
-  // Validate email lists
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (validatedSettings.allowed_senders) {
-    const invalidEmails = validatedSettings.allowed_senders.filter(
-      (email) => !emailRegex.test(email),
-    );
-    if (invalidEmails.length > 0) {
-      throw new HttpsError(
-        "invalid-argument",
-        `Invalid allowed sender emails: ${invalidEmails.join(", ")}`,
-      );
-    }
-  }
-
-  if (validatedSettings.blocked_senders) {
-    const invalidEmails = validatedSettings.blocked_senders.filter(
-      (email) => !emailRegex.test(email),
-    );
-    if (invalidEmails.length > 0) {
-      throw new HttpsError(
-        "invalid-argument",
-        `Invalid blocked sender emails: ${invalidEmails.join(", ")}`,
-      );
-    }
-  }
 
   return validatedSettings;
 }
@@ -239,7 +207,9 @@ export async function createEmailTrigger(
   };
 
   // Save to database
+  console.log(`Saving email trigger to database: ${triggerId}`);
   await goals_db.collection("emailTriggers").doc(triggerId).set(emailTrigger);
+  console.log(`Email trigger saved successfully: ${triggerId}`);
 
   // Update the flow to include the email trigger reference
   await goals_db.collection("flows").doc(flowId).update({
@@ -507,3 +477,10 @@ export async function testEmailTrigger(
     };
   }
 }
+
+
+
+
+// Also, I need a button in the email trigger node that when it's clicked, it's going to actively show incoming emails. So this is for test reference, right? 
+
+// it's basically a way to test the trigger

@@ -16,26 +16,17 @@ export interface EmailTrigger {
 }
 
 export interface EmailTriggerSettings {
-  // Email filtering options
-  allowed_senders?: string[]; // Whitelist of sender emails
-  blocked_senders?: string[]; // Blacklist of sender emails
-  subject_filters?: {
-    include?: string[]; // Subject must contain these keywords
-    exclude?: string[]; // Subject must not contain these keywords
-  };
-
-  // Rate limiting
-  max_triggers_per_hour?: number;
-  max_triggers_per_day?: number;
-
-  // Email processing options
+  // Email processing options (simplified with defaults)
   include_attachments: boolean;
   max_attachment_size_mb: number;
   allowed_attachment_types?: string[]; // e.g., ['pdf', 'jpg', 'png']
 
-  // Auto-reply settings
+  // Rate limiting (simplified with defaults)
+  max_triggers_per_hour?: number;
+  max_triggers_per_day?: number;
+
+  // Auto-reply settings (simplified with defaults)
   send_auto_reply: boolean;
-  auto_reply_message?: string;
 }
 
 // Incoming email data structure
@@ -96,29 +87,10 @@ export interface EmailAttachment {
   checksum: string; // for integrity verification
 }
 
-// Email trigger node properties
+// Email trigger node properties (simplified)
 export interface EmailTriggerProps {
   // Unique email address (auto-generated, read-only)
   unique_email?: string;
-
-  // Email filtering settings
-  allowed_senders?: string;
-  blocked_senders?: string;
-  subject_contains?: string;
-  subject_excludes?: string;
-
-  // Rate limiting
-  max_triggers_per_hour?: number;
-  max_triggers_per_day?: number;
-
-  // Processing options
-  include_attachments?: boolean;
-  max_attachment_size_mb?: number;
-  allowed_file_types?: string;
-
-  // Auto-reply
-  send_auto_reply?: boolean;
-  auto_reply_message?: string;
 }
 
 // Email data that flows receive as input

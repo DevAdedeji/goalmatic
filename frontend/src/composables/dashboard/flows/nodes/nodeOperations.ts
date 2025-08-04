@@ -292,6 +292,49 @@ export const useEditNodeLogic = (props: any) => {
     if (currentIndex === -1) return {}
     const outputs: Record<string, any> = {}
 
+    // Include trigger node outputs for all action nodes
+    if (flow && flow.trigger) {
+      const trigger = flow.trigger
+
+      // For email triggers, use the known expected output
+      if (trigger.node_id === 'EMAIL_TRIGGER') {
+        outputs['trigger-EMAIL_TRIGGER'] = [
+          'from_email',
+          'from_name',
+          'to_email',
+          'subject',
+          'body_text',
+          'body_html',
+          'received_at',
+          'message_id',
+          'trigger_email'
+
+        ]
+      } else if (trigger.node_id === 'SCHEDULE_TIME') {
+        outputs['trigger-SCHEDULE_TIME'] = [
+          'date',
+          'time',
+          'timezone',
+          'scheduled_at'
+        ]
+      } else if (trigger.node_id === 'SCHEDULE_INTERVAL') {
+        outputs['trigger-SCHEDULE_INTERVAL'] = [
+          'interval',
+          'interval_type',
+          'start_date',
+          'end_date',
+          'next_run'
+        ]
+      } else {
+        // Generic trigger output for unknown trigger types
+        outputs[`trigger-${trigger.node_id}`] = [
+          'trigger_data',
+          'timestamp'
+        ]
+      }
+    }
+
+    // Include previous step outputs
     for (let i = 0; i < currentIndex; i++) {
       const step: any = steps[i]
       if (step && step.node_id !== undefined) {

@@ -254,17 +254,23 @@
 					<EmailDisplayField
 						v-else-if="prop.type === 'email_display'"
 						v-model="formValues[prop.key]"
-						:label="prop.name"
 						:description="prop.description"
 						:placeholder="prop.placeholder"
 						:required="prop.required"
 						:disabled="prop.disabled"
 						:copyable="prop.copyable"
 						:auto-generate="prop.auto_generate"
-						:flow-id="payload?.flow_id || payload?.id"
+						:flow-id="payload?.flow_id || payload?.id || route.params.id"
 						:show-instructions="true"
 						@generated="(email) => (formValues[prop.key] = email)"
 						@copied="(email) => console.log('Copied email:', email)"
+					/>
+
+					<!-- Email Trigger Testing Component (only for email triggers) -->
+					<EmailTriggerTester
+						v-if="prop.type === 'email_display' && isEmailTriggerNode && formValues[prop.key]"
+						:trigger-email="formValues[prop.key]"
+						:flow-id="payload?.flow_id || payload?.id || route.params.id"
 					/>
 
 					<!-- Default Text Input for any other type -->
@@ -507,7 +513,10 @@ import MentionEditor from '@/components/core/MentionEditor/index.vue'
 import SearchableSelect from '@/components/core/SearchableSelect.vue'
 import Select from '@/components/core/Select.vue'
 import EmailDisplayField from '@/components/flows/EmailDisplayField.vue'
+import EmailTriggerTester from '@/components/flows/EmailTriggerTester.vue'
 import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
+
+const route = useRoute()
 
 const props = defineProps({
     payload: {
@@ -548,7 +557,16 @@ const hasValidationErrors = ref(false)
 const validationMessages = ref<Record<string, string>>({})
 
 // User composable for getting user's agents
-const { user } = useUser()
+const { user: _user } = useUser()
+
+
+
+// Check if this is an email trigger node
+const isEmailTriggerNode = computed(() => {
+    return props.payload?.node_id === 'EMAIL_TRIGGER' || props.payload?.type === 'EMAIL_TRIGGER'
+})
+
+
 
 // Test node functionality
 const {
@@ -640,7 +658,7 @@ const handleTestNode = async () => {
 }
 
 // Handle AI mode change
-const handleAiModeChange = (propKey: string) => {
+const handleAiModeChange = (_propKey: string) => {
     // Don't clear the value when switching modes - users can enter prompts in AI mode
     // The field value will be treated as either content (manual) or prompt (AI) based on the mode
 }

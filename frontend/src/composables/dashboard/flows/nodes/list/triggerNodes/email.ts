@@ -1,147 +1,114 @@
-import { FlowNode } from "../../types";
+import { FlowNode } from '../../types'
 
 export const emailTriggerNodes: FlowNode[] = [
   {
-    node_id: "EMAIL_TRIGGER",
-    icon: "/icons/mail.svg",
-    name: "Email Trigger",
-    description: "Trigger a flow when an email is received at a unique address",
-    type: "trigger",
-    provider: "GOALMATIC",
-    category: "MESSAGING",
+    node_id: 'EMAIL_TRIGGER',
+    icon: '/icons/mail.svg',
+    name: 'Email Trigger',
+    description: 'Trigger a flow when an email is received at a unique address',
+    type: 'trigger',
+    provider: 'GOALMATIC',
+    category: 'MESSAGING',
     props: [
       {
-        name: "Unique Email Address",
-        key: "unique_email",
-        type: "email_display",
+        name: 'Unique Email Address',
+        key: 'unique_email',
+        type: 'email_display',
         required: false,
         disabled: true,
         copyable: true,
-        description: "Auto-generated unique email address for this trigger",
-        placeholder: "Generating...",
+        description: 'Auto-generated unique email address for this trigger',
+        placeholder: 'Generating...',
         cloneable: false,
-        auto_generate: true,
-        generate_on: "node_create",
-      },
-      {
-        name: "Allowed Senders",
-        key: "allowed_senders",
-        type: "textarea",
-        required: false,
-        description:
-          "Comma-separated list of email addresses that can trigger this flow (leave empty to allow all)",
-        placeholder: "user@example.com, admin@company.com",
-        cloneable: true,
-      },
-      {
-        name: "Blocked Senders",
-        key: "blocked_senders",
-        type: "textarea",
-        required: false,
-        description:
-          "Comma-separated list of email addresses that should be blocked from triggering this flow",
-        placeholder: "spam@example.com, blocked@domain.com",
-        cloneable: true,
-      },
-      {
-        name: "Subject Must Contain",
-        key: "subject_contains",
-        type: "text",
-        required: false,
-        description:
-          "Comma-separated keywords - email subject must contain at least one of these",
-        placeholder: "urgent, important, order",
-        cloneable: true,
-      },
-      {
-        name: "Subject Must Not Contain",
-        key: "subject_excludes",
-        type: "text",
-        required: false,
-        description:
-          "Comma-separated keywords - emails with these in subject will be ignored",
-        placeholder: "spam, advertisement, unsubscribe",
-        cloneable: true,
-      },
-      {
-        name: "Max Triggers Per Hour",
-        key: "max_triggers_per_hour",
-        type: "number",
-        required: false,
-        description:
-          "Maximum number of times this trigger can fire per hour (1-1000)",
-        placeholder: "60",
-        min: 1,
-        max: 1000,
-        value: 60,
-        cloneable: true,
-      },
-      {
-        name: "Max Triggers Per Day",
-        key: "max_triggers_per_day",
-        type: "number",
-        required: false,
-        description:
-          "Maximum number of times this trigger can fire per day (1-5000)",
-        placeholder: "500",
-        min: 1,
-        max: 5000,
-        value: 500,
-        cloneable: true,
-      },
-      {
-        name: "Include Attachments",
-        key: "include_attachments",
-        type: "checkbox",
-        required: false,
-        description: "Whether to include email attachments in the flow data",
-        value: false,
-        cloneable: true,
-      },
-      {
-        name: "Max Attachment Size (MB)",
-        key: "max_attachment_size_mb",
-        type: "number",
-        required: false,
-        description: "Maximum size of attachments to process (1-50 MB)",
-        placeholder: "10",
-        min: 1,
-        max: 50,
-        value: 10,
-        cloneable: true,
-        showIf: "include_attachments",
-      },
-      {
-        name: "Allowed File Types",
-        key: "allowed_file_types",
-        type: "text",
-        required: false,
-        description: "Comma-separated list of allowed file extensions",
-        placeholder: "pdf, doc, docx, txt, jpg, png",
-        value: "pdf, doc, docx, txt, jpg, png, gif",
-        cloneable: true,
-        showIf: "include_attachments",
-      },
-      {
-        name: "Send Auto-Reply",
-        key: "send_auto_reply",
-        type: "checkbox",
-        required: false,
-        description: "Send an automatic reply when emails are processed",
-        value: false,
-        cloneable: true,
-      },
-      {
-        name: "Auto-Reply Message",
-        key: "auto_reply_message",
-        type: "textarea",
-        required: false,
-        description: "Message to send as auto-reply",
-        placeholder:
-          "Thank you for your email. We have received it and will process it shortly.",
-        cloneable: true,
-        showIf: "send_auto_reply",
-      },
+        auto_generate: true
+      }
+
     ],
-  },
-];
+    expectedOutput: [
+      {
+        key: 'from_email',
+        name: 'Sender Email',
+        type: 'text',
+        description: 'Email address of the sender'
+      },
+      {
+        key: 'from_name',
+        name: 'Sender Name',
+        type: 'text',
+        description: 'Name of the sender'
+      },
+      {
+        key: 'to_email',
+        name: 'Recipient Email',
+        type: 'text',
+        description: 'The trigger email address that received the message'
+      },
+      {
+        key: 'subject',
+        name: 'Email Subject',
+        type: 'text',
+        description: 'Subject line of the email'
+      },
+      {
+        key: 'body_text',
+        name: 'Email Body (Text)',
+        type: 'textarea',
+        description: 'Plain text content of the email (preview only from webhook)'
+      },
+      {
+        key: 'body_html',
+        name: 'Email Body (HTML)',
+        type: 'textarea',
+        description: 'HTML content of the email (not available from webhook)'
+      },
+      {
+        key: 'received_at',
+        name: 'Received Date',
+        type: 'text',
+        description: 'When the email was received'
+      },
+      {
+        key: 'message_id',
+        name: 'Message ID',
+        type: 'text',
+        description: 'Unique identifier for the email message'
+      },
+      {
+        key: 'sender',
+        name: 'Sender (Alias)',
+        type: 'text',
+        description: 'Sender email address (convenience field)'
+      },
+      {
+        key: 'sender_name',
+        name: 'Sender Name (Alias)',
+        type: 'text',
+        description: 'Sender name or email (convenience field)'
+      },
+      {
+        key: 'email_subject',
+        name: 'Subject (Alias)',
+        type: 'text',
+        description: 'Email subject (convenience field)'
+      },
+      {
+        key: 'email_body',
+        name: 'Body (Alias)',
+        type: 'textarea',
+        description: 'Email body content (convenience field)'
+      },
+      {
+        key: 'received_date',
+        name: 'Date (Alias)',
+        type: 'text',
+        description: 'Received date (convenience field)'
+      },
+      {
+        key: 'attachments',
+        name: 'Attachments',
+        type: 'array',
+        description: 'Array of email attachments (if enabled)'
+      }
+    ]
+  }
+]

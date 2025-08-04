@@ -4,13 +4,14 @@ import { v4 as uuidv4 } from 'uuid';
 import { Timestamp } from 'firebase-admin/firestore';
 import { Client } from "@upstash/qstash";
 import { is_dev } from '../init';
+import { cleanupLogsForTrigger } from './cleanupEmailTriggerLogs';
 
 // Result interface for webhook processing
 interface WebhookProcessingResult {
   triggerId: string;
   flowId?: string;
   executionId?: string;
-  status: 'processed' | 'failed';
+  status: 'processed' | 'failed' | 'testing';
   error?: string;
 }
 
@@ -20,7 +21,7 @@ interface ZohoWebhookPayloadV1 {
   folder: string;
   subject: string;
   fromAddress: string;
-  toAddress: string[];
+  toAddress: string[] | string; // Can be either array or single string
   ccAddress?: string[];
   bccAddress?: string[];
   date: string;
@@ -64,21 +65,14 @@ interface ZohoWebhookPayloadV2 {
 
 type ZohoWebhookPayload = ZohoWebhookPayloadV1 | ZohoWebhookPayloadV2;
 
-// Email trigger settings interface
+// Email trigger settings interface (simplified)
 interface EmailTriggerSettings {
-  allowed_senders?: string[];
-  blocked_senders?: string[];
-  subject_filters?: {
-    include?: string[];
-    exclude?: string[];
-  };
   max_triggers_per_hour?: number;
   max_triggers_per_day?: number;
   include_attachments: boolean;
   max_attachment_size_mb: number;
   allowed_attachment_types?: string[];
   send_auto_reply: boolean;
-  auto_reply_message?: string;
 }
 
 interface EmailTrigger {
@@ -99,11 +93,19 @@ const API_BASE_URL = is_dev ? `${process.env.BASE_URL_DEV}/executeFlow` : `${pro
 const ZOHO_WEBHOOK_SECRET = process.env.ZOHO_WEBHOOK_SECRET; // For webhook security
 
 /**
+ * Clean email address by removing angle brackets and whitespace
+ */
+function cleanEmailAddress(email: string): string {
+  return email.replace(/[<>]/g, '').trim();
+}
+
+/**
  * Extract email address from trigger email to get trigger ID
  * Expected format: trigger-{triggerId}@goalmatic.io
  */
 function extractTriggerIdFromEmail(email: string): string | null {
-  const match = email.match(/^trigger-([a-zA-Z0-9]+)@goalmatic\.io$/);
+  const cleanEmail = cleanEmailAddress(email);
+  const match = cleanEmail.match(/^([a-zA-Z0-9]+)@goalmatic\.io$/);
   return match ? match[1] : null;
 }
 
@@ -116,14 +118,16 @@ function normalizeWebhookPayload(payload: ZohoWebhookPayload): any {
     return {
       messageId: payload.data.messageId,
       subject: payload.data.subject,
-      fromAddress: payload.data.from.address,
+      fromAddress: cleanEmailAddress(payload.data.from.address),
       fromName: payload.data.from.name,
-      toAddress: payload.data.to.map(t => t.address),
-      ccAddress: payload.data.cc?.map(c => c.address) || [],
+      toAddress: payload.data.to.map(t => cleanEmailAddress(t.address)),
+      ccAddress: payload.data.cc?.map(c => cleanEmailAddress(c.address)) || [],
       date: payload.data.date,
       hasAttachment: payload.data.hasAttachment,
       attachments: payload.data.attachments || [],
       preview: payload.data.preview,
+      bodyHtml: (payload.data as any).html || '',
+      bodyText: (payload.data as any).summary || payload.data.preview || '',
       accountId: payload.data.accountId
     };
   }
@@ -131,17 +135,31 @@ function normalizeWebhookPayload(payload: ZohoWebhookPayload): any {
   // Handle V1 format (legacy)
   else {
     const v1Payload = payload as ZohoWebhookPayloadV1;
+
+    // Ensure toAddress is always an array and clean email addresses
+    let toAddressArray: string[];
+    if (Array.isArray(v1Payload.toAddress)) {
+      toAddressArray = v1Payload.toAddress.map(email => cleanEmailAddress(email));
+    } else if (typeof v1Payload.toAddress === 'string') {
+      toAddressArray = [cleanEmailAddress(v1Payload.toAddress)];
+    } else {
+      console.error('Invalid toAddress format:', v1Payload.toAddress);
+      toAddressArray = [];
+    }
+
     return {
       messageId: v1Payload.messageId,
       subject: v1Payload.subject,
-      fromAddress: v1Payload.fromAddress,
-      fromName: undefined,
-      toAddress: v1Payload.toAddress,
-      ccAddress: v1Payload.ccAddress || [],
+      fromAddress: cleanEmailAddress(v1Payload.fromAddress),
+      fromName: (v1Payload as any).sender || undefined,
+      toAddress: toAddressArray,
+      ccAddress: v1Payload.ccAddress?.map(email => cleanEmailAddress(email)) || [],
       date: v1Payload.date,
       hasAttachment: v1Payload.hasAttachment,
       attachments: [],
-      preview: undefined,
+      preview: (v1Payload as any).summary || undefined,
+      bodyHtml: (v1Payload as any).html || '',
+      bodyText: (v1Payload as any).summary || '',
       accountId: v1Payload.accountId
     };
   }
@@ -171,35 +189,10 @@ function validateWebhookSecurity(headers: any, body: string): boolean {
 }
 
 /**
- * Check if email passes trigger filters
+ * Check if email passes trigger filters (simplified - accepts all emails)
  */
-function passesFilters(normalizedPayload: any, settings: EmailTriggerSettings): { passes: boolean; reason?: string } {
-  const { fromAddress, subject } = normalizedPayload;
-
-  // Check blocked senders
-  if (settings.blocked_senders?.some(blocked => fromAddress.toLowerCase().includes(blocked.toLowerCase()))) {
-    return { passes: false, reason: 'SENDER_BLOCKED' };
-  }
-
-  // Check allowed senders (if configured)
-  if (settings.allowed_senders?.length &&
-      !settings.allowed_senders.some(allowed => fromAddress.toLowerCase().includes(allowed.toLowerCase()))) {
-    return { passes: false, reason: 'SENDER_NOT_ALLOWED' };
-  }
-
-  // Check subject exclusions
-  if (settings.subject_filters?.exclude?.some(exclude =>
-      subject.toLowerCase().includes(exclude.toLowerCase()))) {
-    return { passes: false, reason: 'SUBJECT_FILTERED' };
-  }
-
-  // Check subject inclusions (if configured)
-  if (settings.subject_filters?.include?.length &&
-      !settings.subject_filters.include.some(include =>
-        subject.toLowerCase().includes(include.toLowerCase()))) {
-    return { passes: false, reason: 'SUBJECT_NOT_INCLUDED' };
-  }
-
+function passesFilters(_normalizedPayload: any, _settings: EmailTriggerSettings): { passes: boolean; reason?: string } {
+  // Simplified: accept all emails (no filtering)
   return { passes: true };
 }
 
@@ -244,25 +237,37 @@ async function logEmailTrigger(
   triggerId: string,
   flowId: string,
   normalizedPayload: any,
-  status: 'processed' | 'filtered' | 'failed',
+  status: 'processed' | 'filtered' | 'failed' | 'testing',
   reason?: string,
-  executionId?: string
+  executionId?: string,
+  isTestingMode?: boolean
 ): Promise<void> {
   const logId = uuidv4();
 
-  await goals_db.collection('emailTriggerLogs').doc(logId).set({
+  const logData: any = {
     id: logId,
     trigger_id: triggerId,
     flow_id: flowId,
     message_id: normalizedPayload.messageId,
     from_address: normalizedPayload.fromAddress,
     subject: normalizedPayload.subject,
+    body_text: normalizedPayload.bodyText || normalizedPayload.preview || '',
+    body_html: normalizedPayload.bodyHtml || '',
     received_at: Timestamp.now(),
     status,
-    reason,
-    execution_id: executionId,
-    created_at: Timestamp.now()
-  });
+    created_at: Timestamp.now(),
+    is_testing: isTestingMode || false
+  };
+
+  // Only add optional fields if they have values
+  if (reason) {
+    logData.reason = reason;
+  }
+  if (executionId) {
+    logData.execution_id = executionId;
+  }
+
+  await goals_db.collection('emailTriggerLogs').doc(logId).set(logData);
 }
 
 /**
@@ -279,11 +284,11 @@ async function executeFlowWithEmailData(
   // Prepare email flow input data
   const emailFlowInput = {
     from_email: normalizedPayload.fromAddress,
-    from_name: normalizedPayload.fromName,
+    from_name: normalizedPayload.fromName || normalizedPayload.fromAddress,
     to_email: normalizedPayload.toAddress[0], // Primary recipient
     subject: normalizedPayload.subject,
-    body_text: normalizedPayload.preview,
-    body_html: undefined, // Would need to fetch full email content via Zoho API
+    body_text: normalizedPayload.bodyText || normalizedPayload.preview || '',
+    body_html: normalizedPayload.bodyHtml || '',
     received_at: normalizedPayload.date,
     message_id: normalizedPayload.messageId,
     headers: {},
@@ -329,6 +334,9 @@ export const zohoEmailWebhook = onRequest({
       return;
     }
 
+    console.log('Request method:', request.method);
+    console.log('Request body:', JSON.stringify(request.body, null, 2));
+
     // Validate webhook security
     const bodyString = JSON.stringify(request.body);
     if (!validateWebhookSecurity(request.headers, bodyString)) {
@@ -338,7 +346,9 @@ export const zohoEmailWebhook = onRequest({
 
     // Parse and normalize webhook payload
     const webhookPayload = request.body as ZohoWebhookPayload;
+    console.log('Raw toAddress:', (webhookPayload as any).toAddress, 'Type:', typeof (webhookPayload as any).toAddress);
     const normalizedPayload = normalizeWebhookPayload(webhookPayload);
+    console.log('Normalized toAddress:', normalizedPayload.toAddress, 'Type:', typeof normalizedPayload.toAddress);
 
     console.log('Received email webhook:', {
       messageId: normalizedPayload.messageId,
@@ -347,11 +357,31 @@ export const zohoEmailWebhook = onRequest({
       subject: normalizedPayload.subject
     });
 
+    console.log('Email content debug:', {
+      bodyHtmlLength: normalizedPayload.bodyHtml?.length || 0,
+      bodyTextLength: normalizedPayload.bodyText?.length || 0,
+      previewLength: normalizedPayload.preview?.length || 0,
+      hasBodyHtml: !!normalizedPayload.bodyHtml,
+      hasBodyText: !!normalizedPayload.bodyText
+    });
+
+    console.log('Processing recipients:', normalizedPayload.toAddress);
+
     // Process each recipient (there might be multiple triggers)
     const results: WebhookProcessingResult[] = [];
 
+    // Check if this is a testing email (contains [TEST] in subject or from a testing tool)
+    const isTestingMode = normalizedPayload.subject?.includes('[TEST]') ||
+                         normalizedPayload.subject?.includes('Test Email') ||
+                         normalizedPayload.fromAddress?.includes('test') ||
+                         normalizedPayload.fromAddress?.includes('noreply');
+
+    console.log(`Processing email - Testing mode: ${isTestingMode}`);
+
     for (const recipientEmail of normalizedPayload.toAddress) {
+      console.log(`Processing recipient: "${recipientEmail}"`);
       const triggerId = extractTriggerIdFromEmail(recipientEmail);
+      console.log(`Extracted trigger ID: "${triggerId}"`);
 
       if (!triggerId) {
         console.log(`Skipping non-trigger email: ${recipientEmail}`);
@@ -367,7 +397,33 @@ export const zohoEmailWebhook = onRequest({
 
         if (!triggerDoc.exists) {
           console.error(`Email trigger not found: ${triggerId}`);
-          await logEmailTrigger(triggerId, '', normalizedPayload, 'failed', 'TRIGGER_NOT_FOUND');
+
+          // Debug: List all existing triggers to help troubleshoot
+          const allTriggers = await goals_db.collection('emailTriggers').limit(10).get();
+          console.log('Existing email triggers:');
+          allTriggers.docs.forEach(doc => {
+            const data = doc.data();
+            console.log(`- ID: ${doc.id}, Email: ${data.unique_email}, Status: ${data.status}, FlowID: ${data.flow_id}`);
+          });
+
+          // Also check flows collection for this trigger ID pattern
+          const flowsWithEmailTrigger = await goals_db.collection('flows')
+            .where('trigger.node_id', '==', 'EMAIL_TRIGGER')
+            .limit(5)
+            .get();
+          console.log('Flows with email triggers:');
+          flowsWithEmailTrigger.docs.forEach(doc => {
+            const data = doc.data();
+            const triggerProps = data.trigger?.propsData;
+            console.log(`- FlowID: ${doc.id}, Email: ${triggerProps?.unique_email}, TriggerID: ${triggerProps?.trigger_id}, Status: ${data.status}`);
+          });
+
+          // For testing mode, log as testing instead of failed
+          if (isTestingMode) {
+            await logEmailTrigger(triggerId, '', normalizedPayload, 'testing', 'EMAIL_RECEIVED_FOR_TESTING', undefined, true);
+          } else {
+            await logEmailTrigger(triggerId, '', normalizedPayload, 'failed', 'TRIGGER_NOT_FOUND', undefined, false);
+          }
           continue;
         }
 
@@ -376,7 +432,11 @@ export const zohoEmailWebhook = onRequest({
         // Check if trigger is active
         if (triggerData.status !== 'active') {
           console.log(`Email trigger inactive: ${triggerId}`);
-          await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'filtered', 'TRIGGER_INACTIVE');
+          if (isTestingMode) {
+            await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'testing', 'EMAIL_RECEIVED_FOR_TESTING', undefined, true);
+          } else {
+            await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'filtered', 'TRIGGER_INACTIVE', undefined, false);
+          }
           continue;
         }
 
@@ -411,34 +471,55 @@ export const zohoEmailWebhook = onRequest({
         const flowData = flowDoc.data();
         if (flowData?.status !== 1) {
           console.log(`Flow inactive: ${triggerData.flow_id}`);
-          await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'filtered', 'FLOW_INACTIVE');
+          if (isTestingMode) {
+            await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'testing', 'EMAIL_RECEIVED_FOR_TESTING', undefined, true);
+          } else {
+            await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'filtered', 'FLOW_INACTIVE', undefined, false);
+          }
           continue;
         }
 
-        // Execute the flow
-        const executionId = await executeFlowWithEmailData(
-          triggerData.flow_id,
-          triggerData.creator_id,
-          normalizedPayload
-        );
+        // In testing mode, just log the email reception without executing the flow
+        if (isTestingMode) {
+          console.log(`Testing mode: Email received for trigger ${triggerId}, skipping flow execution`);
+          await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'testing', 'EMAIL_RECEIVED_FOR_TESTING', undefined, true);
 
-        // Update trigger statistics
-        await goals_db.collection('emailTriggers').doc(triggerId).update({
-          last_triggered: Timestamp.now(),
-          trigger_count: (triggerData.trigger_count || 0) + 1
+          results.push({
+            triggerId,
+            flowId: triggerData.flow_id,
+            status: 'testing'
+          });
+        } else {
+          // Execute the flow only in non-testing mode
+          const executionId = await executeFlowWithEmailData(
+            triggerData.flow_id,
+            triggerData.creator_id,
+            normalizedPayload
+          );
+
+          // Update trigger statistics
+          await goals_db.collection('emailTriggers').doc(triggerId).update({
+            last_triggered: Timestamp.now(),
+            trigger_count: (triggerData.trigger_count || 0) + 1
+          });
+
+          // Log successful processing
+          await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'processed', undefined, executionId, false);
+
+          results.push({
+            triggerId,
+            flowId: triggerData.flow_id,
+            executionId,
+            status: 'processed'
+          });
+
+          console.log(`Successfully triggered flow ${triggerData.flow_id} with execution ID: ${executionId}`);
+        }
+
+        // Clean up old logs for this trigger (async, don't wait)
+        cleanupLogsForTrigger(triggerId, 24).catch(error => {
+          console.warn(`Failed to cleanup logs for trigger ${triggerId}:`, error);
         });
-
-        // Log successful processing
-        await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'processed', undefined, executionId);
-
-        results.push({
-          triggerId,
-          flowId: triggerData.flow_id,
-          executionId,
-          status: 'processed'
-        });
-
-        console.log(`Successfully triggered flow ${triggerData.flow_id} with execution ID: ${executionId}`);
 
       } catch (error) {
         console.error(`Error processing trigger ${triggerId}:`, error);

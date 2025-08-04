@@ -52,9 +52,22 @@ export default {
   methods: {
     formatHeader(data) {
       const splitMain = data.split('-')
-      const capTitle = splitMain[2].split('_').map((i) => capitalize(i)).join(' ')
-      const formatted = `(${splitMain[1]}) ${capTitle}`
-      return formatted
+
+      // Handle trigger nodes (format: trigger-NODE_ID)
+      if (splitMain[0] === 'trigger' && splitMain.length === 2) {
+        const capTitle = splitMain[1].split('_').map((i) => capitalize(i)).join(' ')
+        return `(Trigger) ${capTitle}`
+      }
+
+      // Handle step nodes (format: step-index-NODE_ID)
+      if (splitMain.length >= 3) {
+        const capTitle = splitMain[2].split('_').map((i) => capitalize(i)).join(' ')
+        const formatted = `(${splitMain[1]}) ${capTitle}`
+        return formatted
+      }
+
+      // Fallback for unexpected formats
+      return data
     },
     isSelected(groupIdx, childIdx) {
       return this.selectedGroupIndex === groupIdx && this.selectedChildIndex === childIdx

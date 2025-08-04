@@ -1,6 +1,5 @@
 
 import { ref } from 'vue'
-import { db } from '@/firebase/init'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { getFirestoreSubCollection } from '@/firebase/firestore/fetch'
