@@ -1,6 +1,6 @@
 import { useStorage } from '@vueuse/core'
 import { useAlert } from '@/composables/core/notification'
-import { callFirebaseFunction } from '~~/src/firebase/functions'
+import { callFirebaseFunction } from '@/firebase/functions'
 
 
 

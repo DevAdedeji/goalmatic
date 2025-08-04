@@ -59,7 +59,7 @@
 			<div class="grid grid-cols-1 gap-2">
 				<div v-for="(value, key) in step.propsData" :key="key" class="flex gap-2 text-sm items-center">
 					<span class="font-medium text-gray-700">{{ key }}:</span>
-					<span class="text-gray-600 truncate flex-1">{{ parseMentionsFromHtml(value) }}</span>
+					<span class="text-gray-600 truncate flex-1">{{ formatPropertyValue(String(key), value) }}</span>
 					<!-- AI Mode Indicator -->
 					<span v-if="isAiEnabledField(String(key))" class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-primary text-xs rounded-full">
 						<svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -78,6 +78,7 @@ import { Edit2, Trash2, RefreshCw, AlertCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { isNodeValid, getMissingRequiredProps } from '@/composables/dashboard/flows/nodes/nodeOperations'
 import IconDropdown from '@/components/core/IconDropdown.vue'
+import { useFetchUserTables } from '@/composables/dashboard/tables/fetch'
 
 // Define Props
 const props = defineProps({
@@ -181,6 +182,26 @@ const hasPropsData = computed(() => {
 // Check if a field is AI-enabled
 const isAiEnabledField = (fieldKey: string) => {
 	return props.step.aiEnabledFields && props.step.aiEnabledFields.includes(fieldKey)
+}
+
+// Get user tables for resolving table names
+const { userTables } = useFetchUserTables()
+
+// Function to resolve table ID to table name
+const resolveTableName = (tableId: string): string => {
+	const table = userTables.value.find((t: any) => t.id === tableId)
+	return table ? table.name : tableId
+}
+
+// Function to format property values for display
+const formatPropertyValue = (key: string, value: any): string => {
+	// For TABLE_READ nodes, resolve table ID to table name for the 'id' field
+	if (props.step.node_id === 'TABLE_READ' && key === 'id' && typeof value === 'string') {
+		return resolveTableName(value)
+	}
+
+	// For other cases, use the existing parsing logic
+	return parseMentionsFromHtml(value)
 }
 </script>
 

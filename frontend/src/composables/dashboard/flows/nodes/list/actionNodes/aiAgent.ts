@@ -1,5 +1,6 @@
 import type { FlowNode } from '../../types'
 import { useFetchAgents, useFetchUserAgents } from '@/composables/dashboard/assistant/agents/fetch'
+import { availableTools } from '@/composables/dashboard/assistant/agents/tools/list'
 
 
 // Function to fetch user agents for dropdown
@@ -25,6 +26,21 @@ const fetchUserAgentsForConfig = async () => {
   return uniqueAgents
 }
 
+// Function to fetch available tools for Ask AI node
+const fetchAvailableToolsForConfig = async () => {
+  // Return formatted tools for multi-select
+  return availableTools.value.flatMap(tool =>
+    tool.abilities.map(ability => ({
+      id: ability.id,
+      name: `${tool.name} - ${ability.name}`,
+      description: tool.description,
+      icon: ability.icon,
+      primary_id: ability.primary_id,
+      checkStatus: tool.checkStatus
+    }))
+  )
+}
+
 export const aiActionNodes: FlowNode[] = [
   {
     node_id: 'AI',
@@ -39,9 +55,31 @@ export const aiActionNodes: FlowNode[] = [
         node_id: 'ASK_AI',
         type: 'action',
         name: 'Ask AI',
-        description: 'Ask AI a question or request text generation with simple prompt-based interaction',
+        description: 'Ask AI a question or request text generation with tool integration capabilities',
         icon: '/icons/ai.svg',
         props: [
+          {
+            name: 'Mode',
+            key: 'mode',
+            type: 'select',
+            options: [
+              { name: 'Simple AI (No Tools)', value: 'simple' },
+              { name: 'AI with Tools', value: 'tools' }
+            ],
+            required: true,
+            description: 'Choose whether to use simple AI or AI with tool integration',
+            cloneable: true,
+            value: 'simple'
+          },
+          {
+            name: 'Available Tools',
+            key: 'selectedTools',
+            type: 'textarea',
+            required: false,
+            description: 'Enter tool IDs separated by commas (e.g., GOOGLECALENDAR_CREATE_EVENT, TABLE_READ, SEARCH_TOOL). Available tools: GOOGLECALENDAR_CREATE_EVENT, GOOGLECALENDAR_READ_EVENT, GOOGLECALENDAR_UPDATE_EVENT, GOOGLECALENDAR_DELETE_EVENT, TABLE_READ, TABLE_CREATE, TABLE_UPDATE, TABLE_DELETE, SEARCH_TOOL, CURRENT_DATE_TIME_TOOL, SEND_WHATSAPP_MESSAGE_TOOL, SEND_EMAIL_TOOL, GMAIL_SEND_EMAIL, GMAIL_READ_EMAILS, GMAIL_CREATE_DRAFT',
+            cloneable: true,
+            hiddenFunc: (formValues: Record<string, any>) => formValues.mode !== 'tools'
+          },
           {
             name: 'Input Data',
             key: 'inputData',
@@ -73,6 +111,12 @@ export const aiActionNodes: FlowNode[] = [
             key: 'aiResponse',
             type: 'string',
             description: 'The AI\'s response to your prompt'
+          },
+          {
+            name: 'Tool Results',
+            key: 'toolResults',
+            type: 'array',
+            description: 'Results from any tools used during processing (if tools mode is enabled)'
           },
           {
             name: 'Processed Data',

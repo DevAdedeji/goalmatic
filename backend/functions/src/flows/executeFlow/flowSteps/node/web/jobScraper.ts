@@ -19,38 +19,6 @@ const generateJobSearchUrl = (
         case 'vue-jobs':
             return 'https://vuejobs.com/jobs';
 
-        case 'remoteok':
-        case 'remote-ok':
-        case 'remote.ok':
-            let remoteOkUrl = 'https://remoteok.io/remote-dev-jobs';
-            if (jobTitle.toLowerCase().includes('engineer')) {
-                remoteOkUrl = 'https://remoteok.io/remote-engineer-jobs';
-            } else if (jobTitle.toLowerCase().includes('developer')) {
-                remoteOkUrl = 'https://remoteok.io/remote-dev-jobs';
-            } else if (jobTitle.toLowerCase().includes('designer')) {
-                remoteOkUrl = 'https://remoteok.io/remote-design-jobs';
-            } else if (jobTitle.toLowerCase().includes('marketing')) {
-                remoteOkUrl = 'https://remoteok.io/remote-marketing-jobs';
-            }
-            return remoteOkUrl;
-
-        case 'startup-jobs':
-        case 'startupjobs':
-        case 'startup.jobs':
-            let startupJobsUrl = 'https://startup.jobs/';
-            if (jobTitle.toLowerCase().includes('engineer')) {
-                startupJobsUrl = 'https://startup.jobs/engineer-jobs';
-            } else if (jobTitle.toLowerCase().includes('developer')) {
-                startupJobsUrl = 'https://startup.jobs/developer-jobs';
-            } else if (jobTitle.toLowerCase().includes('designer')) {
-                startupJobsUrl = 'https://startup.jobs/design-jobs';
-            } else if (jobTitle.toLowerCase().includes('marketing')) {
-                startupJobsUrl = 'https://startup.jobs/marketing-jobs';
-            } else if (jobTitle.toLowerCase().includes('manager')) {
-                startupJobsUrl = 'https://startup.jobs/manager-jobs';
-            }
-            return startupJobsUrl;
-
         case 'linkedin':
         case 'linkedin-jobs':
             // LinkedIn Jobs URL format
@@ -60,11 +28,6 @@ const generateJobSearchUrl = (
             }
             linkedinUrl += '&f_TPR=r86400'; // Recent jobs (24 hours)
             return linkedinUrl;
-
-        case 'vuejobs':
-        case 'vue-jobs':
-            // VueJobs doesn't need job title in URL - it shows all Vue.js jobs
-            return 'https://vuejobs.com/jobs';
 
         default:
             return null;
@@ -82,10 +45,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             jobSite,
             jobTitle,
             location,
-            dateRange,
-            experienceLevel,
-            employmentType,
-            salaryRange,
             jobLimit
         } = processedPropsWithAiContext;
 
@@ -152,7 +111,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                     }
                 });
             } else {
-                // For other sites (not currently supported in this focused implementation)
                 return {
                     success: false,
                     error: `Currently only LinkedIn and VueJobs are supported. Selected: ${jobSite}`,
@@ -160,7 +118,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 };
             }
         } catch (error: any) {
-            // Enhanced error handling with specific error types
             let errorMessage = 'Request failed';
 
             if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -178,29 +135,18 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             return {
                 success: false,
                 error: `Scraper API error: ${errorMessage}`,
-                supportedSites: ['linkedin', 'vuejobs'],
-                suggestion: jobSite.toLowerCase().includes('linkedin') ?
-                    'LinkedIn scraping failed. Please try again or use VueJobs for Vue.js positions.' :
-                    jobSite.toLowerCase().includes('vuejobs') ?
-                    'VueJobs scraping failed. Please try again or use LinkedIn with a job title.' :
-                    'Only LinkedIn and VueJobs are currently supported. Please select one of these options.'
+                supportedSites: ['linkedin', 'vuejobs']
             };
         }
 
         const data = response.data;
         console.log(data);
-        // Handle the new GET API response structure
-        if (!data.success) {
-            const errorMsg = data.error || 'Unknown error';
 
+        if (!data.success) {
             return {
                 success: false,
-                error: `Scraper API error: ${errorMsg}`,
-                supportedSites: ['linkedin', 'vuejobs'],
-                recommendedSites: [
-                    { name: 'LinkedIn', description: 'Professional network with 20 jobs per search, requires job title' },
-                    { name: 'VueJobs', description: 'Vue.js focused jobs, shows all available positions' }
-                ]
+                error: `Scraper API error: ${data.error || 'Unknown error'}`,
+                supportedSites: ['linkedin', 'vuejobs']
             };
         }
 
@@ -212,12 +158,10 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
         let metadata: any = {};
 
         if (jobSite.toLowerCase().includes('linkedin')) {
-            // LinkedIn API returns structured job data
             const linkedInJobs = data.data?.jobs || [];
             pageTitle = `LinkedIn Jobs - ${jobTitle}`;
             scrapedContent = `Found ${linkedInJobs.length} LinkedIn jobs for "${jobTitle}"`;
 
-            // Convert LinkedIn job format to our JobPosting format and enforce limit
             const linkedInJobLimit = Math.min(parseInt(jobLimit) || 20, 50);
             const limitedLinkedInJobs = linkedInJobs.slice(0, linkedInJobLimit);
 
@@ -242,7 +186,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 searchUrl: data.data?.searchUrl || jobSearchUrl
             };
         } else {
-            // General scraper returns raw content that needs parsing
             scrapedContent = data.data?.content || data.data?.text || data.content || data.text || '';
             pageTitle = data.data?.title || '';
             links = data.data?.links || [];
@@ -261,28 +204,11 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 };
             }
 
-            // Parse the scraped content to extract structured job listings
             const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle);
-
-            // Apply job limit for VueJobs (max 100)
             const vueJobsLimit = Math.min(parseInt(jobLimit) || 20, 100);
             jobPostings = allJobs.slice(0, vueJobsLimit);
         }
 
-        // If no jobs were parsed, create a fallback entry with the raw content
-        if (jobPostings.length === 0) {
-            jobPostings.push({
-                companyName: 'Multiple Companies',
-                positionTitle: jobTitle,
-                jobLocation: location || 'Various Locations',
-                salary: salaryRange || undefined,
-                timePosted: 'Recently Posted',
-                jobLink: jobSearchUrl,
-                jobDescription: `Job search results for "${jobTitle}" from ${jobSite}. Raw content available in scrapedContent field.`,
-                employmentType: employmentType || undefined,
-                experienceLevel: experienceLevel || undefined
-            });
-        }
 
         return {
             success: true,
@@ -290,26 +216,12 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 ...processedPropsWithAiContext,
                 jobPostings,
                 totalJobs: jobPostings.length,
-                requestedLimit: parseInt(jobLimit) || 20,
-                actualLimit: jobSite.toLowerCase().includes('linkedin') ?
-                    Math.min(parseInt(jobLimit) || 20, 50) :
-                    Math.min(parseInt(jobLimit) || 20, 100),
                 scrapedFrom: jobSite,
                 scrapedUrl: jobSearchUrl,
-                scrapedContent: scrapedContent,
-                pageTitle: pageTitle,
-                links: links,
-                metadata: metadata,
-                searchCriteria: {
-                    jobTitle,
-                    location,
-                    dateRange,
-                    experienceLevel,
-                    employmentType,
-                    salaryRange,
-                    jobLimit: parseInt(jobLimit) || 20
-                },
-                rawData: data // Include raw scraper response for debugging/advanced use
+                scrapedContent,
+                pageTitle,
+                links,
+                metadata
             }
         };
 

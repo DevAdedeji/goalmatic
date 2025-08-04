@@ -280,7 +280,8 @@ export const webActionNodes: FlowNode[] = [
                         required: false,
                         description: '🔗 Required for LinkedIn searches (e.g., "Software Engineer"). 🎯 Optional for VueJobs - it shows all Vue.js positions automatically.',
                         ai_enabled: true,
-                        cloneable: true
+                        cloneable: true,
+                        hiddenFunc: (formValues: Record<string, any>) => formValues.jobSite === 'vuejobs'
                     },
                     {
                         name: 'Location',
@@ -289,7 +290,8 @@ export const webActionNodes: FlowNode[] = [
                         required: false,
                         description: 'Job location for LinkedIn search (e.g., "San Francisco, CA", "Remote"). Not used for VueJobs.',
                         ai_enabled: true,
-                        cloneable: true
+                        cloneable: true,
+                        hiddenFunc: (formValues: Record<string, any>) => formValues.jobSite === 'vuejobs'
                     },
                     {
                         name: 'Job Limit',
@@ -298,64 +300,6 @@ export const webActionNodes: FlowNode[] = [
                         required: false,
                         description: 'Maximum number of jobs to fetch (default: 20, max: 50 for LinkedIn, max: 100 for VueJobs)',
                         value: 20,
-                        cloneable: true
-                    },
-                    {
-                        name: 'Date Range',
-                        key: 'dateRange',
-                        type: 'select',
-                        required: false,
-                        description: 'Filter jobs by when they were posted',
-                        options: [
-                            { label: 'Any time', value: 'any' },
-                            { label: 'Last 24 hours', value: '24h' },
-                            { label: 'Last 3 days', value: '3d' },
-                            { label: 'Last week', value: '1w' },
-                            { label: 'Last month', value: '1m' }
-                        ],
-                        value: 'any',
-                        cloneable: true
-                    },
-                    {
-                        name: 'Experience Level',
-                        key: 'experienceLevel',
-                        type: 'select',
-                        required: false,
-                        description: 'Filter by required experience level',
-                        options: [
-                            { label: 'Any level', value: 'any' },
-                            { label: 'Entry level', value: 'entry' },
-                            { label: 'Mid level', value: 'mid' },
-                            { label: 'Senior level', value: 'senior' },
-                            { label: 'Executive', value: 'executive' }
-                        ],
-                        value: 'any',
-                        cloneable: true
-                    },
-                    {
-                        name: 'Employment Type',
-                        key: 'employmentType',
-                        type: 'select',
-                        required: false,
-                        description: 'Filter by employment type',
-                        options: [
-                            { label: 'Any type', value: 'any' },
-                            { label: 'Full-time', value: 'full-time' },
-                            { label: 'Part-time', value: 'part-time' },
-                            { label: 'Contract', value: 'contract' },
-                            { label: 'Freelance', value: 'freelance' },
-                            { label: 'Remote', value: 'remote' }
-                        ],
-                        value: 'any',
-                        cloneable: true
-                    },
-                    {
-                        name: 'Salary Range',
-                        key: 'salaryRange',
-                        type: 'text',
-                        required: false,
-                        description: 'Optional salary range filter (e.g., "$50,000-$80,000", "€40k-60k")',
-                        ai_enabled: true,
                         cloneable: true
                     }
                 ],
@@ -379,18 +323,6 @@ export const webActionNodes: FlowNode[] = [
                         description: 'Total number of job postings found'
                     },
                     {
-                        name: 'Requested Limit',
-                        key: 'requestedLimit',
-                        type: 'number',
-                        description: 'Number of jobs requested by user'
-                    },
-                    {
-                        name: 'Actual Limit',
-                        key: 'actualLimit',
-                        type: 'number',
-                        description: 'Actual limit applied (respects platform maximums)'
-                    },
-                    {
                         name: 'Scraped From',
                         key: 'scrapedFrom',
                         type: 'string',
@@ -403,40 +335,10 @@ export const webActionNodes: FlowNode[] = [
                         description: 'The actual URL that was scraped'
                     },
                     {
-                        name: 'Scraped Content',
-                        key: 'scrapedContent',
-                        type: 'string',
-                        description: 'Raw HTML/text content scraped from the job search page'
-                    },
-                    {
-                        name: 'Page Title',
-                        key: 'pageTitle',
-                        type: 'string',
-                        description: 'Title of the scraped job search page'
-                    },
-                    {
-                        name: 'Links',
-                        key: 'links',
-                        type: 'array',
-                        description: 'All links found on the job search page'
-                    },
-                    {
                         name: 'Metadata',
                         key: 'metadata',
                         type: 'object',
-                        description: 'Page metadata (description, keywords, etc.)'
-                    },
-                    {
-                        name: 'Search Criteria',
-                        key: 'searchCriteria',
-                        type: 'object',
-                        description: 'The search parameters used for scraping'
-                    },
-                    {
-                        name: 'Raw Data',
-                        key: 'rawData',
-                        type: 'object',
-                        description: 'Raw response from the scraper API'
+                        description: 'Additional scraping metadata and statistics'
                     }
                 ]
             }

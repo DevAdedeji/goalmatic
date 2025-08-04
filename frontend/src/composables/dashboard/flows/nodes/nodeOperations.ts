@@ -319,20 +319,33 @@ export const useEditNodeLogic = (props: any) => {
   })
 
 
-  // Initialize the form values with existing values or defaults
-  onMounted(() => {
+  // Initialize and update form values reactively when nodeProps change
+  const initializeFormValues = () => {
     if (!props.payload) return
 
     // Initialize form values with existing values if available
     nodeProps.value.forEach((prop) => {
-      if (props.payload.propsData && props.payload.propsData[prop.key] !== undefined) {
-        formValues.value[prop.key] = props.payload.propsData[prop.key]
-      } else if (props.payload[prop.key] !== undefined) { // Then check for direct values on the payload (for new nodes or initial values)
-        formValues.value[prop.key] = props.payload[prop.key]
-      } else { // Default to empty string if no value is found
-        formValues.value[prop.key] = ''
+      // Only initialize if the property doesn't already exist in formValues
+      if (formValues.value[prop.key] === undefined) {
+        if (props.payload.propsData && props.payload.propsData[prop.key] !== undefined) {
+          formValues.value[prop.key] = props.payload.propsData[prop.key]
+        } else if (props.payload[prop.key] !== undefined) { // Then check for direct values on the payload (for new nodes or initial values)
+          formValues.value[prop.key] = props.payload[prop.key]
+        } else { // Default to empty string if no value is found
+          formValues.value[prop.key] = ''
+        }
       }
     })
+  }
+
+  // Watch for changes in nodeProps and update form values accordingly
+  watch(nodeProps, () => {
+    initializeFormValues()
+  }, { immediate: true })
+
+  // Also initialize on mount for safety
+  onMounted(() => {
+    initializeFormValues()
   })
 
   // Save the changes to the node

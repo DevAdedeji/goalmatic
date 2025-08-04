@@ -52,6 +52,9 @@ export interface FlowNodeProp {
 	description?: string;
 	options?: Array<string | { name: string, value: string }>;
 	disabled?: boolean;
+	disabledFunc?: (formValues: Record<string, any>) => boolean;
+	hidden?: boolean;
+	hiddenFunc?: (formValues: Record<string, any>) => boolean;
 	required: boolean;
 	value?: string | (() => string | undefined);
 	validate?: (value: any, formValues: Record<string, any>) => { valid: boolean; message?: string };

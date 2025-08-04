@@ -15,8 +15,8 @@
 
 			<LeaderboardCard
 				v-for="(user, index) in leaderboardData"
-				:key="user.id"
-				:user="user"
+				:key="(user as any).id"
+				:user="user as Record<string, any>"
 				:rank="index + 1"
 			/>
 		</div>
@@ -26,7 +26,7 @@
 <script setup lang="ts">
 defineProps({
 	leaderboardData: {
-		type: Array,
+		type: Array as () => Record<string, any>[],
 		required: true
 	}
 })

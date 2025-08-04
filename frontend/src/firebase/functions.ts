@@ -22,3 +22,6 @@ export const callFirebaseFunction = async (
 		}
 	})
 }
+
+// Alias for backward compatibility
+export const useFirebaseFunction = callFirebaseFunction

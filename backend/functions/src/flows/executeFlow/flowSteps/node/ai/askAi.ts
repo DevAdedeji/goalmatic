@@ -5,6 +5,7 @@ import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContex
 import { generateText } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { v4 as uuidv4 } from 'uuid';
+import { generateAgentTools } from "../../../../../ai/tools";
 
 const askAi = async (_context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
@@ -15,6 +16,8 @@ const askAi = async (_context: WorkflowContext, step: FlowNode, previousStepResu
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
 
         const {
+            mode = 'simple',
+            selectedTools = [],
             inputData,
             customInstructions = ''
         } = processedPropsWithAiContext;
@@ -26,33 +29,80 @@ const askAi = async (_context: WorkflowContext, step: FlowNode, previousStepResu
             };
         }
 
-        // Create system prompt with custom instructions
-        const systemPrompt = customInstructions
-            ? `You are a helpful AI assistant. ${customInstructions}`
-            : 'You are a helpful AI assistant. Respond to the user\'s prompt clearly and concisely.';
-
         // Initialize Google AI
         const google = createGoogleGenerativeAI({
             apiKey: process.env.GOOGLE_API_KEY,
         });
 
-        // Call the AI directly with generateText
-        const result = await generateText({
-            model: google("gemini-2.5-flash"),
-            system: systemPrompt,
-            prompt: typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2)
-        });
+        const sessionId = uuidv4();
 
-        const aiResponse = result.text;
+        if (mode === 'tools' && selectedTools) {
+            // Tools mode - use AI with tool integration
+            // Parse comma-separated tool IDs
+            const toolIds = typeof selectedTools === 'string'
+                ? selectedTools.split(',').map(id => id.trim()).filter(id => id.length > 0)
+                : Array.isArray(selectedTools)
+                    ? selectedTools.map((tool: any) => typeof tool === 'string' ? tool : tool.id || tool.value)
+                    : [];
 
-        return {
-            success: true,
-            payload: {
-                ...processedPropsWithAiContext,
-                aiResponse,
-                sessionId: uuidv4()
+            if (toolIds.length === 0) {
+                return {
+                    success: false,
+                    error: 'No valid tools specified for tools mode'
+                };
             }
-        };
+
+            const toolSpecs = toolIds.map((id: string) => ({ id }));
+
+            // Generate tools for the AI
+            const agentTools = generateAgentTools(toolSpecs, sessionId);
+
+            // Create enhanced system prompt for tools mode
+            const systemPrompt = customInstructions
+                ? `You are a helpful AI assistant with access to tools. ${customInstructions}\n\nUse the available tools when they can help complete the user's request.`
+                : 'You are a helpful AI assistant with access to tools. Use the available tools when they can help complete the user\'s request.';
+
+            // Call the AI with tools
+            const result = await generateText({
+                model: google("gemini-2.5-flash"),
+                system: systemPrompt,
+                prompt: typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2),
+                tools: agentTools,
+                maxSteps: 10
+            });
+
+            return {
+                success: true,
+                payload: {
+                    ...processedPropsWithAiContext,
+                    aiResponse: result.text,
+                    toolResults: result.toolResults || [],
+                    sessionId
+                }
+            };
+        } else {
+            // Simple mode - basic AI without tools
+            const systemPrompt = customInstructions
+                ? `You are a helpful AI assistant. ${customInstructions}`
+                : 'You are a helpful AI assistant. Respond to the user\'s prompt clearly and concisely.';
+
+            // Call the AI directly with generateText
+            const result = await generateText({
+                model: google("gemini-2.5-flash"),
+                system: systemPrompt,
+                prompt: typeof inputData === 'string' ? inputData : JSON.stringify(inputData, null, 2)
+            });
+
+            return {
+                success: true,
+                payload: {
+                    ...processedPropsWithAiContext,
+                    aiResponse: result.text,
+                    toolResults: [],
+                    sessionId
+                }
+            };
+        }
 
     } catch (error: any) {
         console.error('Error in Ask AI processing:', error);

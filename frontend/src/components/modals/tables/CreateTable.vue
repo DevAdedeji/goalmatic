@@ -56,7 +56,7 @@
 								placeholder="Give your table a name"
 							>
 						</div>
-						<div class="field relative">
+						<div class="field relative mt-4">
 							<label for="description">Table Description</label>
 							<textarea
 								v-model="formData.description"

@@ -9,6 +9,8 @@ export type FlowNodeProp = {
   options?: any[]
   disabled?: boolean
   disabledFunc?: (formValues: Record<string, any>) => boolean
+  hidden?: boolean
+  hiddenFunc?: (formValues: Record<string, any>) => boolean
   ai_enabled?: boolean
   cloneable?: boolean
   // Properties for searchableSelect type
@@ -17,6 +19,10 @@ export type FlowNodeProp = {
   loadingText?: string
   searchPlaceholder?: string
   minSearchLength?: number
+  // Additional properties for UI components
+  placeholder?: string
+  copyable?: boolean
+  auto_generate?: boolean
 }
 
 export type FlowNodeOutputProp = {

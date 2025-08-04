@@ -13,7 +13,7 @@
 		class="flex items-center justify-center uppercase   border-[1.5px] border-line text-dark bg-light font-bold rounded-full"
 		@click="link ? $router.push(link) : null"
 	>
-		<span :style="`font-size: ${size/2}px;line-height: 1em`">{{ name[0] }}</span>
+		<span :style="`font-size: ${size/2}px;line-height: 1em`">{{ name?.[0] || '?' }}</span>
 	</span>
 </template>
 
