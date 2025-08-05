@@ -1,6 +1,15 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { useAlert } from '@/composables/core/notification'
+
+/**
+ * Flow Search and Data Fetching Composable
+ *
+ * Architecture:
+ * - Data fetching: Uses backend server API (Firebase Functions -> Firestore)
+ * - Search functionality: Uses Convex for fast text search capabilities
+ * - Convex is ONLY used for search operations, not for regular data fetching
+ */
 
 // Search results and state
 export const flowSearchResults = ref<any[]>([])
@@ -51,7 +60,8 @@ export const useFlowSearch = () => {
     }
   }
 
-  // Get public flows using Convex (faster than Firebase)
+  // Get public flows from backend server API (Firestore)
+  // Note: Convex is only used for search functionality, not data fetching
   const getPublicFlowsFromConvex = async () => {
     flowSearchLoading.value = true
     try {
@@ -69,7 +79,8 @@ export const useFlowSearch = () => {
     }
   }
 
-  // Get user's flows using Convex (with text search capability)
+  // Get user's flows from backend server API (Firestore)
+  // Note: Convex is only used for search functionality, not data fetching
   const getUserFlowsFromConvex = async (creator_id?: string) => {
     flowSearchLoading.value = true
     try {
@@ -89,7 +100,7 @@ export const useFlowSearch = () => {
     }
   }
 
-  // Get a specific flow by Firebase ID (with permissions check)
+  // Get a specific flow by Firebase ID from backend server API (with permissions check)
   const getFlowByFirebaseId = async (firebaseId: string) => {
     try {
       const result = await callFirebaseFunction('getFlowByFirebaseId', {
@@ -106,7 +117,7 @@ export const useFlowSearch = () => {
     }
   }
 
-  // Get active flows by creator
+  // Get active flows by creator from backend server API (Firestore)
   const getActiveFlowsByCreator = async (creator_id: string) => {
     try {
       const result = await callFirebaseFunction('getActiveFlowsByCreator', {
@@ -123,7 +134,7 @@ export const useFlowSearch = () => {
     }
   }
 
-  // Get draft flows by creator
+  // Get draft flows by creator from backend server API (Firestore)
   const getDraftFlowsByCreator = async (creator_id: string) => {
     try {
       const result = await callFirebaseFunction('getDraftFlowsByCreator', {

@@ -8,7 +8,7 @@ import { getSingleFirestoreDocument } from '@/firebase/firestore/fetch'
 // Store for flows data
 const userFlows = ref([] as any[])
 const flowData = ref<any>(null)
-const loading = ref(false)
+const loading = ref(true)
 
 // Store for all flows (previously public flows)
 const allFlows = ref<any[]>([])

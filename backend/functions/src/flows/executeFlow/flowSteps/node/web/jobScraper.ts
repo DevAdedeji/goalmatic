@@ -99,8 +99,8 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 response = await axios.post('https://api.goalmatic.io/scrape-stealth', {
                     url: jobSearchUrl,
                     options: {
-                        extractMethod: 'text',
-                        includeLinks: true,
+                        extractMethod: 'html',
+                        includeLinks: false,
                         includeImages: false,
                         timeout: 45000
                     }
@@ -153,13 +153,13 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
         // Handle different response structures based on API endpoint
         let jobPostings: JobPosting[] = [];
         let scrapedContent = '';
-        let pageTitle = '';
+
         let links: any[] = [];
-        let metadata: any = {};
+
 
         if (jobSite.toLowerCase().includes('linkedin')) {
             const linkedInJobs = data.data?.jobs || [];
-            pageTitle = `LinkedIn Jobs - ${jobTitle}`;
+
             scrapedContent = `Found ${linkedInJobs.length} LinkedIn jobs for "${jobTitle}"`;
 
             const linkedInJobLimit = Math.min(parseInt(jobLimit) || 20, 50);
@@ -179,17 +179,10 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                                job.title?.toLowerCase().includes('lead') || job.title?.toLowerCase().includes('principal') ? 'Senior' : undefined
             }));
 
-            metadata = {
-                totalFound: data.data?.totalFound || 0,
-                totalScraped: data.data?.totalScraped || 0,
-                pagesScraped: data.data?.pagesScraped || 0,
-                searchUrl: data.data?.searchUrl || jobSearchUrl
-            };
+        
         } else {
             scrapedContent = data.data?.content || data.data?.text || data.content || data.text || '';
-            pageTitle = data.data?.title || '';
             links = data.data?.links || [];
-            metadata = data.data?.metadata || {};
 
             if (!scrapedContent) {
                 return {
@@ -206,7 +199,7 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
 
             const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle);
             const vueJobsLimit = Math.min(parseInt(jobLimit) || 20, 100);
-            jobPostings = allJobs.slice(0, vueJobsLimit);
+            jobPostings = allJobs!.slice(0, vueJobsLimit);
         }
 
 
@@ -218,10 +211,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 totalJobs: jobPostings.length,
                 scrapedFrom: jobSite,
                 scrapedUrl: jobSearchUrl,
-                scrapedContent,
-                pageTitle,
-                links,
-                metadata
             }
         };
 

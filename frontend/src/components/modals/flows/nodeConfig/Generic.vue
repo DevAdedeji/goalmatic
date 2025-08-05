@@ -251,27 +251,29 @@
 					</div>
 
 					<!-- Email Display Field (for showing generated email addresses with copy functionality) -->
-					<EmailDisplayField
-						v-else-if="prop.type === 'email_display'"
-						v-model="formValues[prop.key]"
-						:description="prop.description"
-						:placeholder="prop.placeholder"
-						:required="prop.required"
-						:disabled="prop.disabled"
-						:copyable="prop.copyable"
-						:auto-generate="prop.auto_generate"
-						:flow-id="payload?.flow_id || payload?.id || route.params.id"
-						:show-instructions="true"
-						@generated="(email) => (formValues[prop.key] = email)"
-						@copied="(email) => console.log('Copied email:', email)"
-					/>
+					<div v-else-if="prop.type === 'email_display'" class="flex">
+						<EmailDisplayField
+							v-model="formValues[prop.key]"
+							:description="prop.description"
+							:placeholder="prop.placeholder"
+							:required="prop.required"
+							:disabled="prop.disabled"
+							:copyable="prop.copyable"
+							:auto-generate="prop.auto_generate"
+							:flow-id="payload?.flow_id || payload?.id || route.params.id"
+							:show-instructions="true"
+							@generated="(email) => (formValues[prop.key] = email)"
+							@copied="(email) => console.log('Copied email:', email)"
+						/>
 
-					<!-- Email Trigger Testing Component (only for email triggers) -->
-					<EmailTriggerTester
-						v-if="prop.type === 'email_display' && isEmailTriggerNode && formValues[prop.key]"
-						:trigger-email="formValues[prop.key]"
-						:flow-id="payload?.flow_id || payload?.id || route.params.id"
-					/>
+						<!-- Email Trigger Testing Component (only for email triggers) -->
+						<EmailTriggerTester
+							v-if="prop.type === 'email_display' && isEmailTriggerNode && formValues[prop.key]"
+							:trigger-email="formValues[prop.key]"
+							:flow-id="payload?.flow_id || payload?.id || route.params.id"
+						/>
+					</div>
+
 
 					<!-- Default Text Input for any other type -->
 					<input

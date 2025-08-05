@@ -292,16 +292,8 @@ export const webActionNodes: FlowNode[] = [
                         ai_enabled: true,
                         cloneable: true,
                         hiddenFunc: (formValues: Record<string, any>) => formValues.jobSite === 'vuejobs'
-                    },
-                    {
-                        name: 'Job Limit',
-                        key: 'jobLimit',
-                        type: 'number',
-                        required: false,
-                        description: 'Maximum number of jobs to fetch (default: 20, max: 50 for LinkedIn, max: 100 for VueJobs)',
-                        value: 20,
-                        cloneable: true
                     }
+
                 ],
                 expectedOutput: [
                     {

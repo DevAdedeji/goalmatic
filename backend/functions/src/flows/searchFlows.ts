@@ -1,20 +1,7 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { ConvexHttpClient } from 'convex/browser';
+import { getConvexClient } from '../convex/utils';
 import { api } from '../../convex/src/_generated/api';
-
-// Initialize Convex client based on environment
-const getConvexClient = () => {
-  const isDev = process.env.NODE_ENV === 'development';
-  const convexUrl = isDev 
-    ? process.env.CONVEX_DEV_URL 
-    : process.env.CONVEX_PROD_URL;
-  
-  if (!convexUrl) {
-    throw new Error(`Convex URL not configured for environment: ${process.env.NODE_ENV}`);
-  }
-  
-  return new ConvexHttpClient(convexUrl);
-};
+import { goals_db } from '../init';
 
 export const searchFlows = onCall({
   cors: true,
@@ -86,7 +73,7 @@ export const searchFlows = onCall({
   }
 });
 
-// Get flows by creator using Convex (replacement for Firebase query)
+// Get flows by creator from backend server (Firestore) instead of Convex
 export const getFlowsByCreator = onCall({
   cors: true,
   region: 'us-central1'
@@ -102,10 +89,16 @@ export const getFlowsByCreator = onCall({
   }
 
   try {
-    const convex = getConvexClient();
-    const results = await convex.query(api.flows.getFlowsByCreator, {
-      creator_id
-    });
+    // Fetch flows by creator directly from Firestore instead of Convex
+    const flowsSnapshot = await goals_db
+      .collection('flows')
+      .where('creator_id', '==', creator_id)
+      .get();
+
+    const results = flowsSnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return {
       success: true,
@@ -119,14 +112,22 @@ export const getFlowsByCreator = onCall({
   }
 });
 
-// Get public flows (replacement for Firebase query)
+// Get public flows from backend server (Firestore) instead of Convex
 export const getPublicFlows = onCall({
   cors: true,
   region: 'us-central1'
-}, async (request) => {
+}, async () => {
   try {
-    const convex = getConvexClient();
-    const results = await convex.query(api.flows.getPublicFlows, {});
+    // Fetch public flows directly from Firestore instead of Convex
+    const publicFlowsSnapshot = await goals_db
+      .collection('flows')
+      .where('public', '==', true)
+      .get();
+
+    const results = publicFlowsSnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return {
       success: true,
@@ -140,7 +141,7 @@ export const getPublicFlows = onCall({
   }
 });
 
-// Get a specific flow by Firebase ID (replacement for Firebase get)
+// Get a specific flow by Firebase ID from backend server (Firestore) instead of Convex
 export const getFlowByFirebaseId = onCall({
   cors: true,
   region: 'us-central1'
@@ -152,14 +153,20 @@ export const getFlowByFirebaseId = onCall({
   }
 
   try {
-    const convex = getConvexClient();
-    const result = await convex.query(api.flows.getFlowByFirebaseId, {
-      firebaseId
-    });
+    // Fetch flow directly from Firestore instead of Convex
+    const flowDoc = await goals_db
+      .collection('flows')
+      .doc(firebaseId)
+      .get();
 
-    if (!result) {
+    if (!flowDoc.exists) {
       throw new HttpsError('not-found', 'Flow not found');
     }
+
+    const result = {
+      id: flowDoc.id,
+      ...flowDoc.data()
+    };
 
     return {
       success: true,
@@ -175,7 +182,7 @@ export const getFlowByFirebaseId = onCall({
   }
 });
 
-// Get active flows by creator
+// Get active flows by creator from backend server (Firestore) instead of Convex
 export const getActiveFlowsByCreator = onCall({
   cors: true,
   region: 'us-central1'
@@ -191,10 +198,17 @@ export const getActiveFlowsByCreator = onCall({
   }
 
   try {
-    const convex = getConvexClient();
-    const results = await convex.query(api.flows.getActiveFlowsByCreator, {
-      creator_id
-    });
+    // Fetch active flows by creator directly from Firestore instead of Convex
+    const flowsSnapshot = await goals_db
+      .collection('flows')
+      .where('creator_id', '==', creator_id)
+      .where('status', '==', 1) // Active status
+      .get();
+
+    const results = flowsSnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return {
       success: true,
@@ -208,7 +222,7 @@ export const getActiveFlowsByCreator = onCall({
   }
 });
 
-// Get draft flows by creator
+// Get draft flows by creator from backend server (Firestore) instead of Convex
 export const getDraftFlowsByCreator = onCall({
   cors: true,
   region: 'us-central1'
@@ -224,10 +238,17 @@ export const getDraftFlowsByCreator = onCall({
   }
 
   try {
-    const convex = getConvexClient();
-    const results = await convex.query(api.flows.getDraftFlowsByCreator, {
-      creator_id
-    });
+    // Fetch draft flows by creator directly from Firestore instead of Convex
+    const flowsSnapshot = await goals_db
+      .collection('flows')
+      .where('creator_id', '==', creator_id)
+      .where('status', '==', 0) // Draft status
+      .get();
+
+    const results = flowsSnapshot.docs.map((doc: any) => ({
+      id: doc.id,
+      ...doc.data()
+    }));
 
     return {
       success: true,
