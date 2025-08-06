@@ -6,6 +6,7 @@ import { verifyExecuteFlowData } from "./utils";
 import { goals_db, is_dev } from "../../init";
 import { runStepsInContext } from "./flowSteps";
 import { Timestamp } from "firebase-admin/firestore";
+import { getAnalytics } from "../../utils/analytics";
 
 const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
 const API_BASE_URL = is_dev
@@ -23,8 +24,16 @@ const runWorkflow = async (context: WorkflowContext) => {
 
   const startTime = new Date();
   let logRef: FirebaseFirestore.DocumentReference | null = null;
+  const analytics = getAnalytics();
 
   try {
+    // Track flow execution start
+    analytics.trackFlowEvent('EXECUTION_STARTED', flowId, {
+      execution_id: executionId,
+      trigger_type: triggerData?.trigger_type || 'manual',
+      has_trigger_data: !!triggerData
+    }, userId);
+
     // Create initial log entry
     logRef = goals_db
       .collection("flows")

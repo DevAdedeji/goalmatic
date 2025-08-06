@@ -3,6 +3,7 @@ import { get_WA_TextMessageInput, send_WA_Message, sendWAReadAndTypingIndicator 
 import { WhatsappAgent } from './utils/WhatsappAgent'
 import { setWhatsAppPhone } from '../ai'
 import { goalmatic_whatsapp_signup_flow_template } from './templates/signup'
+import { getAnalytics } from '../utils/analytics'
 import {
     handleGetRequest,
     parseWebhookEvent,
@@ -27,6 +28,7 @@ export const goals_WA_message_webhook = onRequest({
 
     if (req.method === 'POST') {
         try {
+            const analytics = getAnalytics();
             const { message, phone_number_id, from, contactName, webhookType } = parseWebhookEvent(req);
 
             // Handle status webhooks (delivery receipts, read receipts, etc.)
@@ -45,6 +47,14 @@ export const goals_WA_message_webhook = onRequest({
                 res.sendStatus(200);
                 return;
             }
+
+            // Track message received
+            analytics.trackWhatsAppEvent('MESSAGE_RECEIVED', {
+                message_type: message.type,
+                from_phone: from,
+                contact_name: contactName,
+                has_message_id: !!message.id
+            });
 
             setWhatsAppPhone(from);
             logCustomerServiceWindow(from);

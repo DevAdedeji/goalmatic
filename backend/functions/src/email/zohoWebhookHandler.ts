@@ -5,6 +5,7 @@ import { Timestamp } from 'firebase-admin/firestore';
 import { Client } from "@upstash/qstash";
 import { is_dev } from '../init';
 import { cleanupLogsForTrigger } from './cleanupEmailTriggerLogs';
+import { getAnalytics } from '../utils/analytics';
 
 // Result interface for webhook processing
 interface WebhookProcessingResult {
@@ -479,6 +480,16 @@ export const zohoEmailWebhook = onRequest({
           continue;
         }
 
+        // Track email received event
+        const analytics = getAnalytics();
+        analytics.trackEmailTriggerEvent('EMAIL_RECEIVED', {
+          trigger_id: triggerId,
+          flow_id: triggerData.flow_id,
+          from_email: normalizedPayload.from,
+          subject: normalizedPayload.subject,
+          is_testing: isTestingMode
+        }, triggerData.creator_id);
+
         // In testing mode, just log the email reception without executing the flow
         if (isTestingMode) {
           console.log(`Testing mode: Email received for trigger ${triggerId}, skipping flow execution`);
@@ -496,6 +507,14 @@ export const zohoEmailWebhook = onRequest({
             triggerData.creator_id,
             normalizedPayload
           );
+
+          // Track flow triggered event
+          analytics.trackEmailTriggerEvent('FLOW_TRIGGERED', {
+            trigger_id: triggerId,
+            flow_id: triggerData.flow_id,
+            execution_id: executionId,
+            trigger_count: (triggerData.trigger_count || 0) + 1
+          }, triggerData.creator_id);
 
           // Update trigger statistics
           await goals_db.collection('emailTriggers').doc(triggerId).update({

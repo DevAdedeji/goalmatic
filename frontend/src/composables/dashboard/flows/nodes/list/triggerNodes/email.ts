@@ -108,6 +108,12 @@ export const emailTriggerNodes: FlowNode[] = [
         name: 'Attachments',
         type: 'array',
         description: 'Array of email attachments (if enabled)'
+      },
+      {
+        key: 'trigger_email',
+        name: 'Trigger Email',
+        type: 'text',
+        description: 'The unique trigger email address that received this message'
       }
     ]
   }

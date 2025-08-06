@@ -20,8 +20,9 @@ export const runStepsInContext = async (
 
   let previousStepResult: any = {};
 
-  // If we have trigger data (e.g., from email trigger), include it in the initial step result
+  // Handle trigger data - either from external trigger (email) or generate for schedule triggers
   if (triggerData) {
+    // External trigger data (e.g., from email trigger)
     previousStepResult["trigger-data"] = triggerData;
 
     // Also make trigger data available in the format expected by the frontend mention system
@@ -48,6 +49,22 @@ export const runStepsInContext = async (
           received_date: triggerData.received_at
         }
       };
+    }
+  } else if (flowData.trigger) {
+    // For schedule triggers or other triggers without external data, run the trigger node
+    const triggerNodeId = flowData.trigger.node_id;
+    const triggerNode: StepRunner = availableNodes[triggerNodeId];
+
+    if (triggerNode) {
+      const triggerResult = await context.run(
+        `trigger-${triggerNodeId}`,
+        () => {
+          return triggerNode.run(context, flowData.trigger, previousStepResult);
+        }
+      );
+
+      // Make trigger result available for subsequent nodes
+      previousStepResult[`trigger-${triggerNodeId}`] = triggerResult;
     }
   }
 

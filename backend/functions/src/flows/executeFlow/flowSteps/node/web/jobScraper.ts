@@ -4,6 +4,7 @@ import { processMentionsProps } from "../../../../../utils/processMentions";
 import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
 import axios from 'axios';
 import { parseJobListings, JobPosting } from './utils/jobParsingUtils';
+import { getAnalytics } from "../../../../../utils/analytics";
 
 // Function to generate job search URLs for different job sites
 const generateJobSearchUrl = (
@@ -36,11 +37,13 @@ const generateJobSearchUrl = (
 
 const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
+        const analytics = getAnalytics();
+
         // Process all string fields in propsData first
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
-        
+
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
-        
+
         const {
             jobSite,
             jobTitle,
@@ -75,6 +78,15 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
         }
 
         console.log('jobSearchUrl', jobSearchUrl);
+
+        // Track job scraping start
+        analytics.trackJobScrapingEvent('SCRAPE_STARTED', {
+            job_site: jobSite,
+            job_title: jobTitle,
+            location: location,
+            job_limit: jobLimit,
+            search_url: jobSearchUrl
+        });
 
         // Choose API endpoint and method based on job site
         let response: any;

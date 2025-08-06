@@ -296,35 +296,28 @@ export const useEditNodeLogic = (props: any) => {
     if (flow && flow.trigger) {
       const trigger = flow.trigger
 
-      // For email triggers, use the known expected output
-      if (trigger.node_id === 'EMAIL_TRIGGER') {
-        outputs['trigger-EMAIL_TRIGGER'] = [
-          'from_email',
-          'from_name',
-          'to_email',
-          'subject',
-          'body_text',
-          'body_html',
-          'received_at',
-          'message_id',
-          'trigger_email'
+      // Find the trigger node definition dynamically
+      let triggerNodeDef: any = null
 
-        ]
-      } else if (trigger.node_id === 'SCHEDULE_TIME') {
-        outputs['trigger-SCHEDULE_TIME'] = [
-          'date',
-          'time',
-          'timezone',
-          'scheduled_at'
-        ]
-      } else if (trigger.node_id === 'SCHEDULE_INTERVAL') {
-        outputs['trigger-SCHEDULE_INTERVAL'] = [
-          'interval',
-          'interval_type',
-          'start_date',
-          'end_date',
-          'next_run'
-        ]
+      // Search through all trigger nodes and their children
+      for (const triggerNode of flowTriggerNodes) {
+        if (triggerNode.node_id === trigger.node_id) {
+          triggerNodeDef = triggerNode
+          break
+        }
+        // Check children if it's a parent node
+        if (triggerNode.children) {
+          const childNode = triggerNode.children.find((child: any) => child.node_id === trigger.node_id)
+          if (childNode) {
+            triggerNodeDef = childNode
+            break
+          }
+        }
+      }
+
+      // Use dynamic trigger outputs if available, otherwise fallback to generic
+      if (triggerNodeDef && triggerNodeDef.expectedOutput) {
+        outputs[`trigger-${trigger.node_id}`] = triggerNodeDef.expectedOutput.map((output: any) => output.key)
       } else {
         // Generic trigger output for unknown trigger types
         outputs[`trigger-${trigger.node_id}`] = [

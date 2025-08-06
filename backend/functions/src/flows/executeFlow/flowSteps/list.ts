@@ -8,7 +8,7 @@ import { readTableNode, createRecordNode, updateRecordNode, deleteRecordNode } f
 import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
 import { fetchWebContentNode, callWebApiNode, jobScraperNode } from "./node/web";
 import { askAgentNode, askAiNode } from "./node/ai";
-import { emailTriggerNode } from "./node/trigger";
+import { emailTriggerNode, scheduleTimeTriggerNode, scheduleIntervalTriggerNode } from "./node/trigger";
 
 type NodeSignature = {
     nodeId: string;
@@ -18,6 +18,8 @@ type NodeSignature = {
 export const availableNodes: Record<string, NodeSignature> = {
     // Trigger nodes
     [emailTriggerNode.nodeId]: emailTriggerNode,
+    [scheduleTimeTriggerNode.nodeId]: scheduleTimeTriggerNode,
+    [scheduleIntervalTriggerNode.nodeId]: scheduleIntervalTriggerNode,
 
     // Messaging nodes
     [sendEmailNode.nodeId]: sendEmailNode,

@@ -4,6 +4,7 @@ import { afterAuthCheck } from './utils'
 import { useUser } from '@/composables/auth/user'
 import { googleAuth, signOutUser } from '@/firebase/auth'
 import { useAlert } from '@/composables/core/notification'
+import { useAnalytics } from '@/composables/core/analytics/posthog'
 
 declare global {
   interface Window {
@@ -30,16 +31,26 @@ export const useSignin = () => {
   const loading = ref(false)
   const router = useRouter()
   const route = useRoute()
+  const { trackAuthEvent } = useAnalytics()
 
   const googleSignin = async (saveRoute = false) => {
     if (saveRoute) useUser().redirectUrl.value = route.fullPath
     loading.value = true
+    trackAuthEvent('GOOGLE_AUTH_STARTED')
+
     try {
       const user = await googleAuth() as User
       await useUser().setUser(user)
 
-      // Only track signUp if this is a new user
-      if (user.metadata && user.metadata.creationTime === user.metadata.lastSignInTime) {
+      // Check if this is a new user (signup) or existing user (login)
+      const isNewUser = user.metadata && user.metadata.creationTime === user.metadata.lastSignInTime
+
+      if (isNewUser) {
+        trackAuthEvent('SIGNUP_SUCCESS', {
+          method: 'google',
+          user_id: user.uid
+        })
+        // Keep existing AHA tracker for backward compatibility
         try {
           if (typeof window !== 'undefined' && window.ahaTracker) {
             window.ahaTracker.track([{ name: 'signUp' }])
@@ -47,13 +58,25 @@ export const useSignin = () => {
         } catch (error) {
           console.error(error)
         }
+      } else {
+        trackAuthEvent('LOGIN_SUCCESS', {
+          method: 'google',
+          user_id: user.uid
+        })
       }
 
-      await afterAuthCheck(user)
+      trackAuthEvent('GOOGLE_AUTH_SUCCESS', {
+        user_id: user.uid,
+        is_new_user: isNewUser
+      })
 
+      await afterAuthCheck(user)
       loading.value = false
-    } catch (err) {
+    } catch (err: any) {
       loading.value = false
+      trackAuthEvent('GOOGLE_AUTH_FAILED', {
+        error: err.code || err.message
+      })
     }
   }
 
@@ -61,6 +84,7 @@ export const useSignin = () => {
     loading.value = true
     try {
       await signOutUser()
+      trackAuthEvent('LOGOUT')
       if (location.pathname === '/auth/profile') await router.push('/auth/login')
       useAuthModal().closeLogout()
       location.reload()

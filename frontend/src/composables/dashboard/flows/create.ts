@@ -5,6 +5,7 @@ import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { FlowStep, FlowStatus, FlowType } from '@/composables/dashboard/flows/types'
+import { useAnalytics } from '@/composables/core/analytics/posthog'
 
 
 // Form for creating a new flow
@@ -20,6 +21,7 @@ const createFlowForm = reactive({
 export const useCreateFlow = () => {
 const { id: user_id, userProfile } = useUser()
   const loading = ref(false)
+  const { trackFlowEvent } = useAnalytics()
 
   const isDisabled = computed(() => {
     return !createFlowForm.name.trim()
@@ -53,6 +55,14 @@ const { id: user_id, userProfile } = useUser()
       }
 
       await setFirestoreDocument('flows', id, flow_data)
+
+      // Track flow creation
+      trackFlowEvent('CREATED', id, {
+        flow_name: createFlowForm.name,
+        flow_type: createFlowForm.type,
+        has_description: !!createFlowForm.description
+      })
+
       useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow created successfully' })
       resetForm()
       loading.value = false

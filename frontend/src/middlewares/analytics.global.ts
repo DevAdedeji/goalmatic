@@ -1,19 +1,22 @@
 
 
+import { useAnalytics } from '@/composables/core/analytics/posthog'
 
 let initializedClicks = false
 
-
 export default defineNuxtRouteMiddleware(async (to, from) => {
     if (process.client) {
-      useTrackEvent('page_view', { page_path: to.fullPath, page_title: to.meta.title as string || 'Untitled Page' })
+      // Use the new analytics service for page tracking
+      const { trackPageView } = useAnalytics()
+      trackPageView(to.fullPath, to.meta.title as string || 'Untitled Page')
+
       try {
         if (!initializedClicks) {
             trackClicks()
             initializedClicks = true
         }
     } catch (error) {
-      // console.error('Google Analytics initialization failed', error)
+      // console.error('Analytics initialization failed', error)
     }
   }
 })
@@ -24,14 +27,24 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
 
 const trackClicks = () => {
+  const { trackButtonClick } = useAnalytics()
+
   document.addEventListener('click', (mouse_event: MouseEvent) => {
         const target = mouse_event.target as HTMLElement
-        const label = target.getAttribute('data-ga-label') || target.innerText || target.tagName
+        const label = target.getAttribute('data-analytics-label') ||
+                     target.getAttribute('data-ga-label') ||
+                     target.innerText?.trim() ||
+                     target.tagName
 
+        // Only track clicks on interactive elements
+        const interactiveElements = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA']
+        const isInteractive = interactiveElements.includes(target.tagName) ||
+                             target.getAttribute('role') === 'button' ||
+                             target.classList.contains('btn') ||
+                             target.classList.contains('button')
 
-         useTrackEvent('click', {
-          event_category: 'engagement',
-          event_label: label
-        })
+        if (isInteractive && label) {
+          trackButtonClick(label, window.location.pathname)
+        }
       })
 }

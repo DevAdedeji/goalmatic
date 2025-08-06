@@ -2,6 +2,8 @@
 import { ref } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { useNuxtApp } from '#app'
+import { useAnalytics } from '@/composables/core/analytics/posthog'
+import { useAnalytics } from '@/composables/core/analytics/posthog'
 
 let initialized = false
 
@@ -49,27 +51,20 @@ export const initializeAnalytics = (): Promise<void> => {
 
 export const useFireEvents = () => {
   const billingEnabled = ref(import.meta.env.MODE === 'production')
-  const nuxtApp = useNuxtApp()
-  const { id, user } = useUser()
+
+  // Import the new analytics service
+  const { trackEvent } = useAnalytics()
 
   const fireEvent = (name: string, props?: any) => {
     if (!billingEnabled.value) {
       return
     }
 
-    // Use PostHog if available
+    // Use the new centralized analytics service
     try {
-      const posthog = nuxtApp.$posthog?.()
-      if (posthog && id.value) {
-        const userData = user.value
-        posthog.identify(id.value, {
-          email: userData?.email,
-          name: userData?.displayName
-        })
-        posthog.capture(name, props)
-      }
+      trackEvent(name, props)
     } catch (error) {
-      console.error('PostHog error:', error)
+      console.error('Analytics error:', error)
     }
 
     // Use Plausible if available

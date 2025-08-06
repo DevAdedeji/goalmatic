@@ -6,10 +6,12 @@ import { useAlert } from '@/composables/core/notification'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { useUser } from '@/composables/auth/user'
 import { auth } from '@/firebase/init'
+import { useAnalytics } from '@/composables/core/analytics/posthog'
 
 export const useWhatsAppAuth = () => {
     const step = ref(1)
     const otp = ref(['', '', '', ''])
+    const { trackAuthEvent } = useAnalytics()
 
     const sendOTP = async (isSignup = true) => {
         if (!validatePhoneNumber(authCredentienalsForm.phone.value)) {
@@ -18,6 +20,11 @@ export const useWhatsAppAuth = () => {
         }
 
         authCredentienalsForm.loading.value = true
+        trackAuthEvent('PHONE_OTP_SENT', {
+          method: 'whatsapp',
+          is_signup: isSignup
+        })
+
         try {
             const functionName = isSignup ? 'sendWhatsappOTPForSignup' : 'sendWhatsappOTPForLogin'
             const res = await callFirebaseFunction(functionName, {

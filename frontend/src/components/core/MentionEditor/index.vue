@@ -23,8 +23,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const editor = ref<any>()
 
-console.log('MentionEditor - mentionItems:', props.mentionItems)
-
 
 editor.value = new Editor({
 	content: props.modelValue,
