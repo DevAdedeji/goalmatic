@@ -109,6 +109,8 @@ export default defineSchema({
       type: v.string(),
       description: v.optional(v.string()),
       required: v.optional(v.boolean()),
+      // When true, values in this field must be unique across all records in the table
+      preventDuplicates: v.optional(v.boolean()),
       options: v.optional(v.array(v.string())),
       default: v.optional(v.any())
     })),
@@ -266,6 +268,7 @@ export type Table = {
     type: string;
     description?: string;
     required?: boolean;
+    preventDuplicates?: boolean;
     options?: string[];
     default?: any;
   }>;

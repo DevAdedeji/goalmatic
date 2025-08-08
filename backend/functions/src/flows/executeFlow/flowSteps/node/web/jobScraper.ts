@@ -35,6 +35,38 @@ const generateJobSearchUrl = (
     }
 };
 
+// Request timeouts to avoid function timeouts
+const REQUEST_TIMEOUT_LINKEDIN_MS = 20000; // 20s
+const REQUEST_TIMEOUT_VUEJOBS_MS = 15000;  // 15s
+
+// Duplicate filtering helpers
+const normalizeText = (value: string | undefined | null): string => {
+    if (!value) return '';
+    return String(value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const makeDedupeKey = (job: Partial<JobPosting>): string => {
+    return `${normalizeText(job.companyName)}::${normalizeText(job.positionTitle)}`;
+};
+
+const filterDuplicates = (jobs: JobPosting[], existing: Array<Partial<JobPosting>> = []): JobPosting[] => {
+    const existingKeys = new Set(existing.map(makeDedupeKey));
+    const seen = new Set<string>();
+    const result: JobPosting[] = [];
+    for (const job of jobs) {
+        const key = makeDedupeKey(job);
+        if (existingKeys.has(key)) continue;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(job);
+    }
+    return result;
+};
+
 const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
         const analytics = getAnalytics();
@@ -48,7 +80,9 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             jobSite,
             jobTitle,
             location,
-            jobLimit
+            jobLimit,
+            dataContext,
+            existingJobs
         } = processedPropsWithAiContext;
 
         // Validate required fields
@@ -77,7 +111,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             };
         }
 
-        console.log('jobSearchUrl', jobSearchUrl);
 
         // Track job scraping start
         analytics.trackJobScrapingEvent('SCRAPE_STARTED', {
@@ -104,7 +137,7 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                         maxJobs: linkedInJobLimit.toString(),
                         maxPages: maxPages.toString()
                     },
-                    timeout: 60000 // Longer timeout for LinkedIn
+                    timeout: REQUEST_TIMEOUT_LINKEDIN_MS
                 });
             } else if (jobSite.toLowerCase().includes('vuejobs')) {
                 // Use stealth scraper for VueJobs - no job title needed
@@ -114,10 +147,10 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                         extractMethod: 'html',
                         includeLinks: false,
                         includeImages: false,
-                        timeout: 45000
+                        timeout: REQUEST_TIMEOUT_VUEJOBS_MS
                     }
                 }, {
-                    timeout: 50000,
+                    timeout: REQUEST_TIMEOUT_VUEJOBS_MS,
                     headers: {
                         'Content-Type': 'application/json'
                     }
@@ -152,7 +185,6 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
         }
 
         const data = response.data;
-        console.log(data);
 
         if (!data.success) {
             return {
@@ -209,18 +241,24 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
                 };
             }
 
-            const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle);
+            const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle) || [];
             const vueJobsLimit = Math.min(parseInt(jobLimit) || 20, 100);
-            jobPostings = allJobs!.slice(0, vueJobsLimit);
+            jobPostings = allJobs.slice(0, vueJobsLimit);
         }
 
+        // Filter out duplicates vs provided context (company + title)
+        let existingList: Array<Partial<JobPosting>> = [];
+        if (Array.isArray(existingJobs)) existingList = existingJobs as Array<Partial<JobPosting>>;
+        else if (Array.isArray(dataContext)) existingList = dataContext as Array<Partial<JobPosting>>;
+
+        const uniqueJobPostings = filterDuplicates(jobPostings, existingList);
 
         return {
             success: true,
             payload: {
                 ...processedPropsWithAiContext,
-                jobPostings,
-                totalJobs: jobPostings.length,
+                jobPostings: uniqueJobPostings,
+                totalJobs: uniqueJobPostings.length,
                 scrapedFrom: jobSite,
                 scrapedUrl: jobSearchUrl,
             }

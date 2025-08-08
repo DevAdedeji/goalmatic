@@ -262,6 +262,34 @@ export const useEditFlow = () => {
 	})
 }
 
+  // Move step up in the flow
+  const moveStepUp = async (stepIndex: number) => {
+    if (stepIndex <= 0 || stepIndex >= flowDetails.value.steps.length) return
+
+    const steps = [...flowDetails.value.steps]
+    // Swap with previous step
+    const temp = steps[stepIndex]
+    steps[stepIndex] = steps[stepIndex - 1]
+    steps[stepIndex - 1] = temp
+
+    flowDetails.value.steps = steps
+    await updateFlow(flowDetails.value)
+  }
+
+  // Move step down in the flow
+  const moveStepDown = async (stepIndex: number) => {
+    if (stepIndex < 0 || stepIndex >= flowDetails.value.steps.length - 1) return
+
+    const steps = [...flowDetails.value.steps]
+    // Swap with next step
+    const temp = steps[stepIndex]
+    steps[stepIndex] = steps[stepIndex + 1]
+    steps[stepIndex + 1] = temp
+
+    flowDetails.value.steps = steps
+    await updateFlow(flowDetails.value)
+  }
+
 
   return {
     loading,
@@ -282,6 +310,8 @@ export const useEditFlow = () => {
     confirmRemoveNode,
     openVisibilityConfirmation,
     toggleFlowVisibility,
-    toggleVisibilityLoading
+    toggleVisibilityLoading,
+    moveStepUp,
+    moveStepDown
   }
 }

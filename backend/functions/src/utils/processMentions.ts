@@ -46,12 +46,46 @@ export const processMentionTextarea = (text: string, previousStepResult: any): s
 // New function to process all string fields in propsData
 export const processMentionsProps = (propsData: Record<string, any>, previousStepResult: any): Record<string, any> => {
     const processed: Record<string, any> = {};
+    const mentionRegex = /<span[^>]*data-type="mention"[^>]*data-id="([^"]+)"[^>]*>.*?<\/span>/g;
+
     for (const key in propsData) {
-        if (typeof propsData[key] === 'string') {
-            processed[key] = processMentionTextarea(propsData[key], previousStepResult);
+        const value = propsData[key];
+
+        if (typeof value === 'string') {
+            // Detect if the value is exactly a single mention (optionally wrapped in whitespace/other tags)
+            const matches = Array.from(value.matchAll(mentionRegex));
+
+            if (matches.length === 1) {
+                // Remove the single mention span and any leftover HTML/whitespace to verify it's mention-only
+                const withoutMention = value.replace(mentionRegex, '');
+                const cleaned = withoutMention
+                    .replace(/<[^>]*>/g, '') // remove all remaining HTML
+                    .replace(/&nbsp;/gi, ' ')
+                    .trim();
+
+                if (cleaned.length === 0) {
+                    // Single mention only → return RAW referenced value if available
+                    const dataId = matches[0][1];
+                    const parts = dataId.match(/^([^[]+)\[([^\]]+)\]$/);
+                    if (parts) {
+                        const stepId = parts[1];
+                        const payloadKey = parts[2];
+                        const rawValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+
+                        if (rawValue !== undefined) {
+                            processed[key] = rawValue;
+                            continue; // handled
+                        }
+                    }
+                }
+            }
+
+            // Default behavior: convert mentions inside text to strings
+            processed[key] = processMentionTextarea(value, previousStepResult);
         } else {
-            processed[key] = propsData[key];
+            processed[key] = value;
         }
     }
+
     return processed;
 }; 

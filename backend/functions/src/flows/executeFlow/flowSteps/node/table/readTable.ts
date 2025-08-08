@@ -68,7 +68,6 @@ console.log(step.propsData);
                 records,
                 totalRecords: records.length,
                 tableId,
-            
             }
         };
     } catch (error: any) {

@@ -29,8 +29,8 @@ const fetchUserAgentsForConfig = async () => {
 // Function to fetch available tools for Ask AI node
 const fetchAvailableToolsForConfig = async () => {
   // Return formatted tools for multi-select
-  return availableTools.value.flatMap(tool =>
-    tool.abilities.map(ability => ({
+  return availableTools.value.flatMap((tool) =>
+    tool.abilities.map((ability) => ({
       id: ability.id,
       name: `${tool.name} - ${ability.name}`,
       description: tool.description,

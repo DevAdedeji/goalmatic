@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { getFirestoreSubCollection } from '@/firebase/firestore/fetch'
+import { getFirestoreSubCollectionWithSort } from '@/firebase/firestore/sort'
 
 // Define interfaces for flow log data
 interface FlowLog {
@@ -45,7 +46,14 @@ export const useFlowLogs = () => {
     if (import.meta.server) return
     flowLogsLoading.value = true
     try {
-    await getFirestoreSubCollection('flows', flowId, 'logs', flowLogs)
+    // Fetch newest-first
+    await getFirestoreSubCollectionWithSort(
+      'flows',
+      flowId,
+      'logs',
+      flowLogs,
+      { name: 'created_at', order: 'desc' }
+    )
     } catch (error: unknown) {
       console.error('Error fetching flow logs:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'

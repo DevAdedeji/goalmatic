@@ -41,6 +41,7 @@
 								</h3>
 								<span class="bg-gray-100 text-text-secondary px-2 py-0.5 rounded text-xs">{{ field.type }}</span>
 								<span v-if="field.required" class="bg-danger-50 text-danger-700 px-2 py-0.5 rounded text-xs">Required</span>
+								<span v-if="field.preventDuplicates" class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded text-xs">Unique</span>
 							</div>
 							<p v-if="field.description" class="text-text-secondary text-sm">
 								{{ field.description }}

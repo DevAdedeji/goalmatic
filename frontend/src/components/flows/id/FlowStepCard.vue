@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { Edit2, Trash2, RefreshCw, AlertCircle } from 'lucide-vue-next'
+import { Edit2, Trash2, RefreshCw, AlertCircle, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { isNodeValid, getMissingRequiredProps } from '@/composables/dashboard/flows/nodes/nodeOperations'
 import IconDropdown from '@/components/core/IconDropdown.vue'
@@ -101,6 +101,14 @@ const props = defineProps({
 	isOwner: {
 		type: Boolean,
 		default: false
+	},
+	totalSteps: {
+		type: Number,
+		default: 0
+	},
+	currentStepIndex: {
+		type: Number,
+		default: 0
 	}
 })
 
@@ -108,7 +116,9 @@ const props = defineProps({
 const emit = defineEmits([
 	'editStep',
 	'removeStep',
-	'changeNode'
+	'changeNode',
+	'moveStepUp',
+	'moveStepDown'
 ])
 
 // Check if node is valid - now using centralized function
@@ -121,7 +131,31 @@ const isOwner = computed(() => props.isOwner)
 
 // Define dropdown items with conditional logic
 const dropdownItems = computed(() => {
-	const items = [
+	const items = []
+
+	// Add move up/down buttons only for non-trigger action nodes
+	if (!props.isTrigger && props.isOwner) {
+		// Move Up button (disabled if first step or flow is active)
+		items.push({
+			name: 'Move Up',
+			icon: ChevronUp,
+			func: (props.isFlowActive || props.currentStepIndex === 0) ? () => {} : () => emit('moveStepUp', props.currentStepIndex),
+			class: (props.isFlowActive || props.currentStepIndex === 0) ? 'opacity-50 cursor-not-allowed' : 'hover:text-green-500',
+			hide: false
+		})
+
+		// Move Down button (disabled if last step or flow is active)
+		items.push({
+			name: 'Move Down',
+			icon: ChevronDown,
+			func: (props.isFlowActive || props.currentStepIndex >= props.totalSteps - 1) ? () => {} : () => emit('moveStepDown', props.currentStepIndex),
+			class: (props.isFlowActive || props.currentStepIndex >= props.totalSteps - 1) ? 'opacity-50 cursor-not-allowed' : 'hover:text-green-500',
+			hide: false
+		})
+	}
+
+	// Add standard items
+	items.push(
 		{
 			name: 'Change Node',
 			icon: RefreshCw,
@@ -143,7 +177,7 @@ const dropdownItems = computed(() => {
 			class: props.isFlowActive ? 'opacity-50 cursor-not-allowed' : 'hover:text-danger',
 			hide: false
 		}
-	]
+	)
 
 	// Add tooltip text when flow is active
 	if (props.isFlowActive) {

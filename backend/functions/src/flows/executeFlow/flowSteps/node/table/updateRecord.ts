@@ -91,7 +91,7 @@ const updateRecord = async (context: WorkflowContext, step: FlowNode, previousSt
             updated_at: new Date() // Update the updated_at timestamp
         };
 
-        // Validate the record against the table fields
+        // Validate the record against the table fields and enforce uniqueness
         const fields = tableData.fields || [];
         for (const field of fields) {
             if (field.required && (updatedRecord[field.id] === undefined || updatedRecord[field.id] === null || updatedRecord[field.id] === '')) {
@@ -99,6 +99,27 @@ const updateRecord = async (context: WorkflowContext, step: FlowNode, previousSt
                     success: false,
                     error: `Required field '${field.name}' is missing`
                 };
+            }
+
+            // Prevent duplicates when configured, ignoring the current record
+            const newValue = updatedRecord[field.id];
+            if (field.preventDuplicates && newValue !== undefined && newValue !== null && newValue !== '') {
+                const dupSnap = await goals_db
+                    .collection('tables')
+                    .doc(tableId)
+                    .collection('records')
+                    .where(field.id, '==', newValue)
+                    .limit(1)
+                    .get();
+                if (!dupSnap.empty) {
+                    const dupDoc = dupSnap.docs[0];
+                    if (dupDoc.id !== recordId) {
+                        return {
+                            success: false,
+                            error: `Value for '${field.name}' must be unique. '${newValue}' already exists.`,
+                        };
+                    }
+                }
             }
         }
 

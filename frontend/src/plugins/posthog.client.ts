@@ -76,47 +76,47 @@ export default defineNuxtPlugin(() => {
     // Create a mock PostHog client for non-production environments
     posthogClient = {
       capture: (..._args: any[]) => {
-        console.log('[PostHog Mock] Event captured:', _args[0], _args[1])
+        // console.log('[PostHog Mock] Event captured:', _args[0], _args[1])
       },
       identify: (..._args: any[]) => {
-        console.log('[PostHog Mock] User identified:', _args[0], _args[1])
+        // console.log('[PostHog Mock] User identified:', _args[0], _args[1])
       },
       reset: (..._args: any[]) => {
-        console.log('[PostHog Mock] Reset called')
+        // console.log('[PostHog Mock] Reset called')
       },
       register: (..._args: any[]) => {
-        console.log('[PostHog Mock] Properties registered:', _args[0])
+        // console.log('[PostHog Mock] Properties registered:', _args[0])
       },
       unregister: (..._args: any[]) => {
-        console.log('[PostHog Mock] Properties unregistered:', _args[0])
+        // console.log('[PostHog Mock] Properties unregistered:', _args[0])
       },
       getFeatureFlag: (..._args: any[]) => {
-        console.log('[PostHog Mock] Feature flag requested:', _args[0])
+        // console.log('[PostHog Mock] Feature flag requested:', _args[0])
         return undefined
       },
       isFeatureEnabled: (..._args: any[]) => {
-        console.log('[PostHog Mock] Feature flag check:', _args[0])
+        // console.log('[PostHog Mock] Feature flag check:', _args[0])
         return false
       },
       reloadFeatureFlags: (..._args: any[]) => {
-        console.log('[PostHog Mock] Feature flags reloaded')
+        // console.log('[PostHog Mock] Feature flags reloaded')
       },
       people: {
         set: (..._args: any[]) => {
-          console.log('[PostHog Mock] People properties set:', _args[0])
+          // console.log('[PostHog Mock] People properties set:', _args[0])
         }
       },
       opt_in_capturing: (..._args: any[]) => {
-        console.log('[PostHog Mock] Opted in to capturing')
+        // console.log('[PostHog Mock] Opted in to capturing')
       },
       opt_out_capturing: (..._args: any[]) => {
-        console.log('[PostHog Mock] Opted out of capturing')
+        // console.log('[PostHog Mock] Opted out of capturing')
       },
       group: (..._args: any[]) => {
-        console.log('[PostHog Mock] Group identified:', _args[0], _args[1])
+        // console.log('[PostHog Mock] Group identified:', _args[0], _args[1])
       },
       alias: (..._args: any[]) => {
-        console.log('[PostHog Mock] Alias set:', _args[0])
+        // console.log('[PostHog Mock] Alias set:', _args[0])
       }
     }
   }

@@ -10,7 +10,7 @@ import { WorkflowContext } from '@upstash/workflow';
  * This function executes a flow's steps in test mode and records the results
  * but does not change the flow's status or schedule it
  */
-export const testFlow = onCall({cors: true, region: 'us-central1'}, async (request) => {
+export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSeconds: 540}, async (request) => {
     try {
         // Validate request
         if (!request.auth) {

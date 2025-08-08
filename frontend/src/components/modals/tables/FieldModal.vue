@@ -105,6 +105,19 @@
 						Required field
 					</label>
 				</div>
+
+				<!-- Prevent Duplicates -->
+				<div class="flex items-center">
+					<input
+						id="field-unique"
+						v-model="fieldForm.preventDuplicates"
+						type="checkbox"
+						class="form-checkbox h-4 w-4 text-primary focus:ring-primary border-border rounded"
+					>
+					<label for="field-unique" class="ml-2 block text-sm text-text-secondary">
+						Prevent duplicate values for this field
+					</label>
+				</div>
 			</div>
 
 			<div class="mt-6 flex justify-end gap-3 w-full">

@@ -6,6 +6,8 @@ export interface Field {
 	type: string;
 	description?: string;
 	required?: boolean;
+  // If true, disallow duplicate values for this field across all records
+  preventDuplicates?: boolean;
 	options?: string[];
 }
 

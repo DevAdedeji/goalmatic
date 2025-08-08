@@ -342,11 +342,9 @@ export const useEditNodeLogic = (props: any) => {
         } else {
           nodeDef = flowActionNodes.find((n) => n.node_id === step.node_id)
         }
-        // Get prop keys from node definition
-        const InputProps = nodeDef && Array.isArray(nodeDef.props) ? nodeDef.props.map((p: any) => p.key) : []
+        // Only include expected output keys for previous steps
         const OutputProps = nodeDef && Array.isArray(nodeDef.expectedOutput) ? nodeDef.expectedOutput.map((p: any) => p.key) : []
         outputs[`step-${i}-${step.node_id}`] = [
-          ...InputProps,
           ...OutputProps
         ]
       }

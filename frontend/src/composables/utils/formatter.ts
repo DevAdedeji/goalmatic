@@ -75,6 +75,43 @@ export const formatDate = (dateInput: string | number | Date | { seconds: number
   }
 }
 
+export const formatDateTime = (
+  dateInput: string | number | Date | { seconds: number; nanoseconds?: number } | { toDate(): Date }
+): string => {
+  let date: Date
+
+  if (dateInput instanceof Date) {
+    date = dateInput
+  } else if (typeof dateInput === 'string' || typeof dateInput === 'number') {
+    date = new Date(dateInput)
+  } else if (dateInput && typeof dateInput === 'object') {
+    if ('toDate' in dateInput && typeof (dateInput as any).toDate === 'function') {
+      date = (dateInput as any).toDate()
+    } else if ('seconds' in dateInput && typeof (dateInput as any).seconds === 'number') {
+      const ts = dateInput as { seconds: number; nanoseconds?: number }
+      date = new Date(ts.seconds * 1000 + (ts.nanoseconds || 0) / 1000000)
+    } else {
+      date = new Date(dateInput as any)
+    }
+  } else {
+    date = new Date()
+  }
+
+  if (isNaN(date.getTime())) {
+    return 'Invalid date'
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  }).format(date)
+}
+
 export const formatDateTimeForInput = (date: Date): string => {
 	const year = date.getFullYear()
 	const month = (date.getMonth() + 1).toString().padStart(2, '0')

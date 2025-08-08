@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp, collection, query as fsQuery, where, getDocs, limit as fsLimit } from 'firebase/firestore'
 import { v4 as uuidv4 } from 'uuid'
 import { updateFirestoreDocument, updateFirestoreSubDocument } from '@/firebase/firestore/edit'
 import { setFirestoreSubDocument } from '@/firebase/firestore/create'
@@ -7,6 +7,7 @@ import { deleteFirestoreSubCollectionDocument } from '@/firebase/firestore/delet
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { generateUniqueFieldId } from '@/composables/utils/fieldId'
+import { db } from '@/firebase/init'
 
 // Store the selected table for editing
 
@@ -108,6 +109,23 @@ export const useEditTable = () => {
 
     loading.value = true
     try {
+      // Enforce preventDuplicates per field before creating
+      const fields = Array.isArray(table.fields) ? table.fields : []
+      for (const field of fields) {
+        if (field?.preventDuplicates) {
+          const value = record[field.id]
+          if (value !== undefined && value !== null && value !== '') {
+            const recordsRef = collection(db, 'tables', table.id, 'records')
+            const q = fsQuery(recordsRef, where(field.id, '==', value), fsLimit(1))
+            const snap = await getDocs(q)
+            if (!snap.empty) {
+              useAlert().openAlert({ type: 'ERROR', msg: `Value for '${field.name || field.id}' must be unique. '${value}' already exists.` })
+              return null
+            }
+          }
+        }
+      }
+
       // Add a unique ID and timestamps
       const recordId = record.id || uuidv4()
       record.id = recordId
@@ -166,6 +184,26 @@ export const useEditTable = () => {
 
     loading.value = true
     try {
+      // Enforce preventDuplicates per field before updating (ignore same record id)
+      const fields = Array.isArray(table.fields) ? table.fields : []
+      for (const field of fields) {
+        if (field?.preventDuplicates) {
+          const value = updatedRecord[field.id]
+          if (value !== undefined && value !== null && value !== '') {
+            const recordsRef = collection(db, 'tables', table.id, 'records')
+            const q = fsQuery(recordsRef, where(field.id, '==', value), fsLimit(1))
+            const snap = await getDocs(q)
+            if (!snap.empty) {
+              const dupDoc = snap.docs[0]
+              if (dupDoc.id !== recordId) {
+                useAlert().openAlert({ type: 'ERROR', msg: `Value for '${field.name || field.id}' must be unique. '${value}' already exists.` })
+                return false
+              }
+            }
+          }
+        }
+      }
+
       // Preserve the record ID and update timestamp
       updatedRecord.id = recordId
       updatedRecord.updated_at = Timestamp.fromDate(new Date())
@@ -173,6 +211,7 @@ export const useEditTable = () => {
       // Update the record in the subcollection
       await updateFirestoreSubDocument('tables', table.id, 'records', recordId, updatedRecord)
       await updateTable({
+        ...table,
         updated_at: Timestamp.fromDate(new Date())
       })
 
@@ -202,6 +241,7 @@ export const useEditTable = () => {
 
       // Update the table's updated_at timestamp
       await updateTable({
+        ...table,
         updated_at: Timestamp.fromDate(new Date())
       })
 

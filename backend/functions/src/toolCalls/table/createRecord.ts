@@ -311,6 +311,20 @@ export const createTableRecord = async (params: {
                 throw new Error(`Required field '${field.name}' is missing or invalid`);
             }
 
+            // Enforce per-field uniqueness if configured (query by field id)
+            if (field.preventDuplicates && fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
+                const dupSnap = await goals_db
+                    .collection('tables')
+                    .doc(tableId)
+                    .collection('records')
+                    .where(field.id, '==', fieldValue)
+                    .limit(1)
+                    .get();
+                if (!dupSnap.empty) {
+                    throw new Error(`Value for '${field.name}' must be unique. '${fieldValue}' already exists.`);
+                }
+            }
+
             // Map the potentially formatted field value to the correct ID in the new record
             if (fieldValue !== undefined && newRecord[field.id] === undefined) {
                 newRecord[field.id] = fieldValue;

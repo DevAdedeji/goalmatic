@@ -101,10 +101,14 @@
 							:step-index="index + 1"
 							:is-flow-active="flowData.status === 1"
 							:is-owner="isOwner(flowData)"
+							:total-steps="flowData.steps.length"
+							:current-step-index="index"
 							class="rounded-xl"
 							@edit-step="editNode(step)"
 							@remove-step="confirmRemoveNode(step, index)"
 							@change-node="handleChangeNode(step, index, 'action')"
+							@move-step-up="moveStepUp"
+							@move-step-down="moveStepDown"
 						/>
 					</div>
 
@@ -159,24 +163,15 @@ import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useFlowsModal } from '@/composables/core/modals'
 import { useFlowOwner } from '@/composables/dashboard/flows/owner'
 
-const { isFlowValid, confirmRemoveNode, editNode, handleChangeNode } = useEditFlow()
+const { confirmRemoveNode, editNode, handleChangeNode, moveStepUp, moveStepDown } = useEditFlow()
 const { isOwner } = useFlowOwner()
 
-const props = defineProps({
+defineProps({
 	flowData: {
 		type: Object,
 		required: true
 	}
 })
-
-
-
-defineEmits([
-	'openStepPanel',
-	'removeStep'
-])
-
-const loading = ref(false)
 </script>
 
 <style scoped>

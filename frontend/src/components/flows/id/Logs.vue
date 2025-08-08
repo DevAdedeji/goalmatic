@@ -19,6 +19,8 @@
 			:table-data="flowLogs"
 			:loading="loading"
 			:checkbox="false"
+			:has-overflow="true"
+			:max-height="'70vh'"
 		>
 			<!-- Empty state slot (optional, Table component has its own) -->
 			<template #empty>
@@ -55,10 +57,10 @@
 					</span>
 				</span>
 
-				<!-- Start Time -->
-				<span v-else-if="item.start_time" class="text-text-secondary">
-					{{ formatDate(item.data.start_time) }}
-				</span>
+                <!-- Start Time -->
+                <span v-else-if="item.start_time" class="text-text-secondary">
+                    {{ formatDateTime(item.data.start_time) }}
+                </span>
 
 				<!-- Duration -->
 				<span v-else-if="item.duration" class="text-text-secondary">
@@ -86,7 +88,7 @@
 
 <script setup lang="ts">
 import { AlertCircle, RefreshCw, History } from 'lucide-vue-next'
-import { formatDate } from '@/composables/utils/formatter'
+import { formatDateTime } from '@/composables/utils/formatter'
 import Table from '@/components/core/Table.vue'
 
 // Define event emits

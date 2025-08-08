@@ -2,7 +2,10 @@
 	<section class="flex flex-col max-w-full z-0">
 		<slot name="header" />
 		<slot name="sub_header" />
-		<div class="overflow-x-auto border border-border rounded-lg">
+		<div
+			class="overflow-x-auto border border-border rounded-lg"
+			:style="containerStyle"
+		>
 			<table :key="key" class="min-w-full divide-y divide-border">
 				<thead class="bg-gray-50">
 					<tr>
@@ -82,6 +85,7 @@ interface DataItem {
 
 interface Props {
   hasOverflow?: boolean
+  maxHeight?: string | number
   rowClicked?: (data: DataItem) => void
   isClickable?: boolean
   selected?: DataItem[]
@@ -120,6 +124,15 @@ const updateHeaderCheckboxState = () => {
 // Initialize the indeterminate state when the component is mounted
 onMounted(() => {
   updateHeaderCheckboxState()
+})
+
+const containerStyle = computed(() => {
+  if (!props.hasOverflow) return null
+  const style: Record<string, string> = { overflowY: 'auto' }
+  if (props.maxHeight !== undefined && props.maxHeight !== null) {
+    style.maxHeight = typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : String(props.maxHeight)
+  }
+  return style
 })
 
 const displayTable = computed(() => {

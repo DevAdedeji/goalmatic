@@ -15,6 +15,7 @@ export const createTable = mutation({
       type: v.string(),
       description: v.optional(v.string()),
       required: v.optional(v.boolean()),
+      preventDuplicates: v.optional(v.boolean()),
       options: v.optional(v.array(v.string())),
       default: v.optional(v.any())
     })),
@@ -47,6 +48,7 @@ export const updateTable = mutation({
         type: v.string(),
         description: v.optional(v.string()),
         required: v.optional(v.boolean()),
+        preventDuplicates: v.optional(v.boolean()),
         options: v.optional(v.array(v.string())),
         default: v.optional(v.any())
       }))),

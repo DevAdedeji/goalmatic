@@ -129,7 +129,7 @@ const runWorkflow = async (context: WorkflowContext) => {
 
 // Export the Firebase Cloud Function, passing requests to the workflow handler
 export const executeFlow = onRequest(
-  { cors: true, region: "us-central1" },
+  { cors: true, region: "us-central1", timeoutSeconds: 540},
   serve(runWorkflow, {
     qstashClient: new Client({ token: UPSTASH_QSTASH_TOKEN }),
     url: API_BASE_URL,
