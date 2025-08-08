@@ -51,30 +51,7 @@ export const scheduleTriggerNodes: FlowNode[] = [
                     }
                 ],
                 expectedOutput: [
-                    {
-                        key: 'date',
-                        name: 'Scheduled Date',
-                        type: 'text',
-                        description: 'The date when the flow was scheduled to run'
-                    },
-                    {
-                        key: 'time',
-                        name: 'Scheduled Time',
-                        type: 'text',
-                        description: 'The time when the flow was scheduled to run'
-                    },
-                    {
-                        key: 'timezone',
-                        name: 'Timezone',
-                        type: 'text',
-                        description: 'The timezone for the scheduled time'
-                    },
-                    {
-                        key: 'scheduled_at',
-                        name: 'Scheduled At',
-                        type: 'text',
-                        description: 'The full timestamp when the flow was scheduled to run'
-                    }
+
                 ]
             },
             {
@@ -112,36 +89,7 @@ export const scheduleTriggerNodes: FlowNode[] = [
                     }
                 ],
                 expectedOutput: [
-                    {
-                        key: 'interval',
-                        name: 'Interval',
-                        type: 'text',
-                        description: 'The interval configuration'
-                    },
-                    {
-                        key: 'interval_type',
-                        name: 'Interval Type',
-                        type: 'text',
-                        description: 'The type of interval (e.g., daily, weekly)'
-                    },
-                    {
-                        key: 'start_date',
-                        name: 'Start Date',
-                        type: 'text',
-                        description: 'When the interval schedule started'
-                    },
-                    {
-                        key: 'end_date',
-                        name: 'End Date',
-                        type: 'text',
-                        description: 'When the interval schedule will end (if applicable)'
-                    },
-                    {
-                        key: 'next_run',
-                        name: 'Next Run',
-                        type: 'text',
-                        description: 'When the next execution is scheduled'
-                    }
+
                 ]
             }
         ]
