@@ -21,7 +21,7 @@ const validateFormatterFunction = (value: any): { valid: boolean; message?: stri
 export const utilActionNodes: FlowNode[] = [
     {
         node_id: 'UTILS',
-        icon: '/icons/gear.svg',
+        icon: '/icons/data.svg',
         name: 'Utilities',
         description: 'Helper utilities for transforming data',
         type: 'action',
@@ -33,7 +33,7 @@ export const utilActionNodes: FlowNode[] = [
                 type: 'action',
                 name: 'Format Data',
                 description: 'Format/transform input data with a custom function and output a string',
-                icon: '/icons/format.svg',
+                icon: '/icons/data.svg',
                 props: [
                     {
                         name: 'Input Data',
