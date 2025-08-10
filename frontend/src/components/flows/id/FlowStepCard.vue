@@ -1,7 +1,7 @@
 <template>
 	<div class="px-4 py-5  rounded-b-xl relative w-full  border-[1.5px] bg-light"
 		:class="{ 'cursor-pointer': isOwner, 'cursor-default': !isOwner }"
-		@click="isOwner && emit('editStep', props.step)">
+		@click="isOwner && !isFlowActive && emit('editStep', props.step)">
 		<!-- Step Header -->
 		<div class="flex justify-between items-center mb-2">
 			<h3 class="font-medium flex items-center gap-2">
@@ -131,7 +131,7 @@ const isOwner = computed(() => props.isOwner)
 
 // Define dropdown items with conditional logic
 const dropdownItems = computed(() => {
-	const items = []
+	const items: any[] = []
 
 	// Add move up/down buttons only for non-trigger action nodes
 	if (!props.isTrigger && props.isOwner) {

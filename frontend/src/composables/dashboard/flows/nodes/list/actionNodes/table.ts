@@ -9,8 +9,8 @@ const isAllRowsDisabled = (formValues: Record<string, any>) => {
     return value === true || value === 'true'
 }
 
-export const tableActionNodes:FlowNode[] = [
-        {
+export const tableActionNodes: FlowNode[] = [
+    {
         node_id: 'TABLE',
         icon: '/icons/table.svg',
         name: 'Table',
@@ -149,7 +149,36 @@ export const tableActionNodes:FlowNode[] = [
                     }
                 ],
                 expectedOutput: [
-
+                    {
+                        name: 'Success',
+                        key: 'success',
+                        type: 'boolean',
+                        description: 'Whether the operation completed successfully'
+                    },
+                    {
+                        name: 'Records',
+                        key: 'records',
+                        type: 'array',
+                        description: 'Array of records created'
+                    },
+                    {
+                        name: 'Total Records',
+                        key: 'totalRecordsCreated',
+                        type: 'number',
+                        description: 'Number of records created'
+                    },
+                    {
+                        name: 'Failed Records',
+                        key: 'failedRecords',
+                        type: 'array',
+                        description: 'Array of failed records'
+                    },
+                    {
+                        name: 'Total Failed Records',
+                        key: 'totalFailedRecords',
+                        type: 'number',
+                        description: 'Number of failed records'
+                    }
                 ]
             },
             {

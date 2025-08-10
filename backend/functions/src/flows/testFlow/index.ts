@@ -10,7 +10,7 @@ import { WorkflowContext } from '@upstash/workflow';
  * This function executes a flow's steps in test mode and records the results
  * but does not change the flow's status or schedule it
  */
-export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSeconds: 540}, async (request) => {
+export const testFlow = onCall({ cors: true, region: 'us-central1', timeoutSeconds: 540 }, async (request) => {
     try {
         // Validate request
         if (!request.auth) {
@@ -25,7 +25,7 @@ export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSecond
 
         // Get the flow data
         const flowDoc = await goals_db.collection('flows').doc(flowId).get();
-        
+
         if (!flowDoc.exists) {
             throw new HttpsError('not-found', 'Flow not found');
         }
@@ -37,8 +37,8 @@ export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSecond
             throw new HttpsError('permission-denied', 'You do not have permission to test this flow');
         }
 
-        
-        
+
+
         // Check if the flow has steps
         if (!flowData?.steps || flowData.steps.length === 0) {
             throw new HttpsError('failed-precondition', 'Flow must have at least one step to be tested');
@@ -47,7 +47,7 @@ export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSecond
         // Generate a unique execution ID for this test run
         const executionId = uuidv4();
         const startTime = new Date();
-        
+
         // Create a run record for this test execution
         const runRef = goals_db.collection('flows').doc(flowId).collection('logs').doc(executionId);
         await runRef.set({
@@ -70,17 +70,17 @@ export const testFlow = onCall({cors: true, region: 'us-central1', timeoutSecond
                     executionId
                 },
                 run: async (name, fn) => await fn(),
-                cancel: () => {}
+                cancel: () => { }
             } as unknown as WorkflowContext;
 
             // Execute the flow steps
             await runStepsInContext(baseContext, flowData);
-            
+
             // Update the run record with success status
             const endTime = new Date();
             const durationMs = endTime.getTime() - startTime.getTime();
             const durationStr = `${Math.round(durationMs / 1000)}s`;
-            
+
             await runRef.update({
                 status: 'completed',
                 end_time: Timestamp.fromDate(endTime),

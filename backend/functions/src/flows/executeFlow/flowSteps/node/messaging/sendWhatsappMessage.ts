@@ -52,6 +52,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         if (isCSWOpen) {
             const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
+            console.log(waMsg);
             await send_WA_Message(waMsg);
         } else {
             const uniqueTemplateMessageId = uuidv4();
