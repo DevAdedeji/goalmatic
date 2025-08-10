@@ -9,6 +9,7 @@ export * from "./users/index";
 export * from "./flows/index";
 export * from "./flows/testNode";
 export * from "./tables/cloneTable";
+export * from "./tables/onRecordDeleted";
 export * from "./agents/getAgentDetails";
 export * from "./flows/getFlowDetails";
 export * from "./ai/tools/generateCron";
@@ -36,3 +37,12 @@ export * from "./email/cleanupEmailTriggerLogs";
 
 // Debug functions
 export * from "./debug/testEmailTrigger";
+
+// Conditionally register Convex sync functions
+// We only attach these exports when Convex sync is enabled to avoid
+// Firestore trigger registration (and noisy emulator logs) in dev.
+import { isConvexSyncEnabled } from "./init";
+
+if (isConvexSyncEnabled()) {
+    Object.assign(exports, require("./convex/index"));
+}

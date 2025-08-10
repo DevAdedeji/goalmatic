@@ -1,6 +1,18 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 import { goals_db } from "../../../../../init";
+import { Timestamp } from 'firebase-admin/firestore';
+
+const normalizeUnique = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    return String(val)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const buildUniqueDocId = (fieldId: string, normalized: string) => `${fieldId}::${normalized}`;
 
 const updateRecord = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
 
@@ -123,12 +135,41 @@ const updateRecord = async (context: WorkflowContext, step: FlowNode, previousSt
             }
         }
 
-        // Update the record in the subcollection
-        await goals_db.collection('tables').doc(tableId).collection('records').doc(recordId).update(updatedRecord);
-
-        // Update the table's updated_at timestamp
-        await goals_db.collection('tables').doc(tableId).update({
-            updated_at: new Date()
+        // Transaction: update record and maintain unique index docs
+        const tableRef = goals_db.collection('tables').doc(tableId);
+        const recordRef = tableRef.collection('records').doc(recordId);
+        const uniqueCol = tableRef.collection('unique');
+        await goals_db.runTransaction(async (tx) => {
+            // Load existing record to compute old unique keys
+            const existingSnap = await tx.get(recordRef);
+            const existing = existingSnap.data() || {};
+            const fields = tableData.fields || [];
+            for (const field of fields) {
+                if (!field.preventDuplicates) continue;
+                const oldVal = existing[field.id];
+                const newVal = updatedRecord[field.id];
+                if (newVal === undefined || newVal === null || newVal === '') continue;
+                const newNorm = normalizeUnique(newVal);
+                const newKeyRef = uniqueCol.doc(buildUniqueDocId(field.id, newNorm));
+                const exists = await tx.get(newKeyRef);
+                if (exists.exists && exists.data()?.recordId !== recordId) {
+                    throw new Error(`Value for '${field.name}' must be unique. '${newVal}' already exists.`);
+                }
+                // If value changed, remove old key, set new key
+                if (oldVal !== undefined && oldVal !== null && normalizeUnique(oldVal) !== newNorm) {
+                    const oldRef = uniqueCol.doc(buildUniqueDocId(field.id, normalizeUnique(oldVal)));
+                    tx.delete(oldRef);
+                }
+                tx.set(newKeyRef, {
+                    fieldId: field.id,
+                    value: newVal,
+                    normalizedValue: newNorm,
+                    recordId,
+                    updated_at: Timestamp.fromDate(new Date()),
+                });
+            }
+            tx.update(recordRef, updatedRecord);
+            tx.update(tableRef, { updated_at: new Date() });
         });
 
         return {

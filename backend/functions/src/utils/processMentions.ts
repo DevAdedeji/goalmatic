@@ -1,18 +1,46 @@
+const stringifyReplacementValue = (value: any): string => {
+    if (value === null || value === undefined) return '';
+
+    const primitiveTypes = ['string', 'number', 'boolean'];
+    if (primitiveTypes.includes(typeof value)) return String(value);
+
+    if (Array.isArray(value)) {
+        if (value.length === 0) return '';
+        const allObjects = value.every(
+            (item) => item && typeof item === 'object' && !Array.isArray(item)
+        );
+        if (allObjects) {
+            // Compact JSON per item, comma separated
+            return value.map((item) => {
+                try { return JSON.stringify(item); } catch { return String(item); }
+            }).join(', ');
+        }
+        // Mixed/primitives: stringify each then join
+        return value.map((item) => stringifyReplacementValue(item)).join(', ');
+    }
+
+    if (typeof value === 'object') {
+        try { return JSON.stringify(value); } catch { return String(value); }
+    }
+
+    return String(value);
+};
+
 export const processMentionTextarea = (text: string, previousStepResult: any): string => {
     // Part 1: Process mention spans using replace with callback
     const mentionRegex = /<span[^>]*data-type="mention"[^>]*data-id="([^"]+)"[^>]*>.*?<\/span>/g;
-    
+
     let processedText = text.replace(mentionRegex, (match, dataId) => {
 
-        
+
         const parts = dataId.match(/^([^[]+)\[([^\]]+)\]$/);
         if (parts) {
             const stepId = parts[1];
             const payloadKey = parts[2];
-            
+
             // Access the data from previousStepResult
             const replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
-            return replacementValue !== undefined ? String(replacementValue) : '';
+            return replacementValue !== undefined ? stringifyReplacementValue(replacementValue) : '';
         }
         return match; // Return original if parsing fails
     });

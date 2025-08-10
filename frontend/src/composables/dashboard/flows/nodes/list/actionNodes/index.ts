@@ -5,6 +5,7 @@ import { gmailActionNodes } from './gmail'
 import { webActionNodes } from './web'
 import { aiActionNodes } from './aiAgent'
 import { tableActionNodes } from './table'
+import { utilActionNodes } from './utils'
 
 export const flowActionNodes: FlowNode[] = [
 	...messagingActionNodes,
@@ -12,5 +13,6 @@ export const flowActionNodes: FlowNode[] = [
 	...gmailActionNodes,
 	...webActionNodes,
 	...aiActionNodes,
-	...tableActionNodes
+	...tableActionNodes,
+	...utilActionNodes
 ]

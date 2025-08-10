@@ -4,6 +4,17 @@ import { goals_db } from "../../init";
 import { getUserToolConfig, getUserUid } from "../../ai";
 import { parseTime, formatDate, formatTime } from "../utils";
 import { verifyTableAccess } from './verify';
+import { Timestamp as AdminTimestamp } from 'firebase-admin/firestore';
+const normalizeUnique = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    return String(val)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
+
+const buildUniqueDocId = (fieldId: string, normalized: string) => `${fieldId}::${normalized}`;
 
 
 
@@ -17,12 +28,9 @@ import { verifyTableAccess } from './verify';
  * @returns An object with validation result and error message if applicable
  */
 function validateFieldType(value: any, fieldType: string, fieldName: string, field?: any): { valid: boolean; message?: string } {
-    // Skip validation for undefined, null, or empty string values
-    // These will be caught by the required field check if needed
     if (value === undefined || value === null || value === '') {
         return { valid: true };
     }
-
     switch (fieldType) {
         case 'text':
         case 'textarea':
@@ -311,19 +319,7 @@ export const createTableRecord = async (params: {
                 throw new Error(`Required field '${field.name}' is missing or invalid`);
             }
 
-            // Enforce per-field uniqueness if configured (query by field id)
-            if (field.preventDuplicates && fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-                const dupSnap = await goals_db
-                    .collection('tables')
-                    .doc(tableId)
-                    .collection('records')
-                    .where(field.id, '==', fieldValue)
-                    .limit(1)
-                    .get();
-                if (!dupSnap.empty) {
-                    throw new Error(`Value for '${field.name}' must be unique. '${fieldValue}' already exists.`);
-                }
-            }
+            // Defer unique enforcement to transactional section below
 
             // Map the potentially formatted field value to the correct ID in the new record
             if (fieldValue !== undefined && newRecord[field.id] === undefined) {
@@ -331,12 +327,34 @@ export const createTableRecord = async (params: {
             }
         }
 
-        // Add the record to the records subcollection
-        await goals_db.collection('tables').doc(tableId).collection('records').doc(recordId).set(newRecord);
-
-        // Update the table's updated_at timestamp
-        await goals_db.collection('tables').doc(tableId).update({
-            updated_at: Timestamp.now()
+        // Transaction: create record and unique index docs atomically
+        const tableRef = goals_db.collection('tables').doc(tableId);
+        const recordRef = tableRef.collection('records').doc(recordId);
+        const uniqueCol = tableRef.collection('unique');
+        await goals_db.runTransaction(async (tx) => {
+            const fields = tableData.fields || [];
+            for (const field of fields) {
+                if (!field.preventDuplicates) continue;
+                const value = newRecord[field.id];
+                if (value !== undefined && value !== null && value !== '') {
+                    const norm = normalizeUnique(value);
+                    const uRef = uniqueCol.doc(buildUniqueDocId(field.id, norm));
+                    const existing = await tx.get(uRef);
+                    if (existing.exists) {
+                        throw new Error(`Value for '${field.name}' must be unique. '${value}' already exists.`);
+                    }
+                    tx.set(uRef, {
+                        fieldId: field.id,
+                        value,
+                        normalizedValue: norm,
+                        recordId,
+                        created_at: AdminTimestamp.now(),
+                        creator_id: uid,
+                    });
+                }
+            }
+            tx.set(recordRef, newRecord);
+            tx.update(tableRef, { updated_at: AdminTimestamp.now() });
         });
 
         return {

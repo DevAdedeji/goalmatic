@@ -57,10 +57,10 @@
 					</span>
 				</span>
 
-                <!-- Start Time -->
-                <span v-else-if="item.start_time" class="text-text-secondary">
-                    {{ formatDateTime(item.data.start_time) }}
-                </span>
+				<!-- Start Time -->
+				<span v-else-if="item.start_time" class="text-text-secondary">
+					{{ formatDateTime(item.data.start_time) }}
+				</span>
 
 				<!-- Duration -->
 				<span v-else-if="item.duration" class="text-text-secondary">

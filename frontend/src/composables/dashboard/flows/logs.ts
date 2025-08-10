@@ -52,7 +52,7 @@ export const useFlowLogs = () => {
       flowId,
       'logs',
       flowLogs,
-      { name: 'created_at', order: 'desc' }
+      { name: 'start_time', order: 'desc' }
     )
     } catch (error: unknown) {
       console.error('Error fetching flow logs:', error)

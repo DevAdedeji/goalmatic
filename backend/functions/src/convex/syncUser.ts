@@ -30,18 +30,16 @@ export const convexSyncUserCreate = onDocumentCreated({
   document: 'users/{userId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncUserCreate triggered for:', event.params.userId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping user creation sync for:', event.params.userId);
     return;
   }
-  
+
   try {
     const userId = event.params.userId;
     const userData = event.data?.data();
-    
+
     if (!userData) {
       console.error('No user data found for creation sync');
       return;
@@ -54,24 +52,21 @@ export const convexSyncUserCreate = onDocumentCreated({
     }
 
     const convex = getConvexClient();
-    
+
     // Check if user already exists (in case of race condition)
     const existingUser = await convex.query(api.users.getUserByFirebaseId, {
       firebaseId: userId
     });
-    
+
     if (existingUser) {
-      console.log(`User ${userId} already exists in Convex, skipping creation`);
       return;
     }
-    
+
     const convexData = transformUserForConvex(userId, userData);
-    
-    console.log('Sending user data to Convex:', JSON.stringify(convexData, null, 2));
-    
+
+
     await convex.mutation(api.users.createUser, convexData);
-    
-    console.log(`Successfully synced user creation to Convex: ${userId}`);
+
   } catch (error) {
     console.error('Error syncing user creation to Convex:', error);
     console.error('Event data:', JSON.stringify(event.data?.data(), null, 2));
@@ -84,19 +79,17 @@ export const convexSyncUserUpdate = onDocumentUpdated({
   document: 'users/{userId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncUserUpdate triggered for:', event.params.userId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping user update sync for:', event.params.userId);
     return;
   }
-  
+
   try {
     const userId = event.params.userId;
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    
+
     if (!afterData) {
       console.error('No user data found for update sync');
       return;
@@ -104,36 +97,33 @@ export const convexSyncUserUpdate = onDocumentUpdated({
 
     // Check if this update came from Convex to avoid circular sync
     if (afterData._convexSyncSkip) {
-      console.log(`Skipping Firebase->Convex sync for ${userId} (originated from Convex)`);
       return;
     }
 
     const convex = getConvexClient();
-    
+
     // Check if user exists in Convex
     const existingUser = await convex.query(api.users.getUserByFirebaseId, {
       firebaseId: userId
     });
-    
+
     if (!existingUser) {
-      console.log(`User ${userId} not found in Convex during update, creating first...`);
-      
+
       // Validate required fields for creation
       if (!afterData.name || !afterData.username) {
-        console.error('Cannot create user during update - missing required fields:', { 
-          name: afterData.name, 
-          username: afterData.username 
+        console.error('Cannot create user during update - missing required fields:', {
+          name: afterData.name,
+          username: afterData.username
         });
         return;
       }
-      
+
       // Create the user first (upsert pattern)
       const convexData = transformUserForConvex(userId, afterData);
       await convex.mutation(api.users.createUser, convexData);
-      console.log(`Successfully created user during update sync: ${userId}`);
       return;
     }
-    
+
     // Prepare update data - only include fields that have changed
     const updates: any = {
       updated_at: convertTimestamp(afterData.updated_at)
@@ -183,8 +173,7 @@ export const convexSyncUserUpdate = onDocumentUpdated({
       firebaseId: userId,
       updates
     });
-    
-    console.log(`Successfully synced user update to Convex: ${userId}`);
+
   } catch (error) {
     console.error('Error syncing user update to Convex:', error);
     // Don't throw error to avoid Firebase function retries
@@ -196,23 +185,20 @@ export const convexSyncUserDelete = onDocumentDeleted({
   document: 'users/{userId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncUserDelete triggered for:', event.params.userId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping user deletion sync for:', event.params.userId);
     return;
   }
-  
+
   try {
     const userId = event.params.userId;
-    
+
     const convex = getConvexClient();
     await convex.mutation(api.users.deleteUser, {
       firebaseId: userId
     });
-    
-    console.log(`Successfully synced user deletion to Convex: ${userId}`);
+
   } catch (error) {
     console.error('Error syncing user deletion to Convex:', error);
     // Don't throw error to avoid Firebase function retries

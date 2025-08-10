@@ -36,18 +36,16 @@ export const convexSyncAgentCreate = onDocumentCreated({
   document: 'agents/{agentId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncAgentCreate triggered for:', event.params.agentId);
-  
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping agent creation sync for:', event.params.agentId);
+
     return;
   }
-  
+
   try {
     const agentId = event.params.agentId;
     const agentData = event.data?.data();
-    
+
     if (!agentData) {
       console.error('No agent data found for creation sync');
       return;
@@ -60,24 +58,21 @@ export const convexSyncAgentCreate = onDocumentCreated({
     }
 
     const convex = getConvexClient();
-    
+
     // Check if agent already exists (in case of race condition)
     const existingAgent = await convex.query(api.agents.getAgentByFirebaseId, {
       firebaseId: agentId
     });
-    
+
     if (existingAgent) {
-      console.log(`Agent ${agentId} already exists in Convex, skipping creation`);
       return;
     }
-    
+
     const convexData = transformAgentForConvex(agentId, agentData);
-    
-    console.log('Sending agent data to Convex:', JSON.stringify(convexData, null, 2));
-    
+
+
     await convex.mutation(api.agents.createAgent, convexData);
-    
-    console.log(`Successfully synced agent creation to Convex: ${agentId}`);
+
   } catch (error) {
     console.error('Error syncing agent creation to Convex:', error);
     console.error('Event data:', JSON.stringify(event.data?.data(), null, 2));
@@ -90,19 +85,17 @@ export const convexSyncAgentUpdate = onDocumentUpdated({
   document: 'agents/{agentId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncAgentUpdate triggered for:', event.params.agentId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping agent update sync for:', event.params.agentId);
     return;
   }
-  
+
   try {
     const agentId = event.params.agentId;
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    
+
     if (!afterData) {
       console.error('No agent data found for update sync');
       return;
@@ -110,36 +103,33 @@ export const convexSyncAgentUpdate = onDocumentUpdated({
 
     // Check if this update came from Convex to avoid circular sync
     if (afterData._convexSyncSkip) {
-      console.log(`Skipping Firebase->Convex sync for ${agentId} (originated from Convex)`);
       return;
     }
 
     const convex = getConvexClient();
-    
+
     // Check if agent exists in Convex
     const existingAgent = await convex.query(api.agents.getAgentByFirebaseId, {
       firebaseId: agentId
     });
-    
+
     if (!existingAgent) {
-      console.log(`Agent ${agentId} not found in Convex during update, creating first...`);
-      
+
       // Validate required fields for creation
       if (!afterData.name || !afterData.creator_id) {
-        console.error('Cannot create agent during update - missing required fields:', { 
-          name: afterData.name, 
-          creator_id: afterData.creator_id 
+        console.error('Cannot create agent during update - missing required fields:', {
+          name: afterData.name,
+          creator_id: afterData.creator_id
         });
         return;
       }
-      
+
       // Create the agent first (upsert pattern)
       const convexData = transformAgentForConvex(agentId, afterData);
       await convex.mutation(api.agents.createAgent, convexData);
-      console.log(`Successfully created agent during update sync: ${agentId}`);
       return;
     }
-    
+
     // Prepare update data - only include fields that have changed
     const updates: any = {
       updated_at: convertTimestamp(afterData.updated_at)
@@ -191,8 +181,7 @@ export const convexSyncAgentUpdate = onDocumentUpdated({
       firebaseId: agentId,
       updates
     });
-    
-    console.log(`Successfully synced agent update to Convex: ${agentId}`);
+
   } catch (error) {
     console.error('Error syncing agent update to Convex:', error);
     // Don't throw error to avoid Firebase function retries
@@ -204,27 +193,24 @@ export const convexSyncAgentDelete = onDocumentDeleted({
   document: 'agents/{agentId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncAgentDelete triggered for:', event.params.agentId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping agent deletion sync for:', event.params.agentId);
     return;
   }
-  
+
   try {
     const agentId = event.params.agentId;
-    
+
     const convex = getConvexClient();
     await convex.mutation(api.agents.deleteAgent, {
       firebaseId: agentId
     });
-    
-    console.log(`Successfully synced agent deletion to Convex: ${agentId}`);
+
   } catch (error) {
     console.error('Error syncing agent deletion to Convex:', error);
     // Don't throw error to avoid Firebase function retries
   }
-}); 
+});
 
 

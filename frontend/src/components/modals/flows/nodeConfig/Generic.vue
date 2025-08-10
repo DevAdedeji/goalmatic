@@ -509,6 +509,7 @@
 import { ref, onMounted, computed, reactive, watch } from 'vue'
 import { Info as InfoIcon } from 'lucide-vue-next'
 import { useUser } from '@/composables/auth/user'
+ import { getFirestoreSubCollectionWithWhereQuery } from '@/firebase/firestore/query'
 import { useTestNode } from '@/composables/dashboard/flows/nodes/test'
 import Tooltip from '@/components/core/Tooltip.vue'
 import MentionEditor from '@/components/core/MentionEditor/index.vue'
@@ -830,8 +831,8 @@ const closeModal = () => {
 }
 
 // Populate default values reactively
-const initializeFormValues = () => {
-    props.nodeProps.forEach((prop) => {
+const initializeFormValues = async () => {
+    props.nodeProps.forEach(async (prop) => {
         // Initialize AI mode - only for AI-enabled props
         if (prop.ai_enabled) {
             // Only initialize AI mode if not already set
@@ -854,18 +855,35 @@ const initializeFormValues = () => {
         // Handle special value markers
         if (prop.value === 'USER_EMAIL') {
             try {
-                const userEmail = useUser().user.value?.email
+                const userComposable = useUser()
+                const userEmail = userComposable.user.value?.email
                 if (userEmail) {
                     props.formValues[prop.key] = userEmail
+                } else {
+                    // Fallback: use connected Gmail integration email if present
+                    const integrationsRef = ref<any[]>([])
+                    const userId = userComposable.id.value
+                    if (userId) {
+                        await getFirestoreSubCollectionWithWhereQuery(
+                            'users',
+                            userId,
+                            'integrations',
+                            integrationsRef,
+                            { name: 'type', operator: '==', value: 'EMAIL' }
+                        )
+                        const gmailIntegration = (integrationsRef.value || []).find((i: any) => (i.provider === 'GOOGLE' || i.provider === 'GOOGLE_COMPOSIO') && i.email)
+                        if (gmailIntegration?.email) {
+                            props.formValues[prop.key] = gmailIntegration.email
+                        }
+                    }
                 }
             } catch (error) {
                 console.error(
-                    `Error getting user email for ${prop.name}:`,
+                    `Error getting default email for ${prop.name}:`,
                     error
                 )
             }
-            // If property has a value function, evaluate it but don't store the function itself
-        } else if (prop.value && typeof prop.value === 'function') {
+		} else if (prop.value && typeof prop.value === 'function') {
             try {
                 const value = prop.value()
                 // Only set if the value is not undefined

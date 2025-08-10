@@ -29,18 +29,17 @@ export const convexSyncFlowCreate = onDocumentCreated({
   document: 'flows/{flowId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncFlowCreate triggered for:', event.params.flowId);
-  
+
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping flow creation sync for:', event.params.flowId);
     return;
   }
-  
+
   try {
     const flowId = event.params.flowId;
     const flowData = event.data?.data();
-    
+
     if (!flowData) {
       console.error('No flow data found for creation sync');
       return;
@@ -53,24 +52,24 @@ export const convexSyncFlowCreate = onDocumentCreated({
     }
 
     const convex = getConvexClient();
-    
+
     // Check if flow already exists (in case of race condition)
     const existingFlow = await convex.query(api.flows.getFlowByFirebaseId, {
       firebaseId: flowId
     });
-    
+
     if (existingFlow) {
-      console.log(`Flow ${flowId} already exists in Convex, skipping creation`);
+
       return;
     }
-    
+
     const convexData = transformFlowForConvex(flowId, flowData);
-    
-    console.log('Sending flow data to Convex:', JSON.stringify(convexData, null, 2));
-    
+
+
+
     await convex.mutation(api.flows.createFlow, convexData);
-    
-    console.log(`Successfully synced flow creation to Convex: ${flowId}`);
+
+
   } catch (error) {
     console.error('Error syncing flow creation to Convex:', error);
     console.error('Event data:', JSON.stringify(event.data?.data(), null, 2));
@@ -83,19 +82,19 @@ export const convexSyncFlowUpdate = onDocumentUpdated({
   document: 'flows/{flowId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncFlowUpdate triggered for:', event.params.flowId);
-  
+
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping flow update sync for:', event.params.flowId);
+
     return;
   }
-  
+
   try {
     const flowId = event.params.flowId;
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    
+
     if (!afterData) {
       console.error('No flow data found for update sync');
       return;
@@ -103,36 +102,33 @@ export const convexSyncFlowUpdate = onDocumentUpdated({
 
     // Check if this update came from Convex to avoid circular sync
     if (afterData._convexSyncSkip) {
-      console.log(`Skipping Firebase->Convex sync for ${flowId} (originated from Convex)`);
       return;
     }
 
     const convex = getConvexClient();
-    
+
     // Check if flow exists in Convex
     const existingFlow = await convex.query(api.flows.getFlowByFirebaseId, {
       firebaseId: flowId
     });
-    
+
     if (!existingFlow) {
-      console.log(`Flow ${flowId} not found in Convex during update, creating first...`);
-      
+
       // Validate required fields for creation
       if (!afterData.name || !afterData.creator_id) {
-        console.error('Cannot create flow during update - missing required fields:', { 
-          name: afterData.name, 
-          creator_id: afterData.creator_id 
+        console.error('Cannot create flow during update - missing required fields:', {
+          name: afterData.name,
+          creator_id: afterData.creator_id
         });
         return;
       }
-      
+
       // Create the flow first (upsert pattern)
       const convexData = transformFlowForConvex(flowId, afterData);
       await convex.mutation(api.flows.createFlow, convexData);
-      console.log(`Successfully created flow during update sync: ${flowId}`);
       return;
     }
-    
+
     // Prepare update data - only include fields that have changed
     const updates: any = {
       updated_at: convertTimestamp(afterData.updated_at)
@@ -161,8 +157,7 @@ export const convexSyncFlowUpdate = onDocumentUpdated({
       firebaseId: flowId,
       updates
     });
-    
-    console.log(`Successfully synced flow update to Convex: ${flowId}`);
+
   } catch (error) {
     console.error('Error syncing flow update to Convex:', error);
     // Don't throw error to avoid Firebase function retries
@@ -174,27 +169,24 @@ export const convexSyncFlowDelete = onDocumentDeleted({
   document: 'flows/{flowId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncFlowDelete triggered for:', event.params.flowId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping flow deletion sync for:', event.params.flowId);
     return;
   }
-  
+
   try {
     const flowId = event.params.flowId;
-    
+
     const convex = getConvexClient();
     await convex.mutation(api.flows.deleteFlow, {
       firebaseId: flowId
     });
-    
-    console.log(`Successfully synced flow deletion to Convex: ${flowId}`);
+
   } catch (error) {
     console.error('Error syncing flow deletion to Convex:', error);
     // Don't throw error to avoid Firebase function retries
   }
-}); 
+});
 
 // firebase functions:delete syncAgentDelete syncTableUpdate syncUserDelete syncFlowUpdate syncTableDelete syncUserCreate syncTableCreate syncFlowDelete syncAgentUpdate syncFlowCreate syncUserUpdate   --region=us-central1

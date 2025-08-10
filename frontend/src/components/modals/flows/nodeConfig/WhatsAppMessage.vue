@@ -68,7 +68,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted, reactive } from 'vue'
 import { useUser } from '@/composables/auth/user'
-import { useCoreModal } from '@/composables/core/modals'
+import { useCoreModal, useIntegrationsModal } from '@/composables/core/modals'
 import { getSingleFirestoreDocument, getFirestoreSubCollection } from '@/firebase/firestore/fetch'
 import { getFirestoreSubCollectionWithWhereQuery } from '@/firebase/firestore/query'
 
@@ -110,6 +110,7 @@ const verified = computed({
   }
 })
 const user = useUser()
+const integrationsModal = useIntegrationsModal()
 
 // Handle AI mode change
 const handleAiModeChange = (propKey: string) => {
@@ -163,6 +164,25 @@ async function prepopulateUserPhone() {
 	}
 	// After migration, phone numbers should already be normalized with +
 	form.value.phoneNumber = phone || ''
+
+	// If no WhatsApp integration found, prompt user to connect
+	if (!form.value.phoneNumber) {
+		integrationsModal.openConnectWhatsapp()
+	}
+
+	// Reactively update the phone if integration gets connected while this modal is open
+	watch(
+		() => userIntegrationsRef.value,
+		(newVal: any[]) => {
+			if (!Array.isArray(newVal)) return
+			const wa = newVal[0] as any
+			if (wa && wa.phone && form.value.recipientType === 'user') {
+				form.value.phoneNumber = wa.phone as string
+				verified.value = true
+			}
+		},
+		{ deep: true }
+	)
 }
 
 
@@ -176,6 +196,10 @@ function openOtpModal() {
       useCoreModal().closeOtpVerificationModal()
 		}
 	})
+}
+
+function openWhatsappConnect() {
+  integrationsModal.openConnectWhatsapp()
 }
 
 

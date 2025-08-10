@@ -5,9 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { Timestamp } from 'firebase-admin/firestore';
 import { processMentionsProps } from '../../../../../utils/processMentions';
 import { generateAiFlowContext } from '../../../../../utils/generateAiFlowContext';
-import { generateObject } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { z } from 'zod';
+// centralized AI helpers used via node/utils
+import { Timestamp as AdminTimestamp } from 'firebase-admin/firestore';
+import { normalizeUnique, buildUniqueDocId, buildRecordSchema } from './utils';
+import { generateStructuredData } from '../utils';
+import { createRecordChecks } from './utils/checks';
+import { createRecordPrompt } from './utils/prompts';
 
 const createRecord = async (
     context: WorkflowContext,
@@ -15,202 +18,33 @@ const createRecord = async (
     previousStepResult: any
 ) => {
     try {
-        // Extract user ID from the flow data
         const { userId } = context.requestPayload as { userId: string };
-        if (!userId) {
-            throw new Error('User ID not found in flow data');
-        }
-
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
-
-        // Generate AI content for AI-enabled fields and get updated props
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
+        const { tableId, dataContext, aiInstructions = '' } = processedPropsWithAiContext;
+        const { tableData, error } = await createRecordChecks(userId, tableId, dataContext);
 
-        const {tableId, dataContext, aiInstructions = ''} = processedPropsWithAiContext;
-
-
-        console.log(aiInstructions, 'aiInstructions');
-
-        console.log(dataContext, 'dataContext');
-
-
-        if (!tableId) {
-            return {
-                success: false,
-                error: 'Table ID is required',
-            };
-        }
-
-        // Validate required fields for AI mode
-        if (!dataContext) {
-            return {
-                success: false,
-                error: 'Data context is required',
-            };
-        }
-
-        // Get the table document
-        const tableDoc = await goals_db.collection('tables').doc(tableId).get();
-        if (!tableDoc.exists) {
-            return {
-                success: false,
-                error: 'Table not found',
-            };
-        }
-
-        const tableData = tableDoc.data();
-
-        // Check if the table belongs to the user
-        if (tableData?.creator_id !== userId) {
-            return {
-                success: false,
-                error: 'Unauthorized access to table',
-            };
-        }
+        if (error || !tableData) { return { success: false, error: error }; }
 
         let record: any;
         let aiGeneratedData: any = null;
 
-
-        // AI mode - generate record data using AI
         try {
-            // Get table fields for AI context
-            const tableFields = tableData?.fields || [];
-            const schemaDescription = tableFields
-                .map(
-                    (field: any) =>
-                        `${field.id}: ${field.type} ${field.required ? '(required)' : '(optional)'} - ${field.description || field.name || ''}`
-                )
-                .join('\n');
+            const systemPrompt = createRecordPrompt(tableData, aiInstructions);
 
 
-        
-            // Always use array-based approach for consistency
-            const systemPrompt = `You are a structured data generation assistant.
-
-Your purpose is to analyze raw or semi-structured user data and convert it into structured records that match the schema of a database table.
-
-## Your Task:
-Given:
-- A database table schema
-- Optional instructions from the user
-- A data context (which may be a single item or an array of items)
-
-You must:
-- Generate valid database records that strictly follow the table schema.
-- Include only fields defined in the schema (ignore unrelated fields).
-- Ensure each field respects its expected data type.
-- Always return an array of valid records, even if only one item was provided.
-- Make sure all required fields are present in each record.
-- If some required values are missing in the input, use common-sense defaults or infer them if safely possible.
-
-## Table Schema:
-${schemaDescription}
-
-## Additional Instructions:
-${aiInstructions}
-
-## Output Rules:
-- Only use the field IDs as keys (not their display names).
-- Return a clean, minimal array of records. Do not wrap the array in any explanation or additional data.
-- Do not include extra text or metadata in the output—just the array of records.
-- Output only fields that are part of the schema.
-- Handle all values as best as you can based on their expected types. If a field expects a number, don't return a string.
-
-## Examples:
-If input is a single object:
-→ Return: [ { ...record } ]
-
-If input is an array:
-→ Return: [ { ...record1 }, { ...record2 }, ... ]
-
-Remember: Your job is to help users quickly convert their ideas or raw notes into clean, structured, and valid data for the database.
-`;
-
-            // Initialize Google AI
-            const google = createGoogleGenerativeAI({
-                apiKey: process.env.GOOGLE_API_KEY,
-            });
-
-            // Create dynamic schema based on the table's field definitions
+            // Build schema using helper
             const tableFieldsArray = tableData?.fields || [];
-            const schemaFields: Record<string, any> = {};
+            const recordSchema = buildRecordSchema(tableFieldsArray);
 
-
-
-            // Build Zod schema from table field definitions
-            tableFieldsArray.forEach((field: any) => {
-                const fieldId = field.id;
-                switch (field.type) {
-                    case 'text':
-                    case 'textarea':
-                    case 'email':
-                    case 'url':
-                        schemaFields[fieldId] = field.required
-                            ? z.string()
-                            : z.string().optional();
-                        break;
-                    case 'number':
-                        schemaFields[fieldId] = field.required
-                            ? z.number()
-                            : z.number().optional();
-                        break;
-                    case 'boolean':
-                        schemaFields[fieldId] = field.required
-                            ? z.boolean()
-                            : z.boolean().optional();
-                        break;
-                    case 'date':
-                    case 'time':
-                        schemaFields[fieldId] = field.required
-                            ? z.string()
-                            : z.string().optional();
-                        break;
-                    case 'select':
-                        schemaFields[fieldId] = field.required
-                            ? z.string()
-                            : z.string().optional();
-                        break;
-                    default:
-                        // Default to optional string for unknown types
-                        schemaFields[fieldId] = z.string().optional();
-                }
-            });
-
-            // If no schema fields defined, create a basic schema with common fields
-            let recordSchema: any;
-            if (Object.keys(schemaFields).length > 0) {
-                recordSchema = z.object(schemaFields).passthrough();
-            } else {
-                // Fallback schema with basic fields that work with Gemini
-                recordSchema = z
-                    .object({
-                        field1: z.string().optional(),
-                        field2: z.string().optional(),
-                        field3: z.string().optional(),
-                        field4: z.string().optional(),
-                        field5: z.string().optional(),
-                    })
-                    .passthrough();
-            }
-
-
-
-            // Use array output strategy for generating multiple records
-            const result = await generateObject({
-                model: google('gemini-2.5-flash'),
+            // Use centralized helper for array output
+            record = await generateStructuredData<any[]>({
                 system: systemPrompt,
-                prompt:
-                    typeof dataContext === 'string'
-                        ? dataContext
-                        : JSON.stringify(dataContext, null, 2),
-                output: 'array',
+                prompt: dataContext,
                 schema: recordSchema,
+                output: 'array',
             });
-
-            aiGeneratedData = result.object;
-            record = result.object;
-
+            aiGeneratedData = record;
 
         } catch (error: any) {
             return {
@@ -221,6 +55,7 @@ Remember: Your job is to help users quickly convert their ideas or raw notes int
 
         // Create records in batch
         const createdRecords: any[] = [];
+        const failedRecords: Array<{ item: any; error: string }> = [];
         const recordIds: string[] = [];
         const now = new Date();
 
@@ -229,29 +64,46 @@ Remember: Your job is to help users quickly convert their ideas or raw notes int
         const fieldsRequiringUniqueness = new Set(
             tableFields.filter((f: any) => f?.preventDuplicates).map((f: any) => f.id)
         );
+
+
+        // Identify duplicates within the incoming batch and mark them as failures instead of aborting the whole batch
+        let internalDuplicateErrors: Record<number, string[]> = {};
         if (fieldsRequiringUniqueness.size > 0) {
-            const seenValues: Record<string, Set<string>> = {};
+            const seenValues: Record<string, Map<string, number>> = {};
             for (const fieldId of fieldsRequiringUniqueness) {
-                seenValues[fieldId] = new Set<string>();
+                seenValues[fieldId] = new Map<string, number>();
             }
-            for (const item of record) {
+            record.forEach((item: any, index: number) => {
                 for (const fieldId of fieldsRequiringUniqueness) {
                     const value = item[fieldId];
                     if (value !== undefined && value !== null && value !== '') {
                         const key = String(value);
-                        if (seenValues[fieldId].has(key)) {
-                            return {
-                                success: false,
-                                error: `Duplicate value '${value}' for unique field '${fieldId}' within batch. Values must be unique.`,
-                            };
+                        const firstIndex = seenValues[fieldId].get(key);
+                        if (firstIndex !== undefined) {
+                            if (!internalDuplicateErrors[index]) internalDuplicateErrors[index] = [];
+                            internalDuplicateErrors[index].push(
+                                `Duplicate value '${value}' for unique field '${fieldId}' within batch (first seen at index ${firstIndex}).`
+                            );
+                        } else {
+                            seenValues[fieldId].set(key, index);
                         }
-                        seenValues[fieldId].add(key);
                     }
                 }
-            }
+            });
         }
 
-        for (const recordItem of record) {
+        // Write records with transactional unique index enforcement per record
+
+
+        for (const [recordIndex, recordItem] of record.entries()) {
+            // Skip items that violate uniqueness within the batch and collect as failures
+            if (internalDuplicateErrors[recordIndex] && internalDuplicateErrors[recordIndex].length > 0) {
+                failedRecords.push({
+                    item: recordItem,
+                    error: internalDuplicateErrors[recordIndex].join(' '),
+                });
+                continue;
+            }
             const recordId = uuidv4();
             const recordRef = goals_db
                 .collection('tables')
@@ -259,57 +111,90 @@ Remember: Your job is to help users quickly convert their ideas or raw notes int
                 .collection('records')
                 .doc(recordId);
 
+            // Map incoming item keys to field IDs (LLM may output names or case variants)
+            const mapped: Record<string, any> = {};
+            for (const f of tableFields) {
+                const id = f.id;
+                let val = recordItem[id];
+                if (val === undefined) {
+                    // try by exact name
+                    val = recordItem[f.name];
+                }
+                if (val === undefined) {
+                    // case-insensitive name match
+                    const key = Object.keys(recordItem).find(k => k.toLowerCase() === String(f.name || '').toLowerCase());
+                    if (key) val = recordItem[key];
+                }
+                if (val !== undefined) mapped[id] = val;
+            }
+
             const recordToCreate = {
-                ...recordItem,
+                ...mapped,
                 id: recordId,
                 created_at: Timestamp.fromDate(now),
                 updated_at: Timestamp.fromDate(now),
                 creator_id: userId,
             };
 
-            // Enforce uniqueness per configured fields against existing records
-            if (fieldsRequiringUniqueness.size > 0) {
-                for (const fieldId of fieldsRequiringUniqueness) {
-                    const value = recordToCreate[fieldId];
-                    if (value !== undefined && value !== null && value !== '') {
-                        const dupSnap = await goals_db
-                            .collection('tables')
-                            .doc(tableId)
-                            .collection('records')
-                            .where(fieldId, '==', value)
-                            .limit(1)
-                            .get();
-                        if (!dupSnap.empty) {
-                            return {
-                                success: false,
-                                error: `Value for '${fieldId}' must be unique. '${value}' already exists.`,
-                            };
+            try {
+                await goals_db.runTransaction(async (tx) => {
+                    const tableRef = goals_db.collection('tables').doc(tableId);
+                    const uniqueCol = tableRef.collection('unique');
+                    for (const fieldId of fieldsRequiringUniqueness) {
+                        const value = recordToCreate[fieldId];
+                        if (value !== undefined && value !== null && value !== '') {
+                            const norm = normalizeUnique(value);
+                            const uRef = uniqueCol.doc(buildUniqueDocId(fieldId, norm));
+                            const existing = await tx.get(uRef);
+                            if (existing.exists) {
+                                throw new Error(`Value for '${fieldId}' must be unique. '${value}' already exists.`);
+                            }
+                            tx.set(uRef, {
+                                fieldId,
+                                value,
+                                normalizedValue: norm,
+                                recordId,
+                                created_at: AdminTimestamp.fromDate(now),
+                                creator_id: userId,
+                            });
                         }
                     }
-                }
+                    tx.set(recordRef, recordToCreate);
+                    tx.update(tableRef, { updated_at: AdminTimestamp.fromDate(now) });
+                });
+                createdRecords.push(recordToCreate);
+                recordIds.push(recordId);
+            } catch (e: any) {
+                failedRecords.push({ item: recordItem, error: e?.message || String(e) });
             }
-
-            await recordRef.set(recordToCreate);
-
-            createdRecords.push(recordToCreate);
-            recordIds.push(recordId);
         }
 
+        console.log(createdRecords, 'createdRecords');
+        console.log(createdRecords.length, 'totalRecordsCreated');
+
+        if (createdRecords.length === 0) {
+            return {
+                success: false,
+                error: failedRecords.length > 0
+                    ? `All records failed to create. First error: ${failedRecords[0].error}`
+                    : 'No records to create.',
+            };
+        }
 
         return {
             success: true,
             payload: {
                 recordIds,
-                recordId: recordIds[0], // For backward compatibility
                 created_at: now.toISOString(),
                 records: createdRecords,
-                record: createdRecords[0], // For backward compatibility
                 totalRecordsCreated: createdRecords.length,
+                failedRecords,
+                totalRecordsFailed: failedRecords.length,
                 aiGeneratedData,
             },
         };
     } catch (error: any) {
-
+        console.log(error, 'error');
         return {
             success: false,
             error: error?.message || error,

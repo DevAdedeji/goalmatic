@@ -188,15 +188,14 @@ const filteredOptions = computed(() => {
 })
 
 const selectedOption = computed(() => {
-	if (!props.modelValue) return null
-	return allOptions.value.find((option) => getOptionValue(option) === props.modelValue)
+    if (props.modelValue == null) return null
+    return allOptions.value.find((option) => getOptionValue(option) === props.modelValue)
 })
 
 const inputPlaceholder = computed(() => {
-	if (selectedOption.value && !isOpen.value) {
-		return getOptionLabel(selectedOption.value)
-	}
-	return isOpen.value ? props.searchPlaceholder : props.placeholder
+    // Always use explicit placeholders. The selected value should be displayed
+    // as the actual input text (via searchQuery), not as placeholder.
+    return isOpen.value ? props.searchPlaceholder : props.placeholder
 })
 
 const hasCustomOptions = computed(() => {
@@ -339,11 +338,21 @@ onMounted(() => {
 
 // Watch for external model value changes
 watch(() => props.modelValue, (newValue) => {
-	if (newValue && selectedOption.value) {
+    if (newValue != null && selectedOption.value) {
 		searchQuery.value = getOptionLabel(selectedOption.value)
 	} else {
 		searchQuery.value = ''
 	}
+})
+
+// Also watch for options changing (e.g., async-loaded options) so that once the
+// selected option becomes available, we reflect its label in the input text.
+watch(() => allOptions.value, () => {
+    if (props.modelValue == null) return
+    const option = allOptions.value.find((opt) => getOptionValue(opt) === props.modelValue)
+    if (option) {
+        searchQuery.value = getOptionLabel(option)
+    }
 })
 
 // Click outside handler

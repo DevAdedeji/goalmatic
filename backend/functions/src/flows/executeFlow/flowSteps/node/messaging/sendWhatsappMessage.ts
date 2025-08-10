@@ -1,6 +1,6 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
-import { goals_db } from "../../../../../init";
+import { goals_db, is_emulator } from "../../../../../init";
 import { send_WA_Message, send_WA_ImageMessageInput } from "../../../../../whatsapp/utils/sendMessage";
 import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/templates/workflow";
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
@@ -11,9 +11,9 @@ import { normalizePhoneForWhatsApp } from "../../../../../utils/phoneUtils";
 
 const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
-        
+
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
-        
+
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
 
         let { message, recipientType, phoneNumber } = processedPropsWithAiContext;
@@ -65,13 +65,13 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         }
 
-        return { 
-            success: true, 
-            sentAt: new Date().toISOString(), 
+        return {
+            success: true,
+            sentAt: new Date().toISOString(),
             payload: processedPropsWithAiContext // Return updated props so subsequent nodes get processed values
         };
     } catch (error: any) {
-        console.error(error.response?.data);
+        console.error(error);
         return { success: false, error: error?.message || error };
     }
 };
@@ -82,6 +82,8 @@ export const sendWhatsappMessageNode = {
 };
 
 const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
+    // In dev or when running the Firebase emulator, always allow sending
+    if (is_emulator) return true;
     const cswSnap = await goals_db.collection('CSW').doc(phoneNumber).get();
     if (!cswSnap.exists) return false;
     const cswData = cswSnap.data();

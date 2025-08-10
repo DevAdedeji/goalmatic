@@ -24,18 +24,16 @@ export const convexSyncTableCreate = onDocumentCreated({
   document: 'tables/{tableId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncTableCreate triggered for:', event.params.tableId);
-  
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping table creation sync for:', event.params.tableId);
     return;
   }
-  
+
   try {
     const tableId = event.params.tableId;
     const tableData = event.data?.data();
-    
+
     if (!tableData) {
       console.error('No table data found for creation sync');
       return;
@@ -48,24 +46,19 @@ export const convexSyncTableCreate = onDocumentCreated({
     }
 
     const convex = getConvexClient();
-    
+
     // Check if table already exists (in case of race condition)
     const existingTable = await convex.query(api.tables.getTableByFirebaseId, {
       firebaseId: tableId
     });
-    
+
     if (existingTable) {
-      console.log(`Table ${tableId} already exists in Convex, skipping creation`);
       return;
     }
-    
+
     const convexData = transformTableForConvex(tableId, tableData);
-    
-    console.log('Sending table data to Convex:', JSON.stringify(convexData, null, 2));
-    
+
     await convex.mutation(api.tables.createTable, convexData);
-    
-    console.log(`Successfully synced table creation to Convex: ${tableId}`);
   } catch (error) {
     console.error('Error syncing table creation to Convex:', error);
     console.error('Event data:', JSON.stringify(event.data?.data(), null, 2));
@@ -78,19 +71,18 @@ export const convexSyncTableUpdate = onDocumentUpdated({
   document: 'tables/{tableId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncTableUpdate triggered for:', event.params.tableId);
-  
+
+
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping table update sync for:', event.params.tableId);
     return;
   }
-  
+
   try {
     const tableId = event.params.tableId;
     const beforeData = event.data?.before.data();
     const afterData = event.data?.after.data();
-    
+
     if (!afterData) {
       console.error('No table data found for update sync');
       return;
@@ -98,36 +90,33 @@ export const convexSyncTableUpdate = onDocumentUpdated({
 
     // Check if this update came from Convex to avoid circular sync
     if (afterData._convexSyncSkip) {
-      console.log(`Skipping Firebase->Convex sync for ${tableId} (originated from Convex)`);
       return;
     }
 
     const convex = getConvexClient();
-    
+
     // Check if table exists in Convex
     const existingTable = await convex.query(api.tables.getTableByFirebaseId, {
       firebaseId: tableId
     });
-    
+
     if (!existingTable) {
-      console.log(`Table ${tableId} not found in Convex during update, creating first...`);
-      
+
       // Validate required fields for creation
       if (!afterData.name || !afterData.creator_id) {
-        console.error('Cannot create table during update - missing required fields:', { 
-          name: afterData.name, 
-          creator_id: afterData.creator_id 
+        console.error('Cannot create table during update - missing required fields:', {
+          name: afterData.name,
+          creator_id: afterData.creator_id
         });
         return;
       }
-      
+
       // Create the table first (upsert pattern)
       const convexData = transformTableForConvex(tableId, afterData);
       await convex.mutation(api.tables.createTable, convexData);
-      console.log(`Successfully created table during update sync: ${tableId}`);
       return;
     }
-    
+
     // Prepare update data - only include fields that have changed
     const updates: any = {
       updated_at: convertTimestamp(afterData.updated_at)
@@ -156,8 +145,7 @@ export const convexSyncTableUpdate = onDocumentUpdated({
       firebaseId: tableId,
       updates
     });
-    
-    console.log(`Successfully synced table update to Convex: ${tableId}`);
+
   } catch (error) {
     console.error('Error syncing table update to Convex:', error);
     // Don't throw error to avoid Firebase function retries
@@ -169,23 +157,19 @@ export const convexSyncTableDelete = onDocumentDeleted({
   document: 'tables/{tableId}',
   database: goals_db_string,
 }, async (event) => {
-  console.log('convexSyncTableDelete triggered for:', event.params.tableId);
-  
   // Check if Convex sync is enabled
   if (!isConvexSyncEnabled()) {
-    console.log('Convex sync is disabled, skipping table deletion sync for:', event.params.tableId);
     return;
   }
-  
+
   try {
     const tableId = event.params.tableId;
-    
+
     const convex = getConvexClient();
     await convex.mutation(api.tables.deleteTable, {
       firebaseId: tableId
     });
-    
-    console.log(`Successfully synced table deletion to Convex: ${tableId}`);
+
   } catch (error) {
     console.error('Error syncing table deletion to Convex:', error);
     // Don't throw error to avoid Firebase function retries

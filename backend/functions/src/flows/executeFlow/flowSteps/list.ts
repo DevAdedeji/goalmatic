@@ -9,6 +9,7 @@ import { sendWhatsappMessageNode } from "./node/messaging/sendWhatsappMessage";
 import { fetchWebContentNode, callWebApiNode, jobScraperNode } from "./node/web";
 import { askAgentNode, askAiNode } from "./node/ai";
 import { emailTriggerNode, scheduleTimeTriggerNode, scheduleIntervalTriggerNode } from "./node/trigger";
+import { formatDataNode } from "./node/utils/formatter";
 
 type NodeSignature = {
     nodeId: string;
@@ -48,5 +49,8 @@ export const availableNodes: Record<string, NodeSignature> = {
 
     // AI Agent nodes
     [askAgentNode.nodeId]: askAgentNode,
-    [askAiNode.nodeId]: askAiNode
+    [askAiNode.nodeId]: askAiNode,
+
+    // Utility nodes
+    [formatDataNode.nodeId]: formatDataNode
 }
