@@ -1,8 +1,11 @@
 <template>
-	<div class="flex flex-col gap-4 mt-12 pb-64">
+	<div class="flex flex-col gap-4 mt-12 pb-64  mx-auto" :class="[isOwner(flowData) ? 'max-w-[700px]' : '2xl:max-w-5xl max-w-7xl  md:px-10']">
+		<h1 v-if="!isOwner(flowData)" class="section-title">
+			Preview
+		</h1>
 		<!-- Flow trigger section -->
 		<div class="flex flex-col gap-4 items-center">
-			<section v-if="!flowData.trigger && isOwner(flowData)" class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
+			<section v-if="!flowData.trigger && isOwner(flowData)" class="w-full bg-grey  rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">
@@ -30,7 +33,7 @@
 			</section>
 
 
-			<section v-else class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
+			<section v-else class="w-full bg-grey  rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">
@@ -65,7 +68,7 @@
 		<div class="flex flex-col items-center gap-4"
 			:class="{ 'mt-12': flowData.steps.length === 0 }"
 		>
-			<section v-if="flowData.steps.length" class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
+			<section v-if="flowData.steps.length" class="w-full bg-grey  rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">
@@ -126,7 +129,7 @@
 				</div>
 			</section>
 
-			<section v-else-if="isOwner(flowData)" class="w-full bg-grey max-w-[700px] rounded-xl border border-line">
+			<section v-else-if="isOwner(flowData)" class="w-full bg-grey  rounded-xl border border-line">
 				<header class="flex  items-center justify-between px-4 py-3">
 					<div class="flex flex-col">
 						<p class="text-base font-semibold">
@@ -208,5 +211,9 @@ defineProps({
   font-size: 0.875rem;
   width: 100%;
   max-width: 32rem;
+}
+
+.section-title{
+	@apply  text-base md:text-xl font-semibold;
 }
 </style>

@@ -14,6 +14,7 @@ export * from "./agents/getAgentDetails";
 export * from "./flows/getFlowDetails";
 export * from "./ai/tools/generateCron";
 export * from "./ai/tools/generateTableFields";
+export * from "./reminders/deliverReminder";
 export * from "./assistant/generateMediaUrls";
 export * from "./referrals/getReferralStats";
 export * from "./referrals/processReferralEarnings";
@@ -26,7 +27,7 @@ export * from "./chat/shareChatSession";
 export * from "./ai/tools/gmail/utils/setup";
 
 // Convex sync functions
-export * from "./convex/index";
+// export * from "./convex/index";
 export * from "./agents/migrateAgents";
 export * from "./agents/searchAgents";
 

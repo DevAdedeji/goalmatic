@@ -6,8 +6,8 @@
 				<DashboadHeader v-else />
 			</template>
 
-			<main :class="['p-4', 'sm:p-6', 'h-screen', { 'flow-bg': isOwner(flowDetails) }]">
-				<section class="flex flex-col gap-4 center pt-10 px-4 md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
+			<main :class="['p-4 sm:p-6 h-screen overflow-y-auto', { 'flow-bg': isOwner(flowDetails) }]">
+				<section class="flex flex-col gap-4 center pt-10  md:px-10 2xl:max-w-5xl max-w-7xl mx-auto w-full">
 					<FlowsIdHeader v-if="!isOwner(flowDetails) && flowDetails.id" :flow-data="flowDetails" :loading="loading" />
 				</section>
 

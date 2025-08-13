@@ -10,11 +10,9 @@
 
 
 			<Alert />
-			<div class="w-full h-full relative  overflow-x-hidden bg-light   ">
-				<section class="flex-col flex items-stretch h-full">
-					<slot />
-				</section>
-			</div>
+			<section class="w-full min-h-full flex-col flex items-stretch relative  overflow-x-hidden bg-light   ">
+				<slot />
+			</section>
 			<ModalBase />
 		</div>
 		<ClientOnly>

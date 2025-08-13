@@ -12,6 +12,7 @@ import { TABLE_CREATE } from "./table/createRecord";
 import { TABLE_READ } from "./table/readRecord";
 import { SEND_WHATSAPP_MESSAGE_TOOL } from './whatsapp/sendMessage';
 import { SEND_EMAIL_TOOL } from './email/sendEmail';
+import { REMINDER_SET_TOOL } from './reminder/setReminder';
 
 
 
@@ -40,6 +41,7 @@ export const availableTools: Record<string, ToolSignature> = {
     // Messaging tools
     [SEND_WHATSAPP_MESSAGE_TOOL.id]: SEND_WHATSAPP_MESSAGE_TOOL,
     [SEND_EMAIL_TOOL.id]: SEND_EMAIL_TOOL,
+    [REMINDER_SET_TOOL.id]: REMINDER_SET_TOOL,
 
     // Table tools
     [TABLE_CREATE.id]: TABLE_CREATE,

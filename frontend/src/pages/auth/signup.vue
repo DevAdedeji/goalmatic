@@ -64,9 +64,12 @@
 					<div class="flex flex-grow border-b" />
 				</div>
 
-				<button class="btn border bg-light gap-3">
-					<IconsGoogle class="w-5 h-5" />
-					<span class="text-base font-semibold text-subText">Continue with Google</span>
+				<button type="button" :disabled="loading" class="btn border bg-light gap-3" @click="googleSignin()">
+					<template v-if="!loading">
+						<IconsGoogle class="w-5 h-5" />
+						<span class="text-base font-semibold text-subText">Continue with Google</span>
+					</template>
+					<Spinner v-else />
 				</button>
 				<div class="text-center text-sm font-bold flex items-center justify-center gap-2">
 					<span class="text-[#667185]">Already have an account?</span>

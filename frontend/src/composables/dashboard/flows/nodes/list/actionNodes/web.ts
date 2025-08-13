@@ -292,6 +292,21 @@ export const webActionNodes: FlowNode[] = [
                         ai_enabled: true,
                         cloneable: true,
                         hiddenFunc: (formValues: Record<string, any>) => formValues.jobSite === 'vuejobs'
+                    },
+                    {
+                        name: 'Time Posted',
+                        key: 'timePosted',
+                        type: 'select',
+                        required: false,
+                        description: 'Filter LinkedIn jobs by time posted. Default is past 24 hours.',
+                        value: 'r86400',
+                        options: [
+                            { label: 'Past 24 hours', value: 'r86400' },
+                            { label: 'Past week', value: 'r604800' },
+                            { label: 'Past month', value: 'r2592000' }
+                        ],
+                        cloneable: true,
+                        hiddenFunc: (formValues: Record<string, any>) => formValues.jobSite !== 'linkedin'
                     }
 
                 ],

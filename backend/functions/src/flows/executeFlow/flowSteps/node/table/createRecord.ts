@@ -29,6 +29,7 @@ const createRecord = async (
         let record: any;
         let aiGeneratedData: any = null;
 
+        console.log(dataContext, 'dataContext');
         try {
             const systemPrompt = createRecordPrompt(tableData, aiInstructions);
 
@@ -53,6 +54,7 @@ const createRecord = async (
             };
         }
 
+        console.log(record, 'record');
         // Create records in batch
         const createdRecords: any[] = [];
         const failedRecords: Array<{ item: any; error: string }> = [];

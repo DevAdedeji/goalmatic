@@ -22,6 +22,30 @@ export const fetchUserTablesForConfig = async () => {
 
 export const availableTools = ref([
 	{
+		id: 'REMINDER',
+		name: 'Reminder',
+		icon: '/icons/bell.svg',
+		description: 'Schedule reminders delivered via WhatsApp or Email',
+		checkStatus: false,
+		config: [
+			{
+				name: 'Default Delivery Method',
+				key: 'default_delivery_method',
+				type: 'SELECT',
+				required: true,
+				options: () => [
+					{ label: 'WhatsApp', name: 'WhatsApp', id: 'WHATSAPP', value: 'WHATSAPP' },
+					{ label: 'Email', name: 'Email', id: 'EMAIL', value: 'EMAIL' }
+				],
+				value: 'WHATSAPP'
+			}
+		],
+		abilities: [
+			{ name: 'Set Reminder', id: 'SET_REMINDER', icon: '/icons/bell.svg', primary_id: 'REMINDER' }
+		]
+	},
+
+	{
 		id: 'GOOGLECALENDAR',
 		name: 'Google Calendar',
 		icon: '/icons/googleCalendar.svg',

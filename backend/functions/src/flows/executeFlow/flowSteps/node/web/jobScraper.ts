@@ -10,7 +10,8 @@ import { getAnalytics } from "../../../../../utils/analytics";
 const generateJobSearchUrl = (
     jobSite: string,
     jobTitle: string,
-    location?: string
+    location?: string,
+    options?: { timePostedParam?: string }
 ): string | null => {
     const encodedTitle = encodeURIComponent(jobTitle);
     const encodedLocation = location ? encodeURIComponent(location) : '';
@@ -27,12 +28,30 @@ const generateJobSearchUrl = (
             if (location) {
                 linkedinUrl += `&location=${encodedLocation}`;
             }
-            linkedinUrl += '&f_TPR=r86400'; // Recent jobs (24 hours)
+            const timePostedParam = options?.timePostedParam || 'r86400';
+            linkedinUrl += `&f_TPR=${encodeURIComponent(timePostedParam)}`; // Default 24h
             return linkedinUrl;
 
         default:
             return null;
     }
+};
+// Normalize a variety of inputs into LinkedIn f_TPR value (e.g. 'r86400')
+const normalizeLinkedInTimePosted = (input: any): string => {
+    if (input == null) return 'r86400';
+    const raw = String(input).trim().toLowerCase();
+    if (/^r\d+$/.test(raw)) return raw; // already in correct form
+    // Recognize common human-friendly inputs
+    if (raw === '24h' || raw === '24hr' || raw === '24hrs' || raw === 'day' || raw === '1d') return 'r86400';
+    if (raw === 'week' || raw === '7d') return 'r604800';
+    if (raw === 'month' || raw === '30d') return 'r2592000';
+    // Numeric hours
+    const hours = Number(raw);
+    if (!Number.isNaN(hours) && hours > 0) {
+        const seconds = Math.round(hours * 3600);
+        return `r${seconds}`;
+    }
+    return 'r86400';
 };
 
 // Request timeouts to avoid function timeouts
@@ -81,6 +100,7 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             jobTitle,
             location,
             jobLimit,
+            timePosted, // optional prop controlling LinkedIn time filter
             dataContext,
             existingJobs
         } = processedPropsWithAiContext;
@@ -101,8 +121,13 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             };
         }
 
+        // Compute LinkedIn time filter and generate job search URL
+        const timePostedParam = jobSite.toLowerCase().includes('linkedin')
+            ? normalizeLinkedInTimePosted(timePosted)
+            : undefined;
+
         // Generate job search URL based on the selected job site
-        const jobSearchUrl = generateJobSearchUrl(jobSite, jobTitle, location);
+        const jobSearchUrl = generateJobSearchUrl(jobSite, jobTitle, location, { timePostedParam });
 
         if (!jobSearchUrl) {
             return {
@@ -125,19 +150,20 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
         let response: any;
         try {
             if (jobSite.toLowerCase().includes('linkedin')) {
-                // Parse and validate job limit for LinkedIn (max 50)
-                const linkedInJobLimit = Math.min(parseInt(jobLimit) || 20, 50);
-                const maxPages = Math.ceil(linkedInJobLimit / 25); // LinkedIn typically shows 25 jobs per page
-
-                // Use specialized LinkedIn API with GET method
-                response = await axios.get('https://api.goalmatic.io/scrape-linkedin-jobs', {
-                    params: {
-                        keywords: jobTitle || 'software engineer', // Default if no title provided
-                        location: location || 'United States',
-                        maxJobs: linkedInJobLimit.toString(),
-                        maxPages: maxPages.toString()
-                    },
-                    timeout: REQUEST_TIMEOUT_LINKEDIN_MS
+                // Use stealth scraper for LinkedIn and parse locally (single page)
+                response = await axios.post('https://api.goalmatic.io/scrape-stealth', {
+                    url: jobSearchUrl,
+                    options: {
+                        extractMethod: 'html',
+                        includeLinks: false,
+                        includeImages: false,
+                        timeout: REQUEST_TIMEOUT_LINKEDIN_MS
+                    }
+                }, {
+                    timeout: REQUEST_TIMEOUT_LINKEDIN_MS,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
             } else if (jobSite.toLowerCase().includes('vuejobs')) {
                 // Use stealth scraper for VueJobs - no job title needed
@@ -194,57 +220,29 @@ const scrapeJobPostings = async (_context: WorkflowContext, step: FlowNode, prev
             };
         }
 
-        // Handle different response structures based on API endpoint
+        // Handle response structure from stealth scraper (HTML/text content)
         let jobPostings: JobPosting[] = [];
-        let scrapedContent = '';
+        const scrapedContent = data.data?.content || data.data?.html || data.content || data.html || data.data?.text || data.text || '';
+        const links: any[] = data.data?.links || [];
 
-        let links: any[] = [];
-
-
-        if (jobSite.toLowerCase().includes('linkedin')) {
-            const linkedInJobs = data.data?.jobs || [];
-
-            scrapedContent = `Found ${linkedInJobs.length} LinkedIn jobs for "${jobTitle}"`;
-
-            const linkedInJobLimit = Math.min(parseInt(jobLimit) || 20, 50);
-            const limitedLinkedInJobs = linkedInJobs.slice(0, linkedInJobLimit);
-
-            jobPostings = limitedLinkedInJobs.map((job: any) => ({
-                companyName: job.company || 'Company not specified',
-                positionTitle: job.title || jobTitle,
-                jobLocation: job.location || 'Location not specified',
-                salary: job.salary && job.salary !== 'N/A' ? job.salary : undefined,
-                timePosted: job.postedTime || undefined,
-                jobLink: job.link || `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(jobTitle)}`,
-                jobDescription: job.description || `${job.title} position at ${job.company}`,
-                employmentType: 'Full-time',
-                experienceLevel: job.title?.toLowerCase().includes('senior') ? 'Senior' :
-                               job.title?.toLowerCase().includes('junior') ? 'Junior' :
-                               job.title?.toLowerCase().includes('lead') || job.title?.toLowerCase().includes('principal') ? 'Senior' : undefined
-            }));
-
-        
-        } else {
-            scrapedContent = data.data?.content || data.data?.text || data.content || data.text || '';
-            links = data.data?.links || [];
-
-            if (!scrapedContent) {
-                return {
-                    success: true,
-                    payload: {
-                        ...processedPropsWithAiContext,
-                        jobPostings: [],
-                        totalJobs: 0,
-                        scrapedContent: '',
-                        message: 'No content could be scraped from the job search URL'
-                    }
-                };
-            }
-
-            const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle) || [];
-            const vueJobsLimit = Math.min(parseInt(jobLimit) || 20, 100);
-            jobPostings = allJobs.slice(0, vueJobsLimit);
+        if (!scrapedContent) {
+            return {
+                success: true,
+                payload: {
+                    ...processedPropsWithAiContext,
+                    jobPostings: [],
+                    totalJobs: 0,
+                    scrapedContent: '',
+                    message: 'No content could be scraped from the job search URL'
+                }
+            };
         }
+
+        const allJobs = parseJobListings(scrapedContent, links, jobSite, jobTitle) || [];
+
+        // Apply sensible per-site limits
+        const defaultLimit = Math.min(parseInt(jobLimit) || 20, jobSite.toLowerCase().includes('linkedin') ? 50 : 100);
+        jobPostings = allJobs.slice(0, defaultLimit);
 
         // Filter out duplicates vs provided context (company + title)
         let existingList: Array<Partial<JobPosting>> = [];

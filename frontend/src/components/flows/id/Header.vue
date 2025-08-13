@@ -83,6 +83,36 @@
 		</div>
 		<div v-else class="text-subText prose max-w-none" v-html="flowData.description || '<p>No description provided.</p>'" />
 	</section>
+
+	<!-- Nodes list (visible in public/non-owner view under About) -->
+	<section id="nodes" class="card gap-3 w-full mt-4">
+		<div class="flex justify-between items-center mb-2">
+			<Skeleton v-if="loading" width="180px" height="24px" radius="4px" />
+			<h2 v-else class="section-title">
+				Nodes in this Flow
+			</h2>
+		</div>
+
+		<!-- Loading state -->
+		<div v-if="loading" class="flex items-center gap-2 flex-wrap">
+			<Skeleton width="120px" height="40px" radius="999px" />
+			<Skeleton width="150px" height="40px" radius="999px" />
+			<Skeleton width="120px" height="40px" radius="999px" />
+		</div>
+
+		<!-- Nodes content as pill chips -->
+		<div v-else>
+			<div v-if="usedApps.length === 0" class="text-subText text-[14px]">
+				No nodes configured for this flow.
+			</div>
+			<ul v-else class="flex items-center gap-3 flex-wrap">
+				<li v-for="(app, idx) in usedApps" :key="idx" class="inline-flex items-center gap-2 bg-grey rounded-md border border-line px-3 py-2">
+					<img :src="app.icon" :alt="app.label" class="h-5 w-5 rounded-md">
+					<span class="text-sm font-medium">{{ app.label }}</span>
+				</li>
+			</ul>
+		</div>
+	</section>
 </template>
 
 <script setup lang="ts">
@@ -107,6 +137,24 @@ const props = defineProps({
 	  default: false,
 		required: true
   }
+})
+
+// Derive used app pills from trigger + steps
+const usedApps = computed(() => {
+  const apps: { label: string; icon: string }[] = []
+  const add = (node?: any) => {
+    if (!node) return
+    const baseLabel = node.parent_node_id ? String(node.name).split(':')[0].trim() : node.name
+    const label = baseLabel || 'Unknown'
+    const icon = node.icon || '/bot.png'
+    // Avoid duplicates by label
+    if (!apps.find((a) => a.label === label)) {
+      apps.push({ label, icon })
+    }
+  }
+  add((props as any).flowData?.trigger)
+  ;((props as any).flowData?.steps || []).forEach((s: any) => add(s))
+  return apps
 })
 
 const canCloneFlow = (flow: Record<string, any>) => {
