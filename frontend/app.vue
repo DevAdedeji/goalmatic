@@ -4,6 +4,7 @@
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>
+		<AuthLoadingOverlay />
 	</div>
 	<footer v-if="!online" class="center bg-danger text-white py-1 fixed bottom-0 inset-x-0">
 		You are currently offline
@@ -13,6 +14,7 @@
 
 <script lang='ts' setup>
 import { useOnline } from '@vueuse/core'
+import AuthLoadingOverlay from '@/components/core/AuthLoadingOverlay.vue'
 
 
 const online = useOnline()

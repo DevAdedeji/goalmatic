@@ -2,19 +2,23 @@ import type { User } from 'firebase/auth'
 import { Timestamp } from 'firebase/firestore'
 import { useUser } from './user'
 import { setFirestoreDocument } from '@/firebase/firestore/create'
+import { useAuthLoading } from '@/composables/auth/loading'
 
 export const afterAuthCheck = async (user: User | null) => {
     try {
         if (user) {
+            const { start, stop } = useAuthLoading()
+            start('Checking your account...')
             // Check email verification for email/password accounts
             // Google OAuth users typically have verified emails already
             const isEmailPasswordAuth = user.providerData.some((provider) => provider.providerId === 'password')
             const isPhoneAuth = user.providerData.some((provider) => provider.providerId === 'phone') ||
-                               user.phoneNumber ||
-                               !user.email // Custom token users from phone auth typically won't have email
+                user.phoneNumber ||
+                !user.email // Custom token users from phone auth typically won't have email
 
             if (isEmailPasswordAuth && !user.emailVerified) {
-                useRouter().replace('/auth/verify-email')
+                await useRouter().replace('/auth/verify-email')
+                stop()
                 return
             }
 
@@ -23,7 +27,7 @@ export const afterAuthCheck = async (user: User | null) => {
 
             // Only create fallback user document if user doesn't exist AND it's not a phone auth user
             // Phone auth users should already have their documents created by backend functions
-            if (!userProfile?.value?.name && !isPhoneAuth) {
+            if (!userProfile && !isPhoneAuth) {
                 // Check for referral code in localStorage
                 let referredBy: string | null = null
                 if (process.client) {
@@ -38,6 +42,7 @@ export const afterAuthCheck = async (user: User | null) => {
                 const fallbackName = user.displayName || (user.email ? user.email.split('@')[0] : 'User')
                 const fallbackUsername = user.displayName || (user.email ? user.email.split('@')[0] : 'user')
 
+                start('Creating your profile...')
                 await setFirestoreDocument('users', user.uid, {
                     id: user.uid,
                     name: fallbackName,
@@ -51,24 +56,26 @@ export const afterAuthCheck = async (user: User | null) => {
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 })
             }
-         // Check for saved URL in localStorage first
-         let savedRedirectUrl = null as string | null
-         if (process.client) {
-             savedRedirectUrl = localStorage.getItem('redirect_after_login')
-             if (savedRedirectUrl) {
-                 localStorage.removeItem('redirect_after_login')
-             }
-         }
+            // Check for saved URL in localStorage first
+            let savedRedirectUrl = null as string | null
+            if (process.client) {
+                savedRedirectUrl = localStorage.getItem('redirect_after_login')
+                if (savedRedirectUrl) {
+                    localStorage.removeItem('redirect_after_login')
+                }
+            }
 
-         // Fall back to the redirectUrl from the user composable if no saved URL
-         const redirectUrl = useUser().redirectUrl.value
-         useUser().redirectUrl.value = null
+            // Fall back to the redirectUrl from the user composable if no saved URL
+            const redirectUrl = useUser().redirectUrl.value
+            useUser().redirectUrl.value = null
 
-         // Use the saved URL or the redirectUrl from the user composable, or default to /agents
-         useRouter().replace(savedRedirectUrl || redirectUrl || '/agents')
+            // Use the saved URL or the redirectUrl from the user composable, or default to /agents
+            await useRouter().replace(savedRedirectUrl || redirectUrl || '/agents')
+            stop()
         }
     } catch (error) {
         console.error(error)
+        try { useAuthLoading().stop() } catch { }
     }
 }
 

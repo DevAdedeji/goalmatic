@@ -53,6 +53,12 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="mt-10 flex justify-center">
+			<NuxtLink to="/agents" class="btn-primary px-5 py-3 rounded-lg border border-primary/20 grid place-items-center gap-2">
+				<span class="text-white font-semibold">Create your first agent</span>
+			</NuxtLink>
+		</div>
 	</div>
 </template>
 
