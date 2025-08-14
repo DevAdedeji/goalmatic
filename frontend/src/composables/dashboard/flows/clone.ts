@@ -194,15 +194,13 @@ export const useCloneFlow = () => {
         setTimeout(async () => {
             // The router push in performClone navigates to the cloned flow page, where `flowDetails` will load
             // For UX: compute requirements using the source definition; config will be applied on the cloned flow via editor
+            console.log(flowToClone, 'flowToClone')
+            console.log(userIntegrations, 'userIntegrations')
             const { requirements } = checkFlowRequirements(flowToClone, userIntegrations)
+            console.log(requirements, 'requirements')
             useFlowsModal().openCloneFlowApprovalModal({
                 requirements,
-                userIntegrations,
-                // openEditor now edits on the cloned flow page; the global EditNode modal will bind to that context
-                openEditor: (_cfg: any) => {
-                    // The EditNode modal relies on current page flow context; simply open it via node selection in UI
-                    // Here we provide no-op to avoid errors; user can open fields from the editor itself after navigation
-                }
+                userIntegrations
             })
         }, 250)
         return true

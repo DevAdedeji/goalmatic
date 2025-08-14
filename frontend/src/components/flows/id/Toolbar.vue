@@ -1,6 +1,6 @@
 <template>
 	<div class="w-full flex flex-col lg:flex-row flex-wrap justify-between items-center md:my-4 gap-4">
-		<div class="w-full lg:w-[30%] flex justify-start z-[1]">
+		<div class="w-full xl:max-w-[320px] flex justify-start z-[1]">
 			<div class="tabs border border-line ">
 				<button
 					v-for="tab in tabs"
@@ -15,45 +15,59 @@
 			</div>
 		</div>
 
-		<section class="lg:absolute static md:inset-x-0 w-full justify-center flex z-0">
+		<section class="static md:inset-x-0 w-auto justify-center flex z-0">
 			<!-- Error State -->
-			<article v-if="flowStatus === 'error'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
+			<article v-if="flowStatus === 'error'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
 				<AlertTriangle :size="18" />
 				<span class="text-sm">Error detected · One or more parts of your flow has an error.</span>
 			</article>
 
 			<!-- Invalid Flow State -->
-			<article v-else-if="flowStatus === 'invalid'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
+			<article v-else-if="flowStatus === 'invalid'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-amber-200 text-amber-800 bg-amber-50">
 				<AlertTriangle :size="18" />
-				<span class="text-sm">Add a trigger and action to make your flow valid.</span>
+				<span class="text-sm">
+					{{
+						invalidReason === 'no_trigger'
+							? 'Add a trigger to start your flow.'
+							: invalidReason === 'no_action'
+								? 'Add at least one action step to your flow.'
+								: invalidReason === 'invalid_trigger'
+									? 'Configure the trigger to make your flow valid.'
+									: 'Configure all required fields in your action steps to make your flow valid.'
+					}}
+				</span>
+				<button class="btn-outline !px-3 !py-1 text-xs" :disabled="configLoading" @click="openConfigModal">
+					<span v-if="!configLoading">Configure</span>
+					<span v-else class="flex items-center gap-1"><Spinner size="14" class="animate-spin" /> Loading</span>
+				</button>
 			</article>
 
 			<!-- Running State -->
-			<article v-else-if="flowStatus === 'running'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-blue-200 text-blue-800 bg-blue-50">
+			<article v-else-if="flowStatus === 'running'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-blue-200 text-blue-800 bg-blue-50">
 				<Spinner size="18" class="animate-spin" />
 				<span class="text-sm">Flow Running · Your flow is currently executing.</span>
 			</article>
 
 			<!-- Completed State -->
-			<article v-else-if="flowStatus === 'completed'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-green-200 text-green-800 bg-green-50">
+			<article v-else-if="flowStatus === 'completed'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-green-200 text-green-800 bg-green-50">
 				<CheckCircle :size="18" />
 				<span class="text-sm">Flow Completed · Your flow has executed successfully.</span>
 			</article>
 
 			<!-- Canceled State -->
-			<article v-else-if="flowStatus === 'canceled'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
+			<article v-else-if="flowStatus === 'canceled'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
 				<XCircle :size="18" />
 				<span class="text-sm">Flow Canceled · This flow was stopped before completion.</span>
 			</article>
 
 			<!-- No Activity State -->
-			<article v-else-if="flowStatus === 'idle'" class="w-full lg:w-[35%] p-2.5 flex justify-center items-center gap-4 rounded-lg border border-gray-200 text-gray-600 bg-gray-50">
+			<article v-else-if="flowStatus === 'idle'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-gray-200 text-gray-600 bg-gray-50">
 				<span class="text-sm">No new activity · Your flow is running smoothly.</span>
 			</article>
 		</section>
 
 
-		<div class="gap-4 items-center flex-1  lg:w-[30%] hidden lg:flex justify-end z-[1]">
+		<div class="gap-4 items-center flex-1 w-full xl:max-w-[320px] hidden lg:flex justify-end z-[1]">
 			<!-- Flow Status Toggle -->
 			<Tooltip v-if="isOwner(flowData) && !canActivateFlow && flowData.status !== 1" placement="top">
 				<template #trigger>
@@ -116,18 +130,20 @@
 <script setup lang="ts">
 import { Workflow, ScrollText, AlertTriangle, CheckCircle, XCircle } from 'lucide-vue-next'
 import { computed } from 'vue'
-import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useFlowOwner } from '@/composables/dashboard/flows/owner'
 import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
 import { useTestFlow } from '@/composables/dashboard/flows/test'
 import { isNodeValid } from '@/composables/dashboard/flows/nodes/nodeOperations'
+import { useFlowsModal } from '@/composables/core/modals'
+import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { checkFlowRequirements } from '@/composables/dashboard/flows/approval'
 import Tooltip from '@/components/core/Tooltip.vue'
 import Spinner from '@/components/core/Spinner.vue'
 
-const { isFlowValid } = useEditFlow()
 const { isOwner } = useFlowOwner()
 const { toggleFlowStatus, loading: toggleLoading } = useToggleFlow()
 const { testFlow, loading: testLoading } = useTestFlow()
+const { fetchedIntegrations, fetchUserIntegrations } = useFetchIntegrations()
 
 const props = defineProps({
 	currentTab: {
@@ -143,32 +159,29 @@ const props = defineProps({
 
 const emit = defineEmits(['update:currentTab'])
 
-// Check if all nodes in the flow are valid
-const canActivateFlow = computed(() => {
-	// Must have a trigger
-	if (!props.flowData.trigger) {
-		return false
-	}
+// Determine why the flow might be invalid (more granular messaging)
+const invalidReason = computed<
+    null | 'no_trigger' | 'no_action' | 'invalid_trigger' | 'invalid_action'
+>(() => {
+    // Missing trigger
+    if (!props.flowData.trigger) return 'no_trigger'
 
-	// Must have at least one action step
-	if (!props.flowData.steps || props.flowData.steps.length === 0) {
-		return false
-	}
+    // Missing action step
+    if (!props.flowData.steps || props.flowData.steps.length === 0) return 'no_action'
 
-	// Check if trigger is valid
-	if (!isNodeValid(props.flowData.trigger)) {
-		return false
-	}
+    // Invalid trigger configuration
+    if (!isNodeValid(props.flowData.trigger)) return 'invalid_trigger'
 
-	// Check if all action nodes are valid
-	for (const step of props.flowData.steps) {
-		if (!isNodeValid(step)) {
-			return false
-		}
-	}
+    // Any invalid action node
+    for (const step of props.flowData.steps) {
+        if (!isNodeValid(step)) return 'invalid_action'
+    }
 
-	return true
+    return null
 })
+
+// Check if all nodes in the flow are valid
+const canActivateFlow = computed(() => invalidReason.value === null)
 
 // Check if tests can be run (needs at least one valid node)
 const canRunTests = computed(() => {
@@ -191,10 +204,10 @@ const canRunTests = computed(() => {
 
 // Determine the current flow status
 const flowStatus = computed(() => {
-	// If flow is not valid (missing trigger or actions), show invalid
-	if (!isFlowValid.value && isOwner(props.flowData)) {
-		return 'invalid'
-	}
+    // If flow cannot be activated (missing nodes or invalid configuration), show invalid
+    if (isOwner(props.flowData) && invalidReason.value !== null) {
+        return 'invalid'
+    }
 
 	// If flow has errors (you can add error checking logic here)
 	// This would typically check for execution errors or validation errors
@@ -237,6 +250,18 @@ const handleTestFlow = () => {
 		// Switch to the logs tab after successful test
 		emit('update:currentTab', 'logs')
 	})
+}
+
+const configLoading = computed(() => false)
+
+const openConfigModal = async () => {
+    await fetchUserIntegrations()
+    const userIntegrations = fetchedIntegrations.value || []
+    const { requirements } = checkFlowRequirements(props.flowData, userIntegrations)
+    useFlowsModal().openCloneFlowApprovalModal({
+        requirements,
+        userIntegrations
+    })
 }
 
 const tabs = [

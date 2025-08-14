@@ -80,8 +80,10 @@ const inferIntegrationIdsFromNode = (node: Record<string, any>): string[] => {
 
 export const checkFlowRequirements = (
     flow: Record<string, any>,
-    userIntegrations: Record<string, any>[] = []
+    userIntegrations: Record<string, any>[] = [],
+    options?: { simulatePostClone?: boolean }
 ): { requirements: FlowRequirements; missingIntegrationIds: string[]; hasRequirements: boolean } => {
+    const simulate = options?.simulatePostClone !== false
     const integrationIds = new Set<string>()
     const configReqs: ConfigRequirement[] = []
 
@@ -89,8 +91,10 @@ export const checkFlowRequirements = (
     if (flow.trigger) {
         inferIntegrationIdsFromNode(flow.trigger).forEach((id) => integrationIds.add(id))
 
-        const simulated = simulatePostClonePropsData(flow.trigger, true)
-        const simulatedNode = { ...flow.trigger, propsData: simulated }
+        const propsDataToUse = simulate
+            ? simulatePostClonePropsData(flow.trigger, true)
+            : (flow.trigger.propsData || {})
+        const simulatedNode = { ...flow.trigger, propsData: propsDataToUse }
         // Filter out table-related props from missing list (handled automatically)
         const allMissing = getMissingRequiredProps(simulatedNode)
         const filteredMissing = allMissing.filter((p: any) => !['id', 'tableId', 'selected_table_id'].includes(p.key))
@@ -103,8 +107,10 @@ export const checkFlowRequirements = (
     const steps: any[] = Array.isArray(flow.steps) ? flow.steps : []
     steps.forEach((step, index) => {
         inferIntegrationIdsFromNode(step).forEach((id) => integrationIds.add(id))
-        const simulated = simulatePostClonePropsData(step, false)
-        const simulatedNode = { ...step, propsData: simulated }
+        const propsDataToUse = simulate
+            ? simulatePostClonePropsData(step, false)
+            : (step.propsData || {})
+        const simulatedNode = { ...step, propsData: propsDataToUse }
         const allMissing = getMissingRequiredProps(simulatedNode)
         const filteredMissing = allMissing.filter((p: any) => !['id', 'tableId', 'selected_table_id'].includes(p.key))
         if (filteredMissing.length > 0) {

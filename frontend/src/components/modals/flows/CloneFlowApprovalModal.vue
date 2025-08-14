@@ -6,6 +6,11 @@
 		:props-modal="propsModal"
 	>
 		<div class="flex flex-col gap-4">
+			<!-- Success banner when everything is valid -->
+			<article v-if="isFlowCurrentlyValid" class="w-full p-2.5 flex items-center gap-3 rounded border border-green-200 text-green-800 bg-green-50">
+				<svg xmlns="http://www.w3.org/2000/svg" class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4" /><path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0" /></svg>
+				<span class="text-sm">This flow is currently valid. You can run a test or activate it.</span>
+			</article>
 			<!-- Integrations -->
 			<div v-if="requirements.integrations && requirements.integrations.length" class="border rounded-md p-3">
 				<h3 class="text-sm font-semibold mb-2">
@@ -33,13 +38,16 @@
 				<h3 class="text-sm font-semibold mb-2">
 					Fields to Configure
 				</h3>
-				<div class="bg-amber-50 border border-amber-200 rounded-md p-2 text-amber-800 text-xs mb-2">
-					These fields will be empty after cloning. Configure them now or edit later in the workflow editor.
-				</div>
+
 				<div class="flex flex-col gap-3">
 					<div v-for="cfg in requirements.config" :key="cfg.nodeName" class="border rounded p-2">
-						<div class="text-xs font-semibold mb-1">
-							{{ cfg.nodeName }}
+						<div class="flex items-center justify-between mb-1">
+							<div class="text-xs font-semibold">
+								{{ cfg.nodeName }}
+							</div>
+							<button class="btn-outline text-xs" @click="configureNode(cfg)">
+								Configure
+							</button>
 						</div>
 						<ul class="list-disc pl-4">
 							<li v-for="p in cfg.props" :key="p.key" class="text-xs">
@@ -47,12 +55,6 @@
 								<span class="text-subText"> ({{ p.key }})</span>
 							</li>
 						</ul>
-						<div class="mt-2">
-							<button class="btn-primary text-xs" @click="openNodeEditor(cfg)">
-								Configure
-							</button>
-							<!-- Table cloning handled automatically server-side for flows -->
-						</div>
 					</div>
 				</div>
 			</div>
@@ -68,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Modal from '@/components/core/modal/Modal.vue'
 import Spinner from '@/components/core/Spinner.vue'
 import { useFlowsModal } from '@/composables/core/modals'
@@ -76,6 +78,8 @@ import { useConnectIntegration } from '@/composables/dashboard/integrations/conn
 import { useAlert } from '@/composables/core/notification'
 import { callFirebaseFunction } from '@/firebase/functions'
 import { agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
+import { useFetchFlowById } from '@/composables/dashboard/flows/id'
+import { checkFlowRequirements } from '@/composables/dashboard/flows/approval'
 
 const props = defineProps({
   payload: { type: Object, required: true },
@@ -87,10 +91,32 @@ const connectingIntegration = ref<string | null>(null)
 const { connectIntegration } = useConnectIntegration()
 const { openAlert } = useAlert()
 
-const requirements = computed(() => props.payload.requirements || { integrations: [], config: [] })
 const userIntegrations = computed(() => props.payload.userIntegrations || [])
+// Dynamically compute requirements from current flow state so modal updates after edits
+const { flowDetails } = useFetchFlowById()
+const requirements = computed(() => {
+  const flow = flowDetails.value || {}
+  // In-editor validation should not simulate post-clone defaults; use actual propsData
+  const { requirements } = checkFlowRequirements(flow, userIntegrations.value, { simulatePostClone: false })
+  return requirements
+})
 
 const hasIntegration = (id: string) => userIntegrations.value.some((i: any) => i.integration_id === id)
+
+const isFlowCurrentlyValid = computed(() => {
+  const missingConfig = (requirements.value.config || []).length > 0
+  const missingIntegrations = (requirements.value.integrations || []).some((i: any) => !hasIntegration(i.id))
+  return !missingConfig && !missingIntegrations
+})
+
+// Notify once when the flow becomes valid
+const hasNotifiedValid = ref(false)
+watch(isFlowCurrentlyValid, (isValid) => {
+  if (isValid && !hasNotifiedValid.value) {
+    hasNotifiedValid.value = true
+    useAlert().openAlert({ type: 'SUCCESS', msg: 'This flow is currently valid. You can run a test or activate it.' })
+  }
+})
 
 const isBlocked = computed(() => {
   const missingIntegrations = (requirements.value.integrations || []).filter((i: any) => !hasIntegration(i.id))
@@ -119,17 +145,7 @@ const connect = async (id: string) => {
   }
 }
 
-const openNodeEditor = (cfg: any) => {
-  if (!props.payload || !props.payload.openEditor) {
-    openAlert({ type: 'Alert', msg: 'You can configure this field in the workflow editor after cloning.' })
-    return
-  }
-  try {
-    props.payload.openEditor(cfg)
-  } catch (_e) {
-    openAlert({ type: 'Alert', msg: 'You can configure this field in the workflow editor after cloning.' })
-  }
-}
+// Editor opening removed; fields can be configured later in the workflow editor
 
 const cancel = () => {
   useFlowsModal().closeCloneFlowApprovalModal()
@@ -144,6 +160,21 @@ const done = () => {
 const isTableConfig = (cfg: any) => {
   // Heuristic: look for table-related required prop keys
   return (cfg.props || []).some((p: any) => ['id', 'tableId', 'selected_table_id'].includes(p.key))
+}
+
+// Open editor for the node corresponding to a config requirement
+const configureNode = (cfg: any) => {
+  const flow = flowDetails.value
+  if (!flow) return
+  let node: any = null
+  if (cfg?.nodeRef?.type === 'trigger') {
+    node = flow.trigger
+  } else if (cfg?.nodeRef?.type === 'step' && typeof cfg?.nodeRef?.index === 'number') {
+    node = Array.isArray(flow.steps) ? flow.steps[cfg.nodeRef.index] : null
+  }
+  if (node) {
+    useFlowsModal().openEditNode(node)
+  }
 }
 
 const tableCloning = ref(false)
