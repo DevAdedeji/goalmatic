@@ -10,17 +10,25 @@ import type { User } from 'firebase/auth'
 import { auth } from './init'
 import { useAlert } from '@/composables/core/notification'
 import { useUser } from '@/composables/auth/user'
+import { useAuthReady } from '@/composables/auth/ready'
 
 const { openAlert } = useAlert()
 
+let authListenerInitialized = false
 export const watchUserStateChange = () => {
-	if (typeof window !== 'undefined') {
-		onAuthStateChanged(auth, async (user) => {
-			const { clearUser, setUser } = useUser()
-			if (user) await setUser(user)
-			else await clearUser()
-		})
-	}
+	if (typeof window === 'undefined') return
+	if (authListenerInitialized) return
+
+	const { setAuthReady } = useAuthReady()
+
+	onAuthStateChanged(auth, async (user) => {
+		const { clearUser, setUser } = useUser()
+		if (user) await setUser(user)
+		else await clearUser()
+		setAuthReady(true)
+	})
+
+	authListenerInitialized = true
 }
 
 export const authRef = auth

@@ -19,7 +19,7 @@
 import { ref, onMounted } from 'vue'
 import { gsap } from 'gsap'
 import { SplitText } from 'gsap/SplitText'
-import { watchUserStateChange } from '@/firebase/auth'
+
 
 gsap.registerPlugin(SplitText)
 
@@ -31,9 +31,7 @@ const headline = ref<HTMLHeadingElement | null>(null)
 const paragraph = ref<HTMLParagraphElement | null>(null)
 const ctaButton = ref<HTMLElement | null>(null)
 
-onMounted(() => {
-	watchUserStateChange()
-})
+
 
 </script>
 

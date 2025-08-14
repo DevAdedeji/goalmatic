@@ -1,21 +1,80 @@
 <template>
-	<div class="w-full flex flex-col lg:flex-row flex-wrap justify-between items-center md:my-4 gap-4">
-		<div class="w-full xl:max-w-[320px] flex justify-start z-[1]">
-			<div class="tabs border border-line ">
-				<button
-					v-for="tab in tabs"
-					:key="tab.name"
-					class="tab-btn !px-4 capitalize"
-					:class="currentTab === tab.name ? 'active' : ''"
-					@click="emit('update:currentTab', tab.name)"
+	<section>
+		<div class="w-full flex flex-col lg:flex-row flex-wrap justify-between items-center md:my-4 gap-4">
+			<div class="w-full xl:max-w-[320px] flex justify-start z-[1]">
+				<div class="tabs border border-line ">
+					<button
+						v-for="tab in tabs"
+						:key="tab.name"
+						class="tab-btn !px-4 capitalize"
+						:class="currentTab === tab.name ? 'active' : ''"
+						@click="emit('update:currentTab', tab.name)"
+					>
+						<component :is="tab.icon" class="size-4" />
+						{{ tab.name }}
+					</button>
+				</div>
+			</div>
+
+			<div class="gap-4 items-center flex-1 w-full xl:max-w-[320px] hidden lg:flex justify-end z-[1]">
+				<!-- Flow Status Toggle -->
+				<Tooltip v-if="isOwner(flowData) && !canActivateFlow && flowData.status !== 1" placement="top">
+					<template #trigger>
+						<div class="btn-outline w-auto gap-2 cursor-not-allowed opacity-60 !px-4">
+							{{ flowData.status === 1 ? 'Deactivate' : 'Activate' }} Flow
+						</div>
+					</template>
+					<template #content>
+						<div class="p-2 max-w-xs">
+							<p>Cannot activate flow with invalid nodes. Please configure all required properties first.</p>
+						</div>
+					</template>
+				</Tooltip>
+				<div
+					v-else-if="isOwner(flowData)"
+					class="btn-outline w-auto gap-2 cursor-pointer"
+					:class="{ 'opacity-60': toggleLoading }"
+					@click="!toggleLoading && handleToggleFlow()"
 				>
-					<component :is="tab.icon" class="size-4" />
-					{{ tab.name }}
+					<span v-if="!toggleLoading">
+						{{ flowData.status === 1 ? 'Deactivate' : 'Activate' }} Flow
+					</span>
+					<span v-else class="flex items-center gap-2">
+						<Spinner size="16" class="animate-spin" />
+						Updating...
+					</span>
+				</div>
+
+
+
+
+				<Tooltip v-if="isOwner(flowData) && !canRunTests" placement="top">
+					<template #trigger>
+						<button class="btn-outline cursor-not-allowed opacity-60 !px-4" disabled>
+							Run Test
+						</button>
+					</template>
+					<template #content>
+						<div class="p-2 max-w-xs">
+							<p>Cannot test flow with invalid nodes. Please configure all required properties first.</p>
+						</div>
+					</template>
+				</Tooltip>
+				<button
+					v-else-if="isOwner(flowData)"
+					class="btn-outline !px-4"
+					:disabled="testLoading"
+					@click="handleTestFlow"
+				>
+					<span v-if="!testLoading">Run Test</span>
+					<span v-else class="flex items-center gap-2">
+						<Spinner size="16" class="animate-spin" />
+						Testing...
+					</span>
 				</button>
 			</div>
 		</div>
-
-		<section class="static md:inset-x-0 w-auto justify-center flex z-0">
+		<section class="static md:inset-x-0  justify-center flex z-0 max-w-[700px] mx-auto w-full mt-6">
 			<!-- Error State -->
 			<article v-if="flowStatus === 'error'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-red-200 text-red-800 bg-red-50">
 				<AlertTriangle :size="18" />
@@ -65,66 +124,7 @@
 				<span class="text-sm">No new activity · Your flow is running smoothly.</span>
 			</article>
 		</section>
-
-
-		<div class="gap-4 items-center flex-1 w-full xl:max-w-[320px] hidden lg:flex justify-end z-[1]">
-			<!-- Flow Status Toggle -->
-			<Tooltip v-if="isOwner(flowData) && !canActivateFlow && flowData.status !== 1" placement="top">
-				<template #trigger>
-					<div class="btn-outline w-auto gap-2 cursor-not-allowed opacity-60 !px-4">
-						{{ flowData.status === 1 ? 'Deactivate' : 'Activate' }} Flow
-					</div>
-				</template>
-				<template #content>
-					<div class="p-2 max-w-xs">
-						<p>Cannot activate flow with invalid nodes. Please configure all required properties first.</p>
-					</div>
-				</template>
-			</Tooltip>
-			<div
-				v-else-if="isOwner(flowData)"
-				class="btn-outline w-auto gap-2 cursor-pointer"
-				:class="{ 'opacity-60': toggleLoading }"
-				@click="!toggleLoading && handleToggleFlow()"
-			>
-				<span v-if="!toggleLoading">
-					{{ flowData.status === 1 ? 'Deactivate' : 'Activate' }} Flow
-				</span>
-				<span v-else class="flex items-center gap-2">
-					<Spinner size="16" class="animate-spin" />
-					Updating...
-				</span>
-			</div>
-
-
-
-
-			<Tooltip v-if="isOwner(flowData) && !canRunTests" placement="top">
-				<template #trigger>
-					<button class="btn-outline cursor-not-allowed opacity-60 !px-4" disabled>
-						Run Test
-					</button>
-				</template>
-				<template #content>
-					<div class="p-2 max-w-xs">
-						<p>Cannot test flow with invalid nodes. Please configure all required properties first.</p>
-					</div>
-				</template>
-			</Tooltip>
-			<button
-				v-else-if="isOwner(flowData)"
-				class="btn-outline !px-4"
-				:disabled="testLoading"
-				@click="handleTestFlow"
-			>
-				<span v-if="!testLoading">Run Test</span>
-				<span v-else class="flex items-center gap-2">
-					<Spinner size="16" class="animate-spin" />
-					Testing...
-				</span>
-			</button>
-		</div>
-	</div>
+	</section>
 </template>
 
 <script setup lang="ts">

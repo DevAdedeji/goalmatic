@@ -1,5 +1,5 @@
 <template>
-	<div class="mt-2 bg-light rounded-xl border border-line">
+	<div class="mt-6 bg-light rounded-xl border border-line">
 		<div class="flex justify-between items-center p-4">
 			<h2 class="text-xl font-medium text-headline">
 				Logs

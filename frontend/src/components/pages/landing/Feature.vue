@@ -16,7 +16,6 @@
 </template>
 
 <script setup lang="ts">
-import { watchUserStateChange } from '@/firebase/auth'
 
 const features = [
     {
@@ -44,7 +43,7 @@ definePageMeta({
 	layout: false
 })
 
-onMounted(() => watchUserStateChange())
+
 
 </script>
 

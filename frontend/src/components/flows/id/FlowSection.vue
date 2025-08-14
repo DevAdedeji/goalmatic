@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col gap-4 mt-12 pb-64  mx-auto" :class="[isOwner(flowData) ? 'max-w-[700px]' : '2xl:max-w-5xl max-w-7xl  md:px-10']">
+	<div class="flex flex-col gap-4 mt-6 pb-64  mx-auto" :class="[isOwner(flowData) ? 'max-w-[700px]' : '2xl:max-w-5xl max-w-7xl  md:px-10']">
 		<h1 v-if="!isOwner(flowData)" class="section-title">
 			Preview
 		</h1>

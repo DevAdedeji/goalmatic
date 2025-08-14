@@ -55,8 +55,8 @@ const normalizeLinkedInTimePosted = (input: any): string => {
 };
 
 // Request timeouts to avoid function timeouts
-const REQUEST_TIMEOUT_LINKEDIN_MS = 20000; // 20s
-const REQUEST_TIMEOUT_VUEJOBS_MS = 15000;  // 15s
+const REQUEST_TIMEOUT_LINKEDIN_MS = 40000; // 40s
+const REQUEST_TIMEOUT_VUEJOBS_MS = 30000;  // 30s
 
 // Duplicate filtering helpers
 const normalizeText = (value: string | undefined | null): string => {
@@ -275,5 +275,6 @@ export const jobScraperNode = {
     nodeId: 'JOB_POSTING_SCRAPER',
     run: scrapeJobPostings
 };
+
 
 

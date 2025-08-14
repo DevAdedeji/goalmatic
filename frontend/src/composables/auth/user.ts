@@ -53,9 +53,6 @@ export const useUser = () => {
     const clearUser = () => {
         _userCookie.value = null
         _userProfileCookie.value = null
-        if (import.meta.client) {
-            localStorage.clear()
-        }
     }
 
 
