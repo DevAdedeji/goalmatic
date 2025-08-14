@@ -17,6 +17,25 @@ const normalizeUnique = (val: any): string => {
 const buildUniqueDocId = (fieldId: string, normalized: string) => `${fieldId}::${normalized}`;
 
 
+// Normalizes field names so variations like "Activity Name", "activity_name",
+// "activity-name" or "activityName" can be matched consistently
+const normalizeFieldName = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    return String(val)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
+};
+
+// Tokenize a field name into meaningful words (e.g., "activity_name" -> ["activity", "name"]) for synonym-ish matching
+const tokenizeFieldName = (val: any): string[] => {
+    if (val === undefined || val === null) return [];
+    return String(val)
+        .toLowerCase()
+        .split(/[^a-z0-9]+/)
+        .filter(Boolean);
+};
+
+
 
 
 /**
@@ -200,6 +219,8 @@ export const createTableRecord = async (params: {
     record: Record<string, any>;
 }) => {
 
+    console.log(params, 'params');
+
     const uid = getUserUid();
     const toolConfig = getUserToolConfig() || {};
 
@@ -219,6 +240,18 @@ export const createTableRecord = async (params: {
         const recordId = uuidv4();
         const now = Timestamp.now();
 
+        // Resolve input record shape (support record, data, or top-level keys)
+        const rawInput: any = (params && typeof params === 'object') ? (params as any) : {};
+        const rawRecordCandidate: any = (rawInput.record && typeof rawInput.record === 'object')
+            ? rawInput.record
+            : (rawInput.data && typeof rawInput.data === 'object')
+                ? rawInput.data
+                : rawInput;
+        const reservedKeys = new Set(['tableId', 'record', 'data']);
+        const inputRecord: Record<string, any> = Object.fromEntries(
+            Object.entries(rawRecordCandidate || {}).filter(([k]) => !reservedKeys.has(k))
+        );
+
         // Create the new record with timestamps
         const newRecord = {
             id: recordId,
@@ -235,18 +268,35 @@ export const createTableRecord = async (params: {
             const fieldNameLower = field.name.toLowerCase();
 
             // First check for exact match by name or id
-            if (params.record[field.name] !== undefined) {
-                fieldValue = params.record[field.name];
-            } else if (params.record[field.id] !== undefined) {
-                fieldValue = params.record[field.id];
+            if (inputRecord[field.name] !== undefined) {
+                fieldValue = inputRecord[field.name];
+            } else if (inputRecord[field.id] !== undefined) {
+                fieldValue = inputRecord[field.id];
             } else {
                 // Then check for case-insensitive match by name
-                const caseInsensitiveKey = Object.keys(params.record).find(
+                const caseInsensitiveKey = Object.keys(inputRecord).find(
                     key => key.toLowerCase() === fieldNameLower
                 );
 
                 if (caseInsensitiveKey) {
-                    fieldValue = params.record[caseInsensitiveKey];
+                    fieldValue = inputRecord[caseInsensitiveKey];
+                } else {
+                    // Finally, check using normalized name matching (ignoring spaces, underscores, hyphens, casing)
+                    const normalizedTarget = normalizeFieldName(field.name);
+                    const normalizedMatchKey = Object.keys(inputRecord).find(
+                        key => normalizeFieldName(key) === normalizedTarget
+                    );
+
+                    if (normalizedMatchKey) {
+                        fieldValue = inputRecord[normalizedMatchKey];
+                    } else {
+                        // As a last-resort, match if any token of the field name exactly matches the normalized key
+                        const tokens = new Set(tokenizeFieldName(field.name));
+                        const tokenMatchKey = Object.keys(inputRecord).find(key => tokens.has(normalizeFieldName(key)));
+                        if (tokenMatchKey) {
+                            fieldValue = inputRecord[tokenMatchKey];
+                        }
+                    }
                 }
             }
 
@@ -260,7 +310,7 @@ export const createTableRecord = async (params: {
 
             // Format date and time fields after validation
             if (fieldValue !== undefined && fieldValue !== null && fieldValue !== '') {
-                 if (field.type === 'date') {
+                if (field.type === 'date') {
                     // Convert date strings to Firebase Timestamp objects
                     if (typeof fieldValue === 'string') {
                         try {
@@ -291,7 +341,7 @@ export const createTableRecord = async (params: {
                     // If it's already a Timestamp, leave it as is
                 } else if (field.type === 'time') {
                     const formattedTime = formatTime(fieldValue);
-                     if (formattedTime !== null) {
+                    if (formattedTime !== null) {
                         fieldValue = formattedTime;
                     } else {
                         // This should not happen due to prior validation, but just in case
@@ -316,7 +366,31 @@ export const createTableRecord = async (params: {
             }
 
             if (field.required && (fieldValue === undefined || fieldValue === null || fieldValue === '')) {
-                throw new Error(`Required field '${field.name}' is missing or invalid`);
+                // Auto-fallbacks to prevent hard failures for common temporal field types
+                if (field.type === 'date') {
+                    fieldValue = Timestamp.now();
+                } else if (field.type === 'time') {
+                    const nowDate = new Date();
+                    const formatted = formatTime(nowDate);
+                    if (formatted !== null) fieldValue = formatted;
+                }
+            }
+
+            if (field.required && (fieldValue === undefined || fieldValue === null || fieldValue === '')) {
+                const providedKeys = Object.keys(inputRecord || {});
+                // Build a small set of suggested key variants the caller could use
+                const base = String(field.name);
+                const suggestions = new Set<string>([
+                    base,
+                    base.toLowerCase(),
+                    base.toUpperCase(),
+                    base.replace(/[_\-\s]+/g, ' '),
+                    base.replace(/[_\-\s]+/g, ''),
+                    base.replace(/[_\-\s]+/g, '-'),
+                    base.replace(/[_\-\s]+/g, '_'),
+                ]);
+                const message = `Required field '${field.name}' is missing or invalid. Provided keys: [${providedKeys.join(', ')}]. You can supply this field using any of these key formats: [${Array.from(suggestions).join(', ')}]`;
+                throw new Error(message);
             }
 
             // Defer unique enforcement to transactional section below

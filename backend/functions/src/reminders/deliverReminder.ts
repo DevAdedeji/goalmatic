@@ -15,12 +15,11 @@ export const deliverReminder = onRequest({ cors: true, region: 'us-central1' }, 
     }
 
     try {
-        const { reminderId, userId, deliveryMethod, message, scheduledFor } = req.body as {
+        const { reminderId, userId, deliveryMethod, message } = req.body as {
             reminderId: string;
             userId: string;
             deliveryMethod: DeliveryMethod;
             message: string;
-            scheduledFor: string;
         };
 
         if (!reminderId || !userId || !deliveryMethod || !message) {

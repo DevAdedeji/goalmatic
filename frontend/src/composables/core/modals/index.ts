@@ -26,6 +26,7 @@ import EditConfig from '@/components/modals/integrations/EditConfig.vue'
 // ==================== FLOWS ===============================
 import SelectNode from '@/components/modals/flows/SelectNode.vue'
 import EditNode from '@/components/modals/flows/EditNode.vue'
+import CloneFlowApprovalModal from '@/components/modals/flows/CloneFlowApprovalModal.vue'
 import CreateWorkflow from '@/components/modals/assistant/CreateWorkflow.vue'
 
 // ==================== TABLES ===============================
@@ -41,7 +42,7 @@ type CoreTypes = 'Confirmation' | 'LoadingVerification' | 'OtpVerificationModal'
 type BottombarTypes = 'BottomMenu'
 type AssistantTypes = 'CreateAgent' | 'EditToolConfig' | 'ConfirmVisibility' | 'ToolApprovalModal' | 'ShareChat'
 type IntegrationsTypes = 'ConnectWhatsapp' | 'EditConfig'
-type FlowsTypes = 'SelectNode' | 'EditNode' | 'CreateWorkflow'
+type FlowsTypes = 'SelectNode' | 'EditNode' | 'CreateWorkflow' | 'CloneFlowApprovalModal'
 type TablesTypes = 'FieldModal' | 'RecordModal' | 'CreateTable'
 
 // Define helper function types with payload
@@ -58,7 +59,7 @@ const CoreModals = { Confirmation, LoadingVerification, OtpVerificationModal } a
 const BottombarModals = { BottomMenu } as Record<BottombarTypes, any>
 const AssistantModals = { CreateAgent, EditToolConfig, ConfirmVisibility, ToolApprovalModal, ShareChat } as Record<AssistantTypes, any>
 const IntegrationsModals = { ConnectWhatsapp, EditConfig } as Record<IntegrationsTypes, any>
-const FlowsModals = { SelectNode, EditNode, CreateWorkflow } as Record<FlowsTypes, any>
+const FlowsModals = { SelectNode, EditNode, CreateWorkflow, CloneFlowApprovalModal } as Record<FlowsTypes, any>
 const TablesModals = { FieldModal: TablesIdFieldModal, RecordModal: TablesIdRecordModal, CreateTable } as Record<TablesTypes, any>
 
 

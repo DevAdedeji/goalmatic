@@ -795,31 +795,12 @@ const validateAndSave = () => {
         return prop?.ai_enabled && aiMode[key] === 'ai'
     })
 
-    const nonCloneables = props.nodeProps
-        .filter((prop) => {
-            // Include fields that are explicitly marked as non-cloneable
-            if (prop.cloneable === false) return true
-
-            // Include fields with function values (they should be re-evaluated)
-            if (prop.value && typeof prop.value === 'function') return true
-
-            // Include fields with special user-specific values
-            if (prop.value === 'USER_EMAIL') return true
-
-            // Include disabled properties
-            if (prop.disabled) return true
-
-            // Include properties that have validation functions (they might be context-specific)
-            if (prop.validate) return true
-
-            return false
-        })
-        .map((prop) => prop.key)
+    // No longer generating nonCloneables; clonability is enforced when cloning via prop.cloneable
 
     // Reset validation state on successful save
     showValidation.value = false
     hasValidationErrors.value = false
-    emit('save', { ...resolvedValues, aiEnabledFields, nonCloneables })
+    emit('save', { ...resolvedValues, aiEnabledFields })
 }
 
 const closeModal = () => {

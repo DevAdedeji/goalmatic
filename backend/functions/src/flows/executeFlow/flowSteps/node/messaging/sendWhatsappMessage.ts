@@ -17,6 +17,8 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
 
         let { message, recipientType, phoneNumber } = processedPropsWithAiContext;
+        // Ensure message is a string so that numeric 0 is preserved
+        message = message === null || message === undefined ? '' : String(message);
 
         let recipientNumber: string | null = null;
 

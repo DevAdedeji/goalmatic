@@ -63,10 +63,19 @@ export const processMentionTextarea = (text: string, previousStepResult: any): s
     const htmlRegex = /<[^>]*>/g;
     processedText = processedText.replace(htmlRegex, '');
 
-    // Part 4: Clean up extra whitespace and newlines
+    // Part 3b: Fallback token replacement for patterns like @step-1-NODEKEY-payloadKey
+    // Example: @step-1-TABLE_CREATE-totalRecordsCreated
+    processedText = processedText.replace(/@(step|trigger)-([\w-]+)-([\w]+)/g, (_match, prefix, groupRest, payloadKey) => {
+        const stepId = `${prefix}-${groupRest}`; // e.g., step-1-TABLE_CREATE
+        const replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+        return replacementValue !== undefined ? stringifyReplacementValue(replacementValue) : '';
+    });
+
+    // Part 4: Clean up trailing whitespace but preserve intentional multiple newlines
     processedText = processedText
-        .replace(/\n\s*\n/g, '\n')               // Multiple newlines to single newline
-        .trim();                                 // Remove leading/trailing whitespace
+        .replace(/[ \t\v\f]+\n/g, '\n')      // Remove spaces/tabs before newlines
+        .replace(/\n{4,}/g, '\n\n\n')         // Hard cap extremely long blank blocks
+        .trimEnd();                               // Keep leading newlines, trim only end
 
     return processedText;
 };

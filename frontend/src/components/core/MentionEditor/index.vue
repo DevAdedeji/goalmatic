@@ -28,14 +28,24 @@ editor.value = new Editor({
 	content: props.modelValue,
 	extensions: [
 		StarterKit,
-		Mention.configure({
-			renderHTML({ node }) {
-				return `${formatEditorMention(node.attrs.label ?? node.attrs.id)}`
-			},
-			HTMLAttributes: { class: 'mention' },
-			deleteTriggerWithBackspace: true,
-			suggestion: flowSuggestion(props.mentionItems)
-		})
+        Mention.configure({
+            renderHTML({ node }) {
+                const id = node.attrs.id || node.attrs.label || ''
+                const label = formatEditorMention(node.attrs.label ?? node.attrs.id)
+                return [
+                    'span',
+                    {
+                        'data-type': 'mention',
+                        'data-id': id,
+                        class: 'mention'
+                    },
+                    label
+                ]
+            },
+            HTMLAttributes: { class: 'mention' },
+            deleteTriggerWithBackspace: true,
+            suggestion: flowSuggestion(props.mentionItems)
+        })
 	],
 	onUpdate: ({ editor }) => {
 		emit('update:modelValue', editor.getHTML())

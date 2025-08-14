@@ -201,19 +201,19 @@ export const useEditFlow = () => {
     await updateFlow(flowDetails.value)
   }
   const confirmRemoveNode = async (node, position?: number) => {
-	useConfirmationModal().openAlert({
-		type: 'Alert',
-		title: 'Delete Step',
-		desc: 'Are you sure you want to delete this step?',
-    call_function: async () => {
-      loading.value = true
-			await removeNode(node, position)
-      useConfirmationModal().closeAlert()
-      loading.value = false
-		},
-		loading
-	})
-}
+    useConfirmationModal().openAlert({
+      type: 'Alert',
+      title: 'Delete Step',
+      desc: 'Are you sure you want to delete this step?',
+      call_function: async () => {
+        loading.value = true
+        await removeNode(node, position)
+        useConfirmationModal().closeAlert()
+        loading.value = false
+      },
+      loading
+    })
+  }
 
   const editNode = (node: Record<string, any>) => {
     useFlowsModal().openEditNode(node)
@@ -222,13 +222,12 @@ export const useEditFlow = () => {
   // Update a node with new values
   const updateNode = async (node: Record<string, any>, updatedValues: Record<string, any>) => {
     // Extract aiEnabledFields from updatedValues if present
-    const { aiEnabledFields, nonCloneables, ...propsData } = updatedValues
+    const { aiEnabledFields, ...propsData } = updatedValues
 
     const updatedNode = {
       ...node,
       propsData,
-      ...(aiEnabledFields && { aiEnabledFields }),
-      ...(nonCloneables && { nonCloneables })
+      ...(aiEnabledFields && { aiEnabledFields })
     }
 
 
@@ -254,13 +253,13 @@ export const useEditFlow = () => {
   }
 
   const handleChangeNode = (step, index, type) => {
-	removeNode(step, index)
-	useFlowsModal().openSelectNode({
-		type,
-		position: index,
-		isReplacement: true
-	})
-}
+    removeNode(step, index)
+    useFlowsModal().openSelectNode({
+      type,
+      position: index,
+      isReplacement: true
+    })
+  }
 
   // Move step up in the flow
   const moveStepUp = async (stepIndex: number) => {

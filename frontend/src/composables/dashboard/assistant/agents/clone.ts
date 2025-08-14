@@ -19,6 +19,7 @@ import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { useAssistantModal } from '@/composables/core/modals'
 import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { callFirebaseFunction } from '@/firebase/functions'
 import { db } from '@/firebase/init'
 
 export const useCloneAgent = () => {
@@ -35,11 +36,6 @@ export const useCloneAgent = () => {
       return false
     return true
   }
-
-  /**
-   * Updates the leaderboard when an agent is cloned
-   * Increments the points for the original agent creator
-   */
 
 
   // Function to perform the actual cloning
@@ -101,7 +97,7 @@ export const useCloneAgent = () => {
   }
 
   const cloneAgent = async (agentToClone: Record<string, any>) => {
-    // Check if user can clone this agent
+    loading.value = true
     if (!canCloneAgent(agentToClone)) {
       if (!isLoggedIn.value) {
         useAlert().openAlert({
@@ -129,30 +125,35 @@ export const useCloneAgent = () => {
     await fetchUserIntegrations()
     const userIntegrations = fetchedIntegrations.value || []
 
-    // Check if the agent has tools that require configuration or integrations
-    const { hasRequiredTools, toolsRequiringConfig } =
-      checkAgentToolRequirements(agentToClone, userIntegrations)
+    // Initialize tool configs heuristically and auto-clone table if referenced
+    initializeToolConfigs(agentToClone)
 
-    if (hasRequiredTools) {
-      // Initialize tool configs from the agent being cloned
-      initializeToolConfigs(agentToClone)
-
-      // Open the tool approval modal
-      useAssistantModal().openToolApprovalModal({
-        agent: agentToClone,
-        toolsRequiringConfig,
-        userIntegrations,
-        refreshUserIntegrations: async () => {
-          // Refresh user integrations
-          await fetchUserIntegrations()
-          return fetchedIntegrations.value
-        },
-        onConfirm: () => performClone(agentToClone)
-      })
-    } else {
-      // No tool configuration or integrations needed, proceed with cloning
-      await performClone(agentToClone)
+    try {
+      const hasTableTool = (agentToClone?.spec?.tools || []).some((t: any) => (t.primary_id || t.id) === 'TABLE')
+      const sourceTableId = agentToClone?.spec?.toolsConfig?.TABLE?.selected_table_id
+      if (hasTableTool) {
+        if (sourceTableId) {
+          const result = await callFirebaseFunction('cloneTableById', { tableId: sourceTableId }) as any
+          const newTableId = result?.tableId
+          if (newTableId) {
+            agentToolConfigs.value.TABLE = agentToolConfigs.value.TABLE || {}
+            agentToolConfigs.value.TABLE.selected_table_id = newTableId
+          }
+        } else if (agentToClone?.id) {
+          const result = await callFirebaseFunction('cloneTable', { agentId: agentToClone.id }) as any
+          const newTableId = result?.tableId
+          if (newTableId) {
+            agentToolConfigs.value.TABLE = agentToolConfigs.value.TABLE || {}
+            agentToolConfigs.value.TABLE.selected_table_id = newTableId
+          }
+        }
+      }
+    } catch (_e) {
+      // Continue even if table cloning fails; user can configure later
     }
+
+    // Proceed with cloning without opening any approval modal
+    await performClone(agentToClone)
   }
 
   return { cloneAgent, loading, canCloneAgent }

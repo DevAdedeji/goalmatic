@@ -32,10 +32,13 @@
 			<!-- Clone Button -->
 			<div class="flex mt-5 gap-2">
 				<Skeleton v-if="loading" width="80px" height="40px" radius="4px" />
-				<button v-else class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="!canCloneFlow(flowData) ? (flowData?.creator_id === user_id ? 'You cannot clone your own flow' : 'You must be logged in to clone a flow') : 'Clone this flow'"
+				<button v-else class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="'Clone this flow'"
 					@click="handleCloneFlow(flowData)">
-					Clone
-					<Copy :size="16" color="#601DED" />
+					<span v-if="!cloneLoading">Clone</span>
+					<span v-else class="inline-flex items-center gap-2">
+						<Spinner size="16px" /> Cloning...
+					</span>
+					<Copy v-if="!cloneLoading" :size="16" color="#601DED" />
 				</button>
 			</div>
 		</div>
@@ -122,6 +125,8 @@ import { useUser } from '@/composables/auth/user'
 import { formatDateString } from '@/composables/utils/formatter'
 import { useAlert } from '@/composables/core/notification'
 import Skeleton from '@/components/core/skeleton.vue'
+import Spinner from '@/components/core/Spinner.vue'
+// removed approval modal flow for one-click clone UX
 
 const { cloneFlow, loading: cloneLoading } = useCloneFlow()
 const { id: user_id, isLoggedIn } = useUser()
@@ -157,29 +162,15 @@ const usedApps = computed(() => {
   return apps
 })
 
-const canCloneFlow = (flow: Record<string, any>) => {
-  if (!isLoggedIn.value) return false
-  if (flow.creator_id === user_id.value) return false
-  return true
-}
+// simplified one-click experience; we rely only on login check in handler
 
-const handleCloneFlow = (flow: Record<string, any>) => {
+const handleCloneFlow = async (flow: Record<string, any>) => {
   if (!isLoggedIn.value) {
-    openAlert({
-      type: 'ERROR',
-      msg: 'You must be logged in to clone a flow',
-      position: 'bottom-right'
-    })
+    openAlert({ type: 'ERROR', msg: 'You must be logged in to clone a flow', position: 'bottom-right' })
     return
   }
-  if (flow.creator_id === user_id.value) {
-    openAlert({
-      type: 'ERROR',
-      msg: 'You cannot clone your own flow'
-    })
-    return
-  }
-  cloneFlow(flow)
+
+  await cloneFlow(flow)
 }
 </script>
 

@@ -86,7 +86,7 @@ export const availableTools = ref([
 	{
 		id: 'EMAIL',
 		name: 'Email',
-		icon: '/icons/email.svg',
+		icon: '/icons/mail.svg',
 		description: 'Send email notifications to users',
 		checkStatus: false,
 		abilities: [
@@ -134,18 +134,6 @@ export const availableTools = ref([
 			{ name: 'Create Record', id: 'TABLE_CREATE', icon: '/icons/table.svg', primary_id: 'TABLE' },
 			{ name: 'Update Record', id: 'TABLE_UPDATE', icon: '/icons/table.svg', primary_id: 'TABLE' },
 			{ name: 'Delete Record', id: 'TABLE_DELETE', icon: '/icons/table.svg', primary_id: 'TABLE' }
-		]
-	},
-
-	{
-		id: 'MESSAGING',
-		name: 'Messaging',
-		icon: '/icons/mail.svg',
-		description: 'Send messages via WhatsApp and Email',
-		checkStatus: false,
-		abilities: [
-			{ name: 'Send WhatsApp Message', id: 'SEND_WHATSAPP_MESSAGE', icon: '/icons/whatsapp.svg', primary_id: 'MESSAGING' },
-			{ name: 'Send Email', id: 'SEND_EMAIL', icon: '/icons/mail.svg', primary_id: 'MESSAGING' }
 		]
 	}
 ])

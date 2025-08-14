@@ -21,8 +21,8 @@ export const useWhatsAppAuth = () => {
 
         authCredentienalsForm.loading.value = true
         trackAuthEvent('PHONE_OTP_SENT', {
-          method: 'whatsapp',
-          is_signup: isSignup
+            method: 'whatsapp',
+            is_signup: isSignup
         })
 
         try {
@@ -35,16 +35,16 @@ export const useWhatsAppAuth = () => {
                 step.value = 2
                 useAlert().openAlert({ type: 'SUCCESS', msg: res?.message || 'OTP sent to WhatsApp' })
             } else {
-                useAlert().openAlert({ type: 'ERROR', msg: res?.message || 'Failed to send OTP' })
+                useAlert().openAlert({ type: 'ERROR', msg: res?.message || 'Failed to send OTP', addrs: 'useWhatsAppAuth' })
             }
         } catch (error: any) {
-            useAlert().openAlert({ type: 'ERROR', msg: error.message || 'Failed to send OTP' })
+            useAlert().openAlert({ type: 'ERROR', msg: error.message || 'Failed to send OTP', addrs: 'useWhatsAppAuth catch' })
         } finally {
             authCredentienalsForm.loading.value = false
         }
     }
 
-        const confirmOTP = async (fullName?: string) => {
+    const confirmOTP = async (fullName?: string) => {
         authCredentienalsForm.loading.value = true
         try {
             const otpCode = otp.value.join('')
@@ -70,7 +70,7 @@ export const useWhatsAppAuth = () => {
                 await useUser().setUser(user as any)
                 await afterAuthCheck(user as any)
 
-                                useAlert().openAlert({ type: 'SUCCESS', msg: 'Account created successfully!' })
+                useAlert().openAlert({ type: 'SUCCESS', msg: 'Account created successfully!' })
 
                 // Clean up referral code from localStorage
                 if (process.client && referralCode) {
@@ -129,7 +129,7 @@ export const useWhatsAppAuth = () => {
         otp.value = ['', '', '', '']
     }
 
-        const sendSignupOTP = () => sendOTP(true)
+    const sendSignupOTP = () => sendOTP(true)
     const sendLoginOTP = () => sendOTP(false)
 
     return {

@@ -1,15 +1,16 @@
 <template>
 	<transition name="fade" appear>
-		<div
-			:close="closeModal"
-			:class="[
-				type == 'popup' ? 'bg-modal' : 'bg-sidebar',
-				'transition-all modal-background',
-			]"
-			@click.self="autoClose ? close($el) : null"
-		>
+        <div
+            :close="closeModal"
+            :class="[
+                type == 'popup' ? 'bg-modal' : 'bg-sidebar',
+                'transition-all modal-background',
+            ]"
+            @click.self="autoClose ? close($el) : null"
+            style="z-index: 1990;"
+        >
 			<transition name="modal" appear @after-leave="handleAfterLeave">
-				<div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']">
+                <div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']" style="z-index: 2000;">
 					<header class="modal-title flex justify-between w-full items-center">
 						<slot name="header">
 							<div v-if="image || description" class="flex items-center gap-3 flex-1">
@@ -39,7 +40,7 @@
 			</transition>
 
 			<transition name="slide" appear @after-leave="handleAfterLeave">
-				<aside v-if="type == 'sidebar' && show" class="sidebar">
+                <aside v-if="type == 'sidebar' && show" class="sidebar" style="z-index: 2000;">
 					<div class="sidebar-content">
 						<header class="modal-title flex justify-between w-full items-center">
 							<slot name="header">

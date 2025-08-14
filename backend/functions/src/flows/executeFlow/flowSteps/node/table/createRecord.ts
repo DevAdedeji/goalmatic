@@ -12,6 +12,15 @@ import { generateStructuredData } from '../utils';
 import { createRecordChecks } from './utils/checks';
 import { createRecordPrompt } from './utils/prompts';
 
+// Normalize field names so variations like "Activity Name", "activity_name",
+// "activity-name" or "activityName" can be matched consistently
+const normalizeFieldName = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    return String(val)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '');
+};
+
 const createRecord = async (
     context: WorkflowContext,
     step: FlowNode,
@@ -31,7 +40,16 @@ const createRecord = async (
 
         console.log(dataContext, 'dataContext');
         try {
-            const systemPrompt = createRecordPrompt(tableData, aiInstructions);
+            // Build a lightweight current date/time context for better date handling
+            const nowDate = new Date();
+            const isoNow = nowDate.toISOString();
+            const humanDate = nowDate.toLocaleDateString('en-US'); // YYYY-MM-DD
+            const humanTime = nowDate.toTimeString().slice(0, 8);   // HH:mm:ss
+            const systemPrompt = createRecordPrompt(tableData, aiInstructions, {
+                isoNow,
+                humanDate,
+                humanTime,
+            });
 
 
             // Build schema using helper
@@ -113,7 +131,7 @@ const createRecord = async (
                 .collection('records')
                 .doc(recordId);
 
-            // Map incoming item keys to field IDs (LLM may output names or case variants)
+            // Map incoming item keys to field IDs (LLM may output names or case/format variants)
             const mapped: Record<string, any> = {};
             for (const f of tableFields) {
                 const id = f.id;
@@ -126,6 +144,12 @@ const createRecord = async (
                     // case-insensitive name match
                     const key = Object.keys(recordItem).find(k => k.toLowerCase() === String(f.name || '').toLowerCase());
                     if (key) val = recordItem[key];
+                }
+                if (val === undefined) {
+                    // normalized name match (ignore spaces/underscores/hyphens and casing)
+                    const target = normalizeFieldName(f.name);
+                    const normKey = Object.keys(recordItem).find(k => normalizeFieldName(k) === target);
+                    if (normKey) val = recordItem[normKey];
                 }
                 if (val !== undefined) mapped[id] = val;
             }

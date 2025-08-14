@@ -1,6 +1,41 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https'
 import { goals_db } from '../init'
 
+type NodePropDefinition = { key: string; cloneable?: boolean }
+type NodeDefinition = { node_id: string; parent_node_id?: string; props: NodePropDefinition[] }
+
+const buildDefinitionKey = (nodeId?: string, parentNodeId?: string) => `${parentNodeId || ''}::${nodeId || ''}`
+
+function filterByCloneable(
+    node: any,
+    defMap: Record<string, NodePropDefinition[]>
+): any {
+    if (!node || !node.propsData) return node
+    const key = buildDefinitionKey(node.node_id, node.parent_node_id)
+    const propsDef = defMap[key]
+    if (!propsDef || !Array.isArray(propsDef)) {
+        // If no definition is provided, hide all props for safety
+        return { ...node, propsData: {}, ...(node.aiEnabledFields ? { aiEnabledFields: [] } : {}) }
+    }
+
+    const allowed = new Set(propsDef.filter(p => p.cloneable !== false).map(p => p.key))
+    const sanitizedProps: Record<string, any> = {}
+    const sanitizedAi: string[] = []
+    Object.keys(node.propsData).forEach(k => {
+        if (allowed.has(k)) {
+            sanitizedProps[k] = node.propsData[k]
+            if (node.aiEnabledFields && Array.isArray(node.aiEnabledFields) && node.aiEnabledFields.includes(k)) {
+                sanitizedAi.push(k)
+            }
+        }
+    })
+    return {
+        ...node,
+        propsData: sanitizedProps,
+        ...(sanitizedAi.length > 0 ? { aiEnabledFields: sanitizedAi } : {})
+    }
+}
+
 export const getFlowDetails = onCall({
     cors: true,
     region: 'us-central1',
@@ -28,25 +63,21 @@ export const getFlowDetails = onCall({
             throw new HttpsError('permission-denied', 'You do not have permission to view this flow')
         }
 
+        // For public viewers (non-creators), filter propsData using cloneable flags from nodeDefinitions
         if (!isCreator) {
+            const { nodeDefinitions = [] }: { nodeDefinitions?: NodeDefinition[] } = request.data || {}
+            const defMap: Record<string, NodePropDefinition[]> = {}
+            nodeDefinitions.forEach(def => {
+                const k = buildDefinitionKey(def.node_id, def.parent_node_id)
+                defMap[k] = def.props || []
+            })
+
             if (flowData.steps) {
-                flowData.steps = flowData.steps.map((step: any) => {
-                    if (step.propsData) {
-                        const sanitizedPropsData = filterSensitiveData(step.propsData, step.nonCloneables)
-                        
-                        return { 
-                            ...step, 
-                            propsData: sanitizedPropsData,
-                        }
-                    }
-                    return step
-                })
+                flowData.steps = flowData.steps.map((step: any) => filterByCloneable(step, defMap))
             }
 
-
-            if (flowData.trigger && flowData.trigger.propsData) {
-                const sanitizedTriggerProps = filterSensitiveData(flowData.trigger.propsData,  flowData.trigger.nonCloneables)
-                flowData.trigger.propsData = sanitizedTriggerProps
+            if (flowData.trigger) {
+                flowData.trigger = filterByCloneable(flowData.trigger, defMap)
             }
         }
         return {
@@ -60,18 +91,7 @@ export const getFlowDetails = onCall({
 })
 
 
-function filterSensitiveData(propsData: Record<string, any>, nonCloneables?: string[]): Record<string, any> {
-    const sanitizedProps: Record<string, any> = {}
-    Object.keys(propsData).forEach(key => {
-        if (nonCloneables && nonCloneables.includes(key)) {
-            sanitizedProps[key] = null
-        } else {
-            sanitizedProps[key] = propsData[key]
-        }
-    })
-    
-    return sanitizedProps
-}
+// Removed nonCloneables-based filtering. Backend no longer redacts propsData using nonCloneables.
 
 /**
  * Helper function to convert Firestore timestamp to ISO string
@@ -80,22 +100,22 @@ function convertTimestamp(timestamp: any): string | null {
     if (!timestamp) {
         return null;
     }
-    
+
     // Handle Firestore Timestamp with _seconds property
     if (timestamp._seconds) {
         return new Date(timestamp._seconds * 1000).toISOString();
     }
-    
+
     // Handle Firestore Timestamp with toDate method
     if (timestamp.toDate && typeof timestamp.toDate === 'function') {
         return timestamp.toDate().toISOString();
     }
-    
+
     // Handle regular Date object
     if (timestamp instanceof Date) {
         return timestamp.toISOString();
     }
-    
+
     // Handle string that might already be an ISO string
     if (typeof timestamp === 'string') {
         try {
@@ -107,7 +127,7 @@ function convertTimestamp(timestamp: any): string | null {
             // Invalid date string
         }
     }
-    
+
     // Return as is if we can't convert
     return timestamp;
 }

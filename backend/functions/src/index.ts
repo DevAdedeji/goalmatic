@@ -9,6 +9,8 @@ export * from "./users/index";
 export * from "./flows/index";
 export * from "./flows/testNode";
 export * from "./tables/cloneTable";
+export * from "./tables/cloneTableById";
+export * from "./flows/cloneFlow";
 export * from "./tables/onRecordDeleted";
 export * from "./agents/getAgentDetails";
 export * from "./flows/getFlowDetails";

@@ -30,9 +30,10 @@ export const useLinkWhatsapp = () => {
         const res = await callFirebaseFunction('sendWhatsappOTP', { phoneNumber: phoneNumber.value }) as any
         if (res.code === 200) {
             step.value = 2
-            useAlert().openAlert({ type: 'SUCCESS', msg: res?.msg || 'OTP sent to whatsapp' })
+            useAlert().openAlert({ type: 'SUCCESS', msg: res?.msg || res?.message || 'OTP sent to whatsapp' })
         } else {
-            useAlert().openAlert({ type: 'ERROR', msg: res?.msg || 'Failed to send OTP' })
+            console.log(res)
+            useAlert().openAlert({ type: 'ERROR', msg: res?.msg || res?.message || 'Failed to send OTP', addrs: 'useLinkWhatsapp sendOTP' })
         }
         verificationLoading.value = false
     }

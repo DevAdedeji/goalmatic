@@ -81,7 +81,8 @@ async function sendOTP() {
       step.value = 2
       useAlert().openAlert({ type: 'SUCCESS', msg: res?.msg || 'OTP sent to WhatsApp' })
     } else {
-      useAlert().openAlert({ type: 'ERROR', msg: res?.msg || 'Failed to send OTP' })
+      console.log(res)
+      useAlert().openAlert({ type: 'ERROR', msg: res?.msg || res?.message || 'Failed to send OTP' })
     }
   } finally {
     loading.value = false

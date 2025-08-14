@@ -6,6 +6,11 @@ import { setFirestoreDocument } from '@/firebase/firestore/create'
 import { useUser } from '@/composables/auth/user'
 import { useAlert } from '@/composables/core/notification'
 import { flowActionNodes, flowTriggerNodes } from '@/composables/dashboard/flows/nodes/list'
+import { agentToolConfigs } from '@/composables/dashboard/assistant/agents/tools/config'
+import { callFirebaseFunction } from '@/firebase/functions'
+import { useFetchIntegrations } from '@/composables/dashboard/integrations/fetch'
+import { checkFlowRequirements } from '@/composables/dashboard/flows/approval'
+import { useFlowsModal } from '@/composables/core/modals'
 
 export const useCloneFlow = () => {
     const { id: user_id, userProfile, isLoggedIn } = useUser()
@@ -87,39 +92,73 @@ export const useCloneFlow = () => {
         return filterCloneableProperties(trigger)
     }
 
+    // Ensure any required tables are cloned automatically, and minimal config is set
+    const prepareEnvironmentForFlow = async (flowToClone: Record<string, any>) => {
+        const { fetchedIntegrations, fetchUserIntegrations } = useFetchIntegrations()
+        await fetchUserIntegrations()
+        const userIntegrations = fetchedIntegrations.value || []
+
+        const { requirements } = checkFlowRequirements(flowToClone, userIntegrations)
+
+        // If any config requirements are table-related and source table is provided, clone it
+        for (const cfg of requirements.config) {
+            const props = cfg.props || []
+            const propKeys = props.map((p: any) => p.key)
+            const needsTable = propKeys.some((k: string) => ['id', 'tableId', 'selected_table_id'].includes(k))
+
+            if (needsTable) {
+                const sourceTableId = (flowToClone as any)?.spec?.sourceTableId
+                const agentIdForTableClone = (flowToClone as any)?.spec?.agentIdForTableClone
+                try {
+                    if (sourceTableId) {
+                        const result = await callFirebaseFunction('cloneTableById', { tableId: sourceTableId }) as any
+                        const newTableId = result?.tableId
+                        if (newTableId) {
+                            agentToolConfigs.value.TABLE = agentToolConfigs.value.TABLE || {}
+                            agentToolConfigs.value.TABLE.selected_table_id = newTableId
+                        }
+                    } else if (agentIdForTableClone) {
+                        const result = await callFirebaseFunction('cloneTable', { agentId: agentIdForTableClone }) as any
+                        const newTableId = result?.tableId
+                        if (newTableId) {
+                            agentToolConfigs.value.TABLE = agentToolConfigs.value.TABLE || {}
+                            agentToolConfigs.value.TABLE.selected_table_id = newTableId
+                        }
+                    }
+                } catch (_e) {
+                    // Silently continue; user can configure later if cloning fails
+                }
+            }
+        }
+    }
+
     // Function to perform the actual cloning
     const performClone = async (flowToClone: Record<string, any>) => {
         loading.value = true
         try {
-            // Generate a new ID for the cloned flow
-            const id = uuidv4()
-
-            // Clone the steps, filtering out non-cloneable properties
-            const clonedSteps = (flowToClone.steps || []).map(cloneFlowStep)
-
-            // Clone the trigger if it exists
-            const clonedTrigger = flowToClone.trigger ? cloneFlowTrigger(flowToClone.trigger) : null
-
-            // Create the cloned flow data
-            const clonedFlow = {
-                ...flowToClone,
-                id,
-                name: `Copy of ${flowToClone.name}`,
-                creator_id: user_id.value!,
-                created_at: Timestamp.fromDate(new Date()),
-                updated_at: Timestamp.fromDate(new Date()),
-                status: 0, // Set to draft by default
-                steps: clonedSteps,
-                trigger: clonedTrigger,
-                cloned_from: {
-                    id: flowToClone.id,
-                    name: flowToClone.name,
-                    creator_id: flowToClone.creator_id
+            // Pre-clone requirements are handled via approval modal; no auto environment prep here
+            // Build minimal node definitions for backend clone filtering
+            const allNodes = [...flowActionNodes, ...flowTriggerNodes]
+            const definitions: Array<{ node_id: string; parent_node_id?: string; props: Array<{ key: string; cloneable?: boolean }> }> = []
+            const pushNode = (n: any, parent?: any) => {
+                if (n && n.props) {
+                    definitions.push({
+                        node_id: n.node_id,
+                        parent_node_id: parent?.node_id,
+                        props: n.props.map((p: any) => ({ key: p.key, cloneable: p.cloneable }))
+                    })
                 }
+                if (n && Array.isArray(n.children)) n.children.forEach((c: any) => pushNode(c, n))
             }
+            allNodes.forEach((n) => pushNode(n))
 
-            // Save the cloned flow to Firestore
-            await setFirestoreDocument('flows', id, clonedFlow)
+            // Ask backend to clone with server-side cloneable filtering
+            const res = await callFirebaseFunction('cloneFlow', {
+                flowId: flowToClone.id,
+                nodeDefinitions: definitions
+            }) as any
+            const id = res?.id
+            if (!id) throw new Error('Failed to create cloned flow')
 
             // Show success message
             useAlert().openAlert({
@@ -142,8 +181,31 @@ export const useCloneFlow = () => {
     }
 
     const cloneFlow = async (flowToClone: Record<string, any>) => {
-        // Validation is now handled in the component, so just proceed with cloning
-        await performClone(flowToClone)
+        // 1) Clone first (server-side)
+        const ok = await performClone(flowToClone)
+        if (!ok) return false
+
+        // 2) Fetch cloned flow and show requirements modal for configuring the cloned copy
+        const { fetchedIntegrations, fetchUserIntegrations } = useFetchIntegrations()
+        await fetchUserIntegrations()
+        const userIntegrations = fetchedIntegrations.value || []
+
+        // We just navigated to the cloned flow route; wait a tick then open modal for the cloned copy
+        setTimeout(async () => {
+            // The router push in performClone navigates to the cloned flow page, where `flowDetails` will load
+            // For UX: compute requirements using the source definition; config will be applied on the cloned flow via editor
+            const { requirements } = checkFlowRequirements(flowToClone, userIntegrations)
+            useFlowsModal().openCloneFlowApprovalModal({
+                requirements,
+                userIntegrations,
+                // openEditor now edits on the cloned flow page; the global EditNode modal will bind to that context
+                openEditor: (_cfg: any) => {
+                    // The EditNode modal relies on current page flow context; simply open it via node selection in UI
+                    // Here we provide no-op to avoid errors; user can open fields from the editor itself after navigation
+                }
+            })
+        }, 250)
+        return true
     }
 
     return { cloneFlow, loading }

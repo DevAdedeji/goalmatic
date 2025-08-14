@@ -1,7 +1,17 @@
-export const createRecordPrompt = (tableData, aiInstructions: string) => {
+export const createRecordPrompt = (
+    tableData: any,
+    aiInstructions: string,
+    dateContext?: { isoNow: string; humanDate: string; humanTime: string }
+) => {
     const tableFields = tableData?.fields || [];
     const schemaDescription = tableFields
-        .map((field: any) => `${field.id}: ${field.type} ${field.required ? '(required)' : '(optional)'} - ${field.description || field.name || ''}`)
+        .map((field: any) => {
+            const base = `${field.id}: ${field.type} ${field.required ? '(required)' : '(optional)'} - ${field.description || field.name || ''}`;
+            if (field.type === 'select' && Array.isArray(field.options) && field.options.length > 0) {
+                return `${base} | options: [${field.options.join(', ')}]`;
+            }
+            return base;
+        })
         .join('\n');
 
     const systemPrompt = `You are a structured data generation assistant.
@@ -21,9 +31,20 @@ You must:
 - Always return an array of valid records, even if only one item was provided.
 - Make sure all required fields are present in each record.
 - If some required values are missing in the input, use common-sense defaults or infer them if safely possible.
+ - If the user does not explicitly specify a date and/or time but the table has date/time fields, resolve relative phrases like "today", "tomorrow", or "yesterday" using the CurrentDateContext below. Use the provided formats.
 
 ## Table Schema:
 ${schemaDescription}
+
+${dateContext ? `## CurrentDateContext:
+- now_iso: ${dateContext.isoNow}
+- today_human: ${dateContext.humanDate}
+- time_human: ${dateContext.humanTime}
+
+Formatting requirements:
+- If a field is of type 'date', output ISO date string in YYYY-MM-DD (derived from now_iso or user instruction)
+- If a field is of type 'time', output time in HH:mm:ss (24-hour)
+` : ''}
 
 ## Additional Instructions:
 ${aiInstructions}

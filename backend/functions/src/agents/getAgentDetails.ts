@@ -28,8 +28,17 @@ export const getAgentDetails = onCall({
 
         const agentData = snapshot.data()!
 
+        // Enforce access control: allow if public or requester is the creator
+        const isCreator = request.auth && request.auth.uid === agentData.creator_id
+        const isPublic = agentData.public === true
+
+        console.log(isCreator, isPublic);
+        if (!isPublic && !isCreator) {
+            throw new HttpsError('permission-denied', 'This agent is private')
+        }
+
         // Set all toolConfig values to null only if the requester is not the creator
-        if (agentData.spec && agentData.spec.toolsConfig && request.auth && request.auth.uid !== agentData.creator_id) {
+        if (agentData.spec && agentData.spec.toolsConfig && !isCreator) {
             const toolsConfig = { ...agentData.spec.toolsConfig }
 
             // Iterate through all tools and set their config values to null

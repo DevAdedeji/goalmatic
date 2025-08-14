@@ -2,7 +2,7 @@ import axios from 'axios'
 
 export const send_WA_Message = (data, phone_number_id?: string) => {
   const actualPhoneNumberId = phone_number_id || process.env.PHONE_NUMBER_ID || '613700238502517'
-  
+
   const config = {
     method: 'post',
     url: `https://graph.facebook.com/v23.0/${actualPhoneNumberId}/messages`,
@@ -19,7 +19,7 @@ export const send_WA_Message = (data, phone_number_id?: string) => {
 
 
 
-export const get_WA_TextMessageInput = (recipient, text)=> {
+export const get_WA_TextMessageInput = (recipient, text) => {
   return JSON.stringify({
     'messaging_product': 'whatsapp',
     'preview_url': false,
@@ -28,12 +28,12 @@ export const get_WA_TextMessageInput = (recipient, text)=> {
     'type': 'text',
     'text': {
       'preview_url': true,
-        'body': text,
+      'body': text === null || text === undefined ? '' : String(text),
     },
   })
 }
 
-export const send_WA_ImageMessageInput = (recipient, caption, imageUrl = 'https://goalmatic.io/hero/workflow.png')=> {
+export const send_WA_ImageMessageInput = (recipient, caption, imageUrl = 'https://goalmatic.io/hero/workflow.png') => {
   return JSON.stringify({
     'messaging_product': 'whatsapp',
     'preview_url': false,
@@ -42,7 +42,7 @@ export const send_WA_ImageMessageInput = (recipient, caption, imageUrl = 'https:
     'type': 'image',
     "image": {
       "link": imageUrl,
-      "caption": caption
+      "caption": caption === null || caption === undefined ? '' : String(caption)
     }
   })
 }

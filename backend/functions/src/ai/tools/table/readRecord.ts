@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { readTableRecord } from "../../../toolCalls/table/readRecord";
 
 const readTableRecordTool = tool({
-    description: "Read records from a table with optional filtering based on field names.",
+    description: "Read records from a table with optional filtering. If a table is selected in toolsConfig.TABLE.selected_table_id, use the field IDs from <SelectedTable> when possible for accurate filtering. For select fields, filter by one of the allowed options exactly as listed.",
     parameters: z.object({
         filter: z.array(
             z.object({

@@ -95,9 +95,10 @@
 						Use agent
 						<Sparkles :size="15" />
 					</button>
-					<button v-if="id !== '0' && !isOwner(agentDetails)" class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="!canCloneAgent(agentDetails) ? (agentDetails?.creator_id === user_id ? 'You cannot clone your own agent' : 'You must be logged in to clone an agent') : 'Clone this agent'"
+					<button v-if="id !== '0' && !isOwner(agentDetails)" class="btn-icon gap-2 text-primary" :disabled="cloneLoading" :title="'Clone this agent'"
 						@click="cloneAgent(agentDetails)">
-						Clone
+						<span v-if="!cloneLoading">Clone</span>
+						<Spinner v-else size="14px" />
 						<Copy :size="16" color="#601DED" />
 					</button>
 

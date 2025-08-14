@@ -15,7 +15,7 @@ const sendWhatsAppMessage = async (params: {
     phoneNumber?: string;
 }) => {
     const uid = getUserUid();
-    
+
     if (!uid) {
         throw new Error('User authentication required');
     }
@@ -37,14 +37,14 @@ const sendWhatsAppMessage = async (params: {
             .where('provider', '==', 'WHATSAPP')
             .limit(1)
             .get();
-            
+
         if (userIntegrationsSnap.empty) {
             throw new Error('No WhatsApp integration found. Please link your WhatsApp number first.');
         }
-        
+
         const integrationPhone = userIntegrationsSnap.docs[0].data().phone;
         recipientNumber = normalizePhoneForWhatsApp(integrationPhone);
-        
+
         if (!recipientNumber) {
             throw new Error('Invalid phone number in user integration');
         }
@@ -52,9 +52,9 @@ const sendWhatsAppMessage = async (params: {
         if (!params.phoneNumber) {
             throw new Error('Phone number is required for custom recipient');
         }
-        
+
         recipientNumber = normalizePhoneForWhatsApp(params.phoneNumber);
-        
+
         if (!recipientNumber) {
             throw new Error('Invalid phone number format');
         }
@@ -70,11 +70,13 @@ const sendWhatsAppMessage = async (params: {
     const isCSWOpen = await isCustomerServiceWindowOpen(recipientNumber);
 
     try {
+        // Ensure message is a string so that numeric 0 is preserved
+        const messageText = params.message === null || params.message === undefined ? '' : String(params.message);
         if (isCSWOpen) {
             // Can send direct message during Customer Service Window
-            const waMsg = send_WA_ImageMessageInput(recipientNumber, params.message);
+            const waMsg = send_WA_ImageMessageInput(recipientNumber, messageText);
             await send_WA_Message(waMsg);
-            
+
             return {
                 success: true,
                 message: 'WhatsApp message sent successfully',
@@ -86,15 +88,15 @@ const sendWhatsAppMessage = async (params: {
             // Must use template message outside Customer Service Window
             const uniqueTemplateMessageId = uuidv4();
             const waMsg = goalmatic_whatsapp_workflow_template({
-                message: formatTemplateMessage(params.message),
+                message: formatTemplateMessage(messageText),
                 recipientNumber: recipientNumber,
                 uniqueTemplateMessageId: uniqueTemplateMessageId
             });
-            
+
             // Save the non-formatted message for later retrieval
-            await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, params.message);
+            await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, messageText);
             await send_WA_Message(waMsg);
-            
+
             return {
                 success: true,
                 message: 'WhatsApp template message sent successfully',
@@ -114,15 +116,15 @@ const sendWhatsAppMessage = async (params: {
 const isCustomerServiceWindowOpen = async (phoneNumber: string): Promise<boolean> => {
     const cswSnap = await goals_db.collection('CSW').doc(phoneNumber).get();
     if (!cswSnap.exists) return false;
-    
+
     const cswData = cswSnap.data();
     const lastReceivedMessage = cswData?.lastReceivedMessage;
-    
+
     if (!lastReceivedMessage) return false;
-    
+
     const now = new Date();
     const timeSinceLastMessage = now.getTime() - new Date(lastReceivedMessage).getTime();
-    
+
     // Customer Service Window is 24 hours (1000ms * 60s * 60m * 24h)
     return timeSinceLastMessage < 1000 * 60 * 60 * 24;
 };

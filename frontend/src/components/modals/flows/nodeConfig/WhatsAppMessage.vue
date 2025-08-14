@@ -46,6 +46,19 @@
 			<label class="block font-medium mb-1">Phone Number</label>
 			<PhoneInput v-model="form.phoneNumber" :disabled="form.recipientType === 'user'" placeholder="e.g. +1234567890" />
 
+			<!-- UX: For 'user' type, prompt to connect WhatsApp instead of auto-opening modal -->
+			<div v-if="form.recipientType === 'user' && !form.phoneNumber" class="mt-2">
+				<div class="text-xs text-amber-700 mb-2">
+					Connect your WhatsApp number to send messages from your account.
+				</div>
+				<button type="button" class="btn-primary" @click="openWhatsappConnect">
+					Connect WhatsApp
+				</button>
+			</div>
+			<div v-else-if="form.recipientType === 'user' && form.phoneNumber" class="text-xs text-green-700 mt-2">
+				Using connected number {{ form.phoneNumber }}
+			</div>
+
 			<div v-if="form.recipientType === 'custom'">
 				<button v-if="!verified" type="button" class="btn-primary mt-2" :disabled="loading || verified || form.phoneNumber.length < 13" @click="openOtpModal">
 					Verify Phone
@@ -141,10 +154,11 @@ console.log(form.value.recipientType)
 })
 
 watch(() => form.value.recipientType, async (val) => {
-	if (val === 'user') {
-		await prepopulateUserPhone()
-		verified.value = true
-	}
+  if (val === 'user') {
+    await prepopulateUserPhone()
+    // Do not auto-open connection modal; show CTA button instead
+    verified.value = !!form.value.phoneNumber
+  }
 })
 
 async function prepopulateUserPhone() {
@@ -165,10 +179,7 @@ async function prepopulateUserPhone() {
 	// After migration, phone numbers should already be normalized with +
 	form.value.phoneNumber = phone || ''
 
-	// If no WhatsApp integration found, prompt user to connect
-	if (!form.value.phoneNumber) {
-		integrationsModal.openConnectWhatsapp()
-	}
+  // If no WhatsApp integration found, do not auto-open the connection modal
 
 	// Reactively update the phone if integration gets connected while this modal is open
 	watch(
@@ -216,15 +227,13 @@ const canSave = computed(() => {
 
 function save() {
 	// Create AI enabled fields list - only include message if it's in AI mode
-	const aiEnabledFields = aiMode.message === 'ai' ? ['message'] : []
-	const nonCloneables = ['phoneNumber']
+    const aiEnabledFields = aiMode.message === 'ai' ? ['message'] : []
 
   const payload = {
 		message: form.value.message,
 		recipientType: form.value.recipientType,
 		phoneNumber: form.value.phoneNumber,
-		aiEnabledFields,
-		nonCloneables
+		aiEnabledFields
 	}
 	emit('save', payload)
 }
