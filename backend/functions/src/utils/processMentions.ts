@@ -31,15 +31,31 @@ export const processMentionTextarea = (text: string, previousStepResult: any): s
     const mentionRegex = /<span[^>]*data-type="mention"[^>]*data-id="([^"]+)"[^>]*>.*?<\/span>/g;
 
     let processedText = text.replace(mentionRegex, (match, dataId) => {
-
-
         const parts = dataId.match(/^([^[]+)\[([^\]]+)\]$/);
         if (parts) {
             const stepId = parts[1];
             const payloadKey = parts[2];
 
             // Access the data from previousStepResult
-            const replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+            let replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+
+            // Fallback: if not found (e.g., step index changed), try resolving by node id suffix
+            if (replacementValue === undefined) {
+                const suffixMatch = stepId.match(/^(?:step-\d+|trigger)-(.+)$/);
+                const nodeIdSuffix = suffixMatch ? suffixMatch[1] : undefined;
+                if (nodeIdSuffix && previousStepResult) {
+                    for (const key in previousStepResult) {
+                        if (typeof key === 'string' && key.endsWith(`-${nodeIdSuffix}`)) {
+                            const candidate = previousStepResult[key]?.payload?.[payloadKey];
+                            if (candidate !== undefined) {
+                                replacementValue = candidate;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             return replacementValue !== undefined ? stringifyReplacementValue(replacementValue) : '';
         }
         return match; // Return original if parsing fails
@@ -67,7 +83,22 @@ export const processMentionTextarea = (text: string, previousStepResult: any): s
     // Example: @step-1-TABLE_CREATE-totalRecordsCreated
     processedText = processedText.replace(/@(step|trigger)-([\w-]+)-([\w]+)/g, (_match, prefix, groupRest, payloadKey) => {
         const stepId = `${prefix}-${groupRest}`; // e.g., step-1-TABLE_CREATE
-        const replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+        let replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+
+        // Fallback: attempt to resolve by node id suffix (drop the dynamic index if present)
+        if (replacementValue === undefined && previousStepResult) {
+            const nodeIdSuffix = groupRest.replace(/^\d+-/, '');
+            for (const key in previousStepResult) {
+                if (typeof key === 'string' && key.endsWith(`-${nodeIdSuffix}`)) {
+                    const candidate = previousStepResult[key]?.payload?.[payloadKey];
+                    if (candidate !== undefined) {
+                        replacementValue = candidate;
+                        break;
+                    }
+                }
+            }
+        }
+
         return replacementValue !== undefined ? stringifyReplacementValue(replacementValue) : '';
     });
 

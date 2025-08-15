@@ -106,20 +106,29 @@ const runWorkflow = async (context: WorkflowContext) => {
       });
     }
   } catch (error) {
-    console.error("Error in runWorkflow:", error);
+    // Detect Upstash's expected WorkflowAbort to avoid noisy logs and failure marking
+    const isWorkflowAbort =
+      (typeof (error as any)?.name === 'string' && (error as any).name === 'WorkflowAbort') ||
+      String(error).includes('WorkflowAbort');
 
-    // Update log with failure
-    if (logRef) {
-      const endTime = new Date();
-      const durationMs = endTime.getTime() - startTime.getTime();
-      const durationStr = `${Math.round(durationMs / 1000)}s`;
+    if (!isWorkflowAbort) {
+      console.error("Error in runWorkflow:", error);
+    }
 
-      await logRef.update({
-        status: "failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-        end_time: Timestamp.fromDate(endTime),
-        duration: durationStr,
-      });
+    if (!isWorkflowAbort) {
+      // Update log with failure only for real errors
+      if (logRef) {
+        const endTime = new Date();
+        const durationMs = endTime.getTime() - startTime.getTime();
+        const durationStr = `${Math.round(durationMs / 1000)}s`;
+
+        await logRef.update({
+          status: "failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+          end_time: Timestamp.fromDate(endTime),
+          duration: durationStr,
+        });
+      }
     }
 
     // Re-throw the error so it can be handled by the workflow system
@@ -130,8 +139,11 @@ const runWorkflow = async (context: WorkflowContext) => {
 // Export the Firebase Cloud Function, passing requests to the workflow handler
 export const executeFlow = onRequest(
   { cors: true, region: "us-central1", timeoutSeconds: 540},
-  serve(runWorkflow, {
-    qstashClient: new Client({ token: UPSTASH_QSTASH_TOKEN }),
-    url: API_BASE_URL,
-  }) as any,
+  (() => {
+    const options: any = { url: API_BASE_URL };
+    if (UPSTASH_QSTASH_TOKEN) {
+      options.qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
+    }
+    return serve(runWorkflow, options) as any;
+  })()
 );

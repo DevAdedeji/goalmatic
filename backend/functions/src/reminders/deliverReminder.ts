@@ -4,7 +4,7 @@ import { send_WA_Message, send_WA_ImageMessageInput } from '../whatsapp/utils/se
 import { goalmatic_whatsapp_workflow_template } from '../whatsapp/templates/workflow';
 import { formatTemplateMessage } from '../whatsapp/utils/formatTemplateMessage';
 import { notifyUser } from '../helpers/emailNotifier';
-import { is_emulator } from '../init';
+// import { is_emulator } from '../init';
 
 type DeliveryMethod = 'WHATSAPP' | 'EMAIL';
 
@@ -100,7 +100,7 @@ export const deliverReminder = onRequest({ cors: true, region: 'us-central1' }, 
 });
 
 const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
-    if (is_emulator) return true;
+    // if (is_emulator) return true;
     const cswSnap = await goals_db.collection('CSW').doc(phoneNumber).get();
     if (!cswSnap.exists) return false;
     const last = cswSnap.data()?.lastReceivedMessage;

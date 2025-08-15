@@ -199,11 +199,21 @@ const createRecord = async (
         console.log(createdRecords.length, 'totalRecordsCreated');
 
         if (createdRecords.length === 0) {
+            // Do not fail the entire step if nothing was created; surface failures to downstream nodes
             return {
-                success: false,
-                error: failedRecords.length > 0
-                    ? `All records failed to create. First error: ${failedRecords[0].error}`
-                    : 'No records to create.',
+                success: true,
+                payload: {
+                    recordIds: [],
+                    created_at: now.toISOString(),
+                    records: [],
+                    totalRecordsCreated: 0,
+                    failedRecords,
+                    totalRecordsFailed: failedRecords.length,
+                    aiGeneratedData,
+                    note: failedRecords.length > 0
+                        ? `No records created. First failure: ${failedRecords[0].error}`
+                        : 'No records to create.'
+                }
             };
         }
 
