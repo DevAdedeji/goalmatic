@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		title="Review Workflow Requirements"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<div class="flex flex-col gap-4">

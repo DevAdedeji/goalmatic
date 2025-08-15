@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		title="Change Agent Visibility"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<div class="flex flex-col gap-4">

@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		:title="modalData.title"
-		:is-full-height="true"
 		:props-modal="propsModal"
 	>
 		<form class="auth-form mt-4 p-1 pb-24" @submit.prevent="">

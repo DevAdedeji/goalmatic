@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		title="Sign Out"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<IconsSmiley class="size-10 mx-auto mb-3" />

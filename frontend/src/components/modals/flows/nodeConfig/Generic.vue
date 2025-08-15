@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- Properties Form -->
-		<form class="flex flex-col gap-6 sm:pb-0" @submit.prevent="validateAndSave">
+		<form class="flex flex-col gap-6 sm:pb-0 pb-24" @submit.prevent="validateAndSave">
 			<div v-if="!hasProps" class="text-center py-4 text-text-secondary">
 				This node has no configurable properties.
 			</div>

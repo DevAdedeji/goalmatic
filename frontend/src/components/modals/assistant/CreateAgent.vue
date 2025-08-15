@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		title="Create Agent"
-		:is-full-height="false"
 		:props-modal="propsModal"
 		modal-content-class="p-0 "
 		size="xl"

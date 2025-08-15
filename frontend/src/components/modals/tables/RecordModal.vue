@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		:title="editingRecordIndex === -1 ? 'Add New Record' : 'Edit Record'"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<form @submit.prevent="onSave">

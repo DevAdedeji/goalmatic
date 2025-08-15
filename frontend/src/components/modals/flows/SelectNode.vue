@@ -4,7 +4,6 @@
 		:title="modalTitle"
 		:props-modal="propsModal"
 		type="sidebar"
-		:is-full-height="true"
 	>
 		<section class="mt-8">
 			<!-- Replacement indicator -->

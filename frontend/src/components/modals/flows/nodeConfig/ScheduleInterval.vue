@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- 1. Describe how often you want this to run -->
-		<label class="block font-medium mb-1">Describe how often you want this to run</label>
+		<label class="block font-medium mb-1 pb-24">Describe how often you want this to run</label>
 		<div class="flex gap-2 items-center mb-4">
 			<input
 				v-model="scheduleInput"

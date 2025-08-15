@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		title="Share public link to chat"
-		:is-full-height="false"
 		:props-modal="propsModal"
 		size="md"
 	>

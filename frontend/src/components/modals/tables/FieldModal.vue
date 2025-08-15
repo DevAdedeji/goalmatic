@@ -2,7 +2,6 @@
 	<Modal
 		modal="$attrs.modal"
 		:title="editingFieldIndex === -1 ? 'Add New Field' : 'Edit Field'"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<form @submit.prevent="payload.onSave()">

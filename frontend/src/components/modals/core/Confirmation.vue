@@ -2,7 +2,6 @@
 	<Modal
 		modal="$atts.modal"
 		:title="title"
-		:is-full-height="false"
 		:props-modal="propsModal"
 	>
 		<p class="text-dark text-lg tracking-[0.1rem] text-center">

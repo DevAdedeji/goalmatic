@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="pb-24">
 		<div class="mb-4">
 			<!-- AI Mode Toggle for Message Field -->
 			<div class="flex items-center justify-between mb-1">
