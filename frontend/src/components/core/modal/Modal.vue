@@ -207,9 +207,12 @@ const handleAfterLeave = () => {
 
 	.sidebar-content{
 		@apply bg-light h-full overflow-y-auto p-4 pb-32 rounded-xl;
+		padding-bottom: calc(8rem + env(safe-area-inset-bottom));
 
 		@media screen and (max-width: 640px) {
-			@apply rounded-t-2xl rounded-b-none h-auto max-h-[90vh];
+			@apply rounded-t-2xl rounded-b-none h-auto;
+			max-height: 90dvh;
+			padding-bottom: calc(2rem + env(safe-area-inset-bottom));
 		}
 
 		header{
@@ -219,16 +222,20 @@ const handleAfterLeave = () => {
 }
     .bottombar {
         @apply bg-light rounded-t-2xl flex flex-col gap-2 sm:hidden fixed inset-x-0 bottom-0 w-full border border-dark p-4 pb-0 pt-6;
+        bottom: env(safe-area-inset-bottom);
+        padding-bottom: calc(env(safe-area-inset-bottom));
     }
 .generator_tw{
 	@apply sm:w-[700px] sm:w-[400px]
 }
 .isFullHeight {
-	@apply h-screen sm:h-auto
+	@apply h-dvh sm:h-auto;
+	padding-bottom: env(safe-area-inset-bottom);
 }
 .isNotFullHeight{
 	@apply h-auto w-full sm:w-[470px] rounded-b-none md:rounded-b-2xl bottom-0 md:bottom-auto absolute md:relative;
 	height: auto !important;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
 
 .bg-sidebar {
@@ -238,7 +245,8 @@ const handleAfterLeave = () => {
 	background-color: rgba(0, 0, 0, 0.4);
 	width: 100vw;
 	max-width: 100vw;
-	min-height: 100vh;
+	min-height: 100dvh;
+	padding-bottom: env(safe-area-inset-bottom);
 	z-index: 30;
 	backdrop-filter: blur(1.5px);
 }
@@ -252,7 +260,8 @@ const handleAfterLeave = () => {
 	background-color: rgba(0, 0, 0, 0.4);
 	width: 100vw;
 	max-width: 100vw;
-	min-height: 100vh;
+	min-height: 100dvh;
+	padding-bottom: env(safe-area-inset-bottom);
 	z-index: 30;
 	backdrop-filter: blur(1.5px);
 	display: flex;
