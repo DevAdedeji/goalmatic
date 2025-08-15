@@ -231,7 +231,10 @@ const openEmailSupport = () => {
 }
 
 const openWhatsAppSupport = () => {
-	window.open('https://wa.me/+2348146923944?text=Hi, I need help with Goalmatic')
+	const phone = '2348146923944'
+	const message = 'Hello Goalmatic Support, I am a Goalmatic user. I would like to get help with ...'
+	const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+	window.open(url)
 }
 
 const openFeatureRequest = () => {
