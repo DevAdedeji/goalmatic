@@ -2,10 +2,12 @@ import { goals_db } from '../../../init';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Client } from "@upstash/qstash";
 
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
-const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
+const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
+
 
 export const handleDeactivateScheduleIntervalTrigger = async (flowData: any, userId: string) => {
+  
+  const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
   try {
     // Check if the flow has a scheduled interval
     if (!flowData.schedule || !flowData.schedule.scheduleId) {

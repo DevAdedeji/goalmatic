@@ -42,13 +42,23 @@
 	</div>
 
 
-	<div class="flex justify-end gap-2 mt-4">
+	<div class="hidden sm:flex justify-end gap-2 mt-4 pb-24 sm:pb-0">
 		<button class="btn-outline flex-1" :disabled="loading" @click="$emit('cancel')">
 			Cancel
 		</button>
 		<button class="btn-primary flex-1" :disabled="!cronResult || loading" @click="onSave">
 			Save
 		</button>
+	</div>
+	<div class="fixed inset-x-0 bottom-0 sm:hidden bg-light border-t border-border p-3">
+		<div class="grid grid-cols-2 gap-3 w-full">
+			<button type="button" class="btn-outline" :disabled="loading" @click="$emit('cancel')">
+				Cancel
+			</button>
+			<button type="button" class="btn-primary" :disabled="!cronResult || loading" @click="onSave">
+				Save
+			</button>
+		</div>
 	</div>
 </template>
 

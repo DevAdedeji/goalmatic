@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<!-- Properties Form -->
-		<form class="flex flex-col gap-6" @submit.prevent="validateAndSave">
+		<form class="flex flex-col gap-6 sm:pb-0" @submit.prevent="validateAndSave">
 			<div v-if="!hasProps" class="text-center py-4 text-text-secondary">
 				This node has no configurable properties.
 			</div>
@@ -484,7 +484,7 @@
 				</div>
 			</div>
 
-			<div class="flex justify-end gap-2 mt-4">
+			<div class="hidden sm:flex justify-end gap-2 mt-4 pb-24 sm:pb-0">
 				<button
 					type="button"
 					class="btn-outline flex-1"
@@ -500,6 +500,17 @@
 					<span v-if="loading">Saving...</span>
 					<span v-else>Save Changes</span>
 				</button>
+			</div>
+			<div class="fixed inset-x-0 bottom-0 sm:hidden bg-light border-t border-border p-3">
+				<div class="grid grid-cols-2 gap-3 w-full">
+					<button type="button" class="btn-outline" @click="closeModal">
+						Cancel
+					</button>
+					<button type="submit" class="btn-primary" :disabled="loading">
+						<span v-if="loading">Saving...</span>
+						<span v-else>Save Changes</span>
+					</button>
+				</div>
 			</div>
 		</form>
 	</div>

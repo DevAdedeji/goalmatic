@@ -4,6 +4,13 @@ export const modalType = ref()
 export const closeModalType = () => {
     modalType.value = null
     payloads.value = {}
+    try {
+        if (stack.value.length === 0) {
+            document.documentElement.style.overflow = ''
+            document.body.style.overflow = ''
+            document.body.style.touchAction = ''
+        }
+    } catch {}
 }
 
 const capitalize = (text: string) => (text[0] ?? '').toUpperCase() + text.slice(1)
@@ -19,6 +26,11 @@ export const closeAllExtremes = () => {
     stack.value = []
     payloads.value = {}
     modalType.value = null
+    try {
+        document.documentElement.style.overflow = ''
+        document.body.style.overflow = ''
+        document.body.style.touchAction = ''
+    } catch {}
 }
 
 export const useModal = () => {
@@ -28,6 +40,12 @@ export const useModal = () => {
         close(id)
         if (Object.keys(modals).includes(id)) {
             stack.value.push(id)
+            try {
+                // lock background scroll when any modal opens
+                document.documentElement.style.overflow = 'hidden'
+                document.body.style.overflow = 'hidden'
+                document.body.style.touchAction = 'none'
+            } catch {}
             if (payload !== null) {
                 payloads.value[id] = payload
             }
@@ -41,6 +59,14 @@ export const useModal = () => {
         if (index > -1) {
             stack.value.splice(index, 1)
             delete payloads.value[id]
+            try {
+                // restore scroll if no more modals open
+                if (stack.value.length === 0) {
+                    document.documentElement.style.overflow = ''
+                    document.body.style.overflow = ''
+                    document.body.style.touchAction = ''
+                }
+            } catch {}
         }
     }
 

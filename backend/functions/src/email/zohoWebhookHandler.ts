@@ -89,7 +89,7 @@ interface EmailTrigger {
 }
 
 // Constants
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
+const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
 const API_BASE_URL = is_dev ? `${process.env.BASE_URL_DEV}/executeFlow` : `${process.env.BASE_URL}/executeFlow`;
 const ZOHO_WEBHOOK_SECRET = process.env.ZOHO_WEBHOOK_SECRET; // For webhook security
 

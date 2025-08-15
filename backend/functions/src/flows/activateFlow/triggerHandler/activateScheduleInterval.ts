@@ -4,7 +4,7 @@ import { HttpsError } from 'firebase-functions/v2/https';
 import { Client } from "@upstash/qstash";
 import { Timestamp } from 'firebase-admin/firestore';
 
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
+const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
 const API_BASE_URL = is_dev ? `${process.env.BASE_URL_DEV}/executeFlow` : `${process.env.BASE_URL}/executeFlow`;
 const FAILURE_CALLBACK_URL = is_dev ? `${process.env.BASE_URL_DEV}/failedScheduleTimeCallback` : `${process.env.BASE_URL}/failedScheduleTimeCallback`;
 

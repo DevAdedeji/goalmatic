@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { goals_db, is_dev } from '../../../init';
 import { getUserUid, getUserToolConfig } from '../../index';
 
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN as string;
+const UPSTASH_QSTASH_TOKEN = (process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN) as string;
 const API_BASE_URL = is_dev
     ? `${process.env.BASE_URL_DEV}/deliverReminder`
     : `${process.env.BASE_URL}/deliverReminder`;

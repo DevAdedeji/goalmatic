@@ -1,16 +1,16 @@
 <template>
 	<transition name="fade" appear>
-        <div
-            :close="closeModal"
-            :class="[
-                type == 'popup' ? 'bg-modal' : 'bg-sidebar',
-                'transition-all modal-background',
-            ]"
-            @click.self="autoClose ? close($el) : null"
-            style="z-index: 1990;"
-        >
+		<div
+			:close="closeModal"
+			:class="[
+				type == 'popup' ? 'bg-modal' : 'bg-sidebar',
+				'transition-all modal-background',
+			]"
+			style="z-index: 1990;"
+			@click.self="autoClose ? close($el) : null"
+		>
 			<transition name="modal" appear @after-leave="handleAfterLeave">
-                <div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']" style="z-index: 2000;">
+				<div v-if="type == 'popup' && show" :class="[isFullHeight? `isFullHeight ${computedWidth}`:'isNotFullHeight','modal']" style="z-index: 2000;">
 					<header class="modal-title flex justify-between w-full items-center">
 						<slot name="header">
 							<div v-if="image || description" class="flex items-center gap-3 flex-1">
@@ -40,7 +40,7 @@
 			</transition>
 
 			<transition name="slide" appear @after-leave="handleAfterLeave">
-                <aside v-if="type == 'sidebar' && show" class="sidebar" style="z-index: 2000;">
+				<aside v-if="type == 'sidebar' && show" class="sidebar" style="z-index: 2000;">
 					<div class="sidebar-content">
 						<header class="modal-title flex justify-between w-full items-center">
 							<slot name="header">
@@ -206,7 +206,7 @@ const handleAfterLeave = () => {
 	}
 
 	.sidebar-content{
-		@apply bg-light h-full overflow-y-auto p-4 rounded-xl;
+		@apply bg-light h-full overflow-y-auto p-4 pb-32 rounded-xl;
 
 		@media screen and (max-width: 640px) {
 			@apply rounded-t-2xl rounded-b-none h-auto max-h-[90vh];
@@ -241,6 +241,23 @@ const handleAfterLeave = () => {
 	min-height: 100vh;
 	z-index: 30;
 	backdrop-filter: blur(1.5px);
+}
+
+.bg-modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.4);
+	width: 100vw;
+	max-width: 100vw;
+	min-height: 100vh;
+	z-index: 30;
+	backdrop-filter: blur(1.5px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .modal-enter-active,

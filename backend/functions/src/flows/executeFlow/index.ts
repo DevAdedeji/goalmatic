@@ -8,25 +8,33 @@ import { runStepsInContext } from "./flowSteps";
 import { Timestamp } from "firebase-admin/firestore";
 import { getAnalytics } from "../../utils/analytics";
 
-const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN;
+const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
 const API_BASE_URL = is_dev
   ? `${process.env.BASE_URL_DEV}/executeFlow`
   : `${process.env.BASE_URL}/executeFlow`;
 
 const runWorkflow = async (context: WorkflowContext) => {
-  const { flowId, userId, executionId, triggerData } =
-    context.requestPayload as {
-      flowId: string;
-      userId: string;
-      executionId: string;
-      triggerData?: any;
-    };
-
   const startTime = new Date();
   let logRef: FirebaseFirestore.DocumentReference | null = null;
   const analytics = getAnalytics();
 
   try {
+    // Validate request payload early to avoid uncaught destructuring errors
+    const payload = context.requestPayload as {
+      flowId: string;
+      userId: string;
+      executionId: string;
+      triggerData?: any;
+    } | undefined;
+
+    if (!payload || !payload.flowId || !payload.userId || !payload.executionId) {
+      // Cancel the workflow gracefully if payload is invalid or missing
+      context.cancel();
+      return { isValid: false, error: "Invalid or missing request payload" };
+    }
+
+    const { flowId, userId, executionId, triggerData } = payload;
+
     // Track flow execution start
     analytics.trackFlowEvent('EXECUTION_STARTED', flowId, {
       execution_id: executionId,
@@ -144,6 +152,16 @@ export const executeFlow = onRequest(
     if (UPSTASH_QSTASH_TOKEN) {
       options.qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
     }
-    return serve(runWorkflow, options) as any;
+
+    // The Upstash serve() returns an Express router-like handler that expects (req, res, next).
+    // Firebase onRequest invokes handlers as (req, res). Wrap to provide a no-op next callback.
+    const routerLike = serve(runWorkflow, options) as any;
+    return (req: any, res: any) => {
+      if (req.method !== 'POST') {
+        res.status(405).send('Only POST requests are allowed in workflows');
+        return;
+      }
+      routerLike(req, res, () => {});
+    };
   })()
 );

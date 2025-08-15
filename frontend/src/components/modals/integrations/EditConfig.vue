@@ -5,7 +5,7 @@
 		:is-full-height="false"
 		:props-modal="propsModal"
 	>
-		<form class="auth-form mt-4 p-1" @submit.prevent="">
+		<form class="auth-form mt-4 p-1 pb-24" @submit.prevent="">
 			<div v-for="field in modalData.fields" :key="field.key" class="field relative">
 				<label for="start">{{ field.name }}</label>
 				<Select
@@ -22,6 +22,14 @@
 				</button>
 			</div>
 		</form>
+		<div class="fixed inset-x-0 bottom-0 sm:hidden bg-light border-t border-border p-3">
+			<div class="grid grid-cols-1 gap-3 w-full">
+				<button class="btn-primary text-light" :disabled="loading" @click="updateConfig">
+					<span v-if="!loading"> Update </span>
+					<Spinner v-else />
+				</button>
+			</div>
+		</div>
 	</Modal>
 </template>
 
