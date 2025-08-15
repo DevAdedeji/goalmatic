@@ -179,7 +179,7 @@ export const useEditFlow = () => {
       return
     }
 
-    if (!position) {
+    if (position === undefined || position === null) {
       flowDetails.value.steps.push({ position: flowDetails.value.steps.length + 1, ...node, id: uuidv4() })
       return
     }
@@ -253,11 +253,12 @@ export const useEditFlow = () => {
   }
 
   const handleChangeNode = (step, index, type) => {
-    removeNode(step, index)
+    // Do not delete first. Open select modal in replacement mode and perform replacement after selection
     useFlowsModal().openSelectNode({
       type,
       position: index,
-      isReplacement: true
+      isReplacement: true,
+      replaceTargetId: step?.id || null
     })
   }
 

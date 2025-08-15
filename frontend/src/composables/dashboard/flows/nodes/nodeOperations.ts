@@ -102,7 +102,8 @@ export const getMissingRequiredProps = (node: Record<string, any>) => {
  * Logic for the SelectNode component
  */
 export const useSelectNodeLogic = (props: any) => {
-  const { addNode, editNode } = useEditFlow()
+  const { addNode, editNode, updateFlow } = useEditFlow()
+  const { flowDetails } = useFetchFlowById()
 
   // Get nodes based on type
   const nodes = computed(() => {
@@ -143,33 +144,63 @@ export const useSelectNodeLogic = (props: any) => {
     if (hasChildren(node)) {
       toggleNodeExpansion(node.node_id)
     } else {
-      // Add the node to the flow
-      addNode(node, props.payload?.position)
+      // If we're replacing, do an in-place replace; otherwise add
+      const isReplacement = !!props.payload?.isReplacement
+      const position = props.payload?.position
+      const replaceTargetId = props.payload?.replaceTargetId
 
-      // Close this modal
-      useFlowsModal().closeSelectNode()
-
-      // Open the edit modal with the newly added node
-      setTimeout(() => {
-        // If it's a trigger node
+      if (isReplacement) {
         if (node.type === 'trigger') {
-          // Get the trigger node from flowData
-          const { flowDetails } = useFetchFlowById()
-          editNode(flowDetails.value.trigger)
-        } else {
-          // For action nodes, find the correct step based on position
-          const { flowDetails } = useFetchFlowById()
-          const position = props.payload?.position
-
-          // If position is specified, find the node at that position
-          if (position !== undefined && position !== null) {
-            editNode(flowDetails.value.steps[position])
+          // Replace trigger in place
+          flowDetails.value.trigger = { ...node, id: flowDetails.value.trigger?.id || node.id }
+        } else if (position !== undefined && position !== null) {
+          // Replace action at the given index preserving id
+          const existing = flowDetails.value.steps[position]
+          const preservedId = existing?.id
+          flowDetails.value.steps.splice(position, 1, { ...node, id: preservedId || node.id })
+        } else if (replaceTargetId) {
+          const idx = (flowDetails.value.steps || []).findIndex((s: any) => s.id === replaceTargetId)
+          if (idx !== -1) {
+            const preservedId = flowDetails.value.steps[idx]?.id
+            flowDetails.value.steps.splice(idx, 1, { ...node, id: preservedId || node.id })
           } else {
-            // Otherwise, it was added at the end
-            editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
+            // Fallback to append if not found
+            addNode(node, null)
           }
+        } else {
+          // Fallback when info missing
+          addNode(node, position ?? null)
         }
-      }, 100) // Small delay to ensure UI updates
+
+        // Persist and open editor on the replaced node
+        updateFlow(flowDetails.value)
+        useFlowsModal().closeSelectNode()
+        setTimeout(() => {
+          if (node.type === 'trigger') {
+            editNode(flowDetails.value.trigger)
+          } else if (position !== undefined && position !== null) {
+            editNode(flowDetails.value.steps[position])
+          } else if (replaceTargetId) {
+            const idx = (flowDetails.value.steps || []).findIndex((s: any) => s.id === replaceTargetId)
+            if (idx !== -1) editNode(flowDetails.value.steps[idx])
+          }
+        }, 100)
+      } else {
+        // Add flow as before
+        addNode(node, position)
+        useFlowsModal().closeSelectNode()
+        setTimeout(() => {
+          if (node.type === 'trigger') {
+            editNode(flowDetails.value.trigger)
+          } else {
+            if (position !== undefined && position !== null) {
+              editNode(flowDetails.value.steps[position])
+            } else {
+              editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
+            }
+          }
+        }, 100)
+      }
     }
   }
 
@@ -187,33 +218,57 @@ export const useSelectNodeLogic = (props: any) => {
       icon: childNode.icon
     }
 
-    // Add the node to the flow
-    addNode(mergedNode, props.payload?.position)
+    const isReplacement = !!props.payload?.isReplacement
+    const position = props.payload?.position
+    const replaceTargetId = props.payload?.replaceTargetId
 
-    // Close this modal
-    useFlowsModal().closeSelectNode()
-
-    // Open the edit modal with the newly added node
-    setTimeout(() => {
-      // If it's a trigger node
+    if (isReplacement) {
       if (mergedNode.type === 'trigger') {
-        // Get the trigger node from flowData
-        const { flowDetails } = useFetchFlowById()
-        editNode(flowDetails.value.trigger)
-      } else {
-        // For action nodes, find the correct step based on position
-        const { flowDetails } = useFetchFlowById()
-        const position = props.payload?.position
-
-        // If position is specified, find the node at that position
-        if (position !== undefined && position !== null) {
-          editNode(flowDetails.value.steps[position])
+        flowDetails.value.trigger = { ...mergedNode, id: flowDetails.value.trigger?.id || mergedNode.id }
+      } else if (position !== undefined && position !== null) {
+        const existing = flowDetails.value.steps[position]
+        const preservedId = existing?.id
+        flowDetails.value.steps.splice(position, 1, { ...mergedNode, id: preservedId || mergedNode.id })
+      } else if (replaceTargetId) {
+        const idx = (flowDetails.value.steps || []).findIndex((s: any) => s.id === replaceTargetId)
+        if (idx !== -1) {
+          const preservedId = flowDetails.value.steps[idx]?.id
+          flowDetails.value.steps.splice(idx, 1, { ...mergedNode, id: preservedId || mergedNode.id })
         } else {
-          // Otherwise, it was added at the end
-          editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
+          addNode(mergedNode, null)
         }
+      } else {
+        addNode(mergedNode, position ?? null)
       }
-    }, 100) // Small delay to ensure UI updates
+
+      updateFlow(flowDetails.value)
+      useFlowsModal().closeSelectNode()
+      setTimeout(() => {
+        if (mergedNode.type === 'trigger') {
+          editNode(flowDetails.value.trigger)
+        } else if (position !== undefined && position !== null) {
+          editNode(flowDetails.value.steps[position])
+        } else if (replaceTargetId) {
+          const idx = (flowDetails.value.steps || []).findIndex((s: any) => s.id === replaceTargetId)
+          if (idx !== -1) editNode(flowDetails.value.steps[idx])
+        }
+      }, 100)
+    } else {
+      // Add flow as before
+      addNode(mergedNode, position)
+      useFlowsModal().closeSelectNode()
+      setTimeout(() => {
+        if (mergedNode.type === 'trigger') {
+          editNode(flowDetails.value.trigger)
+        } else {
+          if (position !== undefined && position !== null) {
+            editNode(flowDetails.value.steps[position])
+          } else {
+            editNode(flowDetails.value.steps[flowDetails.value.steps.length - 1])
+          }
+        }
+      }, 100)
+    }
   }
 
   // Check if we're in replacement mode
