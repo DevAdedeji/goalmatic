@@ -44,7 +44,7 @@
 					<Spinner v-else />
 				</button>
 			</div>
-			<div v-else class="grid grid-cols-3 gap-3 w-full">
+			<div v-else class="grid grid-cols-2 gap-3 w-full">
 				<button type="button" class="btn-outline flex-1 w-full" :disabled="verificationLoading" @click="goBack">
 					Back
 				</button>
