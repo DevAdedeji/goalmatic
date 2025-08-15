@@ -1,7 +1,7 @@
 <template>
-	<div class="flex flex-col gap-4">
-		<Skeleton width="300px" height="36px" radius="4px" />
-		<Skeleton width="500px" height="20px" radius="4px" />
+	<div class="flex flex-col gap-4 max-w-screen">
+		<Skeleton width="100px" height="36px" radius="4px" />
+		<Skeleton width="250px" height="20px" radius="4px" />
 		<div class="mt-8">
 			<Skeleton width="150px" height="24px" radius="4px" class="mb-4" />
 			<div class="grid gap-4">
