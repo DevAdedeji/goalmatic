@@ -2,7 +2,7 @@
 	<Modal
 		modal="$atts.modal"
 		title="Connect Whatsapp"
-		:is-full-height="false"
+		:is-full-height="true"
 		:auto-close="false"
 		:props-modal="propsModal"
 	>

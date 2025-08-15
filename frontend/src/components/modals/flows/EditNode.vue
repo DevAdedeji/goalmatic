@@ -7,6 +7,7 @@
 		:image="payload?.icon"
 		:image-alt="payload?.name"
 		:description="payload?.description"
+		:is-full-height="true"
 	>
 		<section class="mt-6">
 			<component
