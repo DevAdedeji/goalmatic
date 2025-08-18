@@ -7,9 +7,12 @@ import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import { is_dev } from '@/composables/utils/system'
 
 
+ const resolvedAuthDomain = (import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string) ||
+  (typeof window !== 'undefined' ? window.location.host : undefined)
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN as string,
+  authDomain: resolvedAuthDomain as string,
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID as string,
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET as string,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID as string,
