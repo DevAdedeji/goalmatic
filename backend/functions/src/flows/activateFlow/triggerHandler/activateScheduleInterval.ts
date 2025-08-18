@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { HttpsError } from 'firebase-functions/v2/https';
 import { Client } from "@upstash/qstash";
 import { Timestamp } from 'firebase-admin/firestore';
+import moment from 'moment-timezone';
 
 const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
 const API_BASE_URL = is_dev ? `${process.env.BASE_URL_DEV}/executeFlow` : `${process.env.BASE_URL}/executeFlow`;
@@ -21,6 +22,7 @@ export const handleActivateScheduleIntervalTrigger = async (flowData: any, userI
   }
 
   const { cron } = propsData;
+  const timezone: string | undefined = propsData.timezone;
 
  
 
@@ -34,10 +36,37 @@ export const handleActivateScheduleIntervalTrigger = async (flowData: any, userI
     };
 
     let qstashResponse;
+    // Determine the cron to use (UTC-adjusted if timezone is provided)
+    let cronToUse = cron;
     try {
+      // QStash cron is evaluated in UTC. If user provided a timezone and the cron encodes a specific local time,
+      // convert that local time to equivalent UTC cron.
+      if (timezone && typeof timezone === 'string') {
+        try {
+          const parts = cron.trim().split(/\s+/);
+          if (parts.length === 5) {
+            const [min, hour, dom, mon, dow] = parts;
+            const nowTz = moment.tz(timezone);
+            const sample = moment.tz({
+              year: nowTz.year(),
+              month: nowTz.month(),
+              date: nowTz.date(),
+              hour: isNaN(parseInt(hour)) ? nowTz.hour() : parseInt(hour),
+              minute: isNaN(parseInt(min)) ? nowTz.minute() : parseInt(min)
+            }, timezone).utc();
+            const utcHour = sample.hour();
+            const utcMin = sample.minute();
+            // Replace only hour/min fields when they are concrete numbers
+            const newHour = /[^0-9*,/\-]/.test(hour) ? hour : String(utcHour);
+            const newMin = /[^0-9*/,/\-]/.test(min) ? min : String(utcMin);
+            cronToUse = `${newMin} ${newHour} ${dom} ${mon} ${dow}`;
+          }
+        } catch {}
+      }
+
       qstashResponse = await qstashClient.schedules.create({
         destination: webhookUrl,
-        cron,
+        cron: cronToUse,
         body: JSON.stringify(payload),
         failureCallback: FAILURE_CALLBACK_URL,
         retries: 1
@@ -55,7 +84,10 @@ export const handleActivateScheduleIntervalTrigger = async (flowData: any, userI
       status: 1,
       schedule: {
         scheduleId: qstashResponse.scheduleId,
-        cron,
+        // Store the actual cron used by QStash and the original/local intent
+        cron: cron,
+        cron_used: cronToUse,
+        timezone: timezone || null,
         createdAt: Timestamp.fromDate(updateTime)
       }
     });

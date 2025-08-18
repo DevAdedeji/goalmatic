@@ -52,7 +52,10 @@ export const useEditFlow = () => {
 
       await updateFirestoreDocument('flows', flow.id, {
         public: !isPublic,
-        updated_at: Timestamp.fromDate(new Date())
+        // Include creator_id to satisfy security rules equality check
+        creator_id: flow.creator_id,
+        // Use client timestamp slightly in the past to ensure <= request.time per rules
+        updated_at: Timestamp.fromMillis(Date.now() - 10000)
       })
 
       // Update the local flow object to reflect the change
@@ -89,7 +92,10 @@ export const useEditFlow = () => {
     try {
       const sent_data = {
         ...data,
-        updated_at: Timestamp.fromDate(new Date())
+        // Ensure creator_id is present for security rules
+        creator_id: data.creator_id,
+        // Use client timestamp slightly in the past to ensure <= request.time per rules
+        updated_at: Timestamp.fromMillis(Date.now() - 10000)
       } as Record<string, any>
 
       // Process steps to ensure proper data structure and clonable fields
@@ -118,9 +124,51 @@ export const useEditFlow = () => {
           // Preserve aiEnabledFields array for AI-enabled properties
           ...(sent_data.trigger.aiEnabledFields && sent_data.trigger.aiEnabledFields.length > 0 && { aiEnabledFields: sent_data.trigger.aiEnabledFields })
         }
+
+        // Firestore does not allow undefined values. Some trigger nodes may not have an id.
+        if (Object.prototype.hasOwnProperty.call(sent_data.trigger, 'id') && sent_data.trigger.id === undefined) {
+          delete sent_data.trigger.id
+        }
       }
 
-      await updateFirestoreDocument('flows', sent_data.id, sent_data)
+      // Remove any undefined values recursively to satisfy Firestore constraints
+      const removeUndefined = (obj: any): any => {
+        if (obj === null || obj === undefined) return obj
+        // Preserve Firestore Timestamp and Date objects as-is
+        if (obj instanceof Timestamp || obj instanceof Date) return obj
+        if (Array.isArray(obj)) {
+          return obj.map((item) => removeUndefined(item))
+        }
+        if (typeof obj === 'object') {
+          const cleaned: Record<string, any> = {}
+          Object.keys(obj).forEach((key) => {
+            const value = obj[key]
+            if (value !== undefined) {
+              cleaned[key] = removeUndefined(value)
+            }
+          })
+          return cleaned
+        }
+        return obj
+      }
+
+      const cleaned_data = removeUndefined(sent_data)
+
+      // Send full cleaned data (no allow-list filtering)
+      const updatePayload: Record<string, any> = cleaned_data
+
+      // Debug info to help diagnose rules failures
+      // Note: safe to keep in dev; remove or guard for production if noisy
+      // eslint-disable-next-line no-console
+      console.debug('Updating flow payload', {
+        flowId: cleaned_data.id,
+        userId: user_id.value,
+        creatorId: updatePayload.creator_id,
+        hasUpdatedAt: Boolean(updatePayload.updated_at),
+        isTimestamp: updatePayload.updated_at instanceof Timestamp
+      })
+
+      await updateFirestoreDocument('flows', cleaned_data.id, updatePayload)
 
       // Update the local flowDetails to reflect changes immediately
       flowDetails.value = { ...sent_data }

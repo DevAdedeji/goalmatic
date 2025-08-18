@@ -1,7 +1,7 @@
 <template>
-	<div>
+	<div class="pb-24">
 		<!-- 1. Describe how often you want this to run -->
-		<label class="block font-medium mb-1 pb-24">Describe how often you want this to run</label>
+		<label class="block font-medium mb-1 ">Describe how often you want this to run</label>
 		<div class="flex gap-2 items-center mb-4">
 			<input
 				v-model="scheduleInput"
@@ -18,6 +18,16 @@
 				<span v-if="!loading">Generate</span>
 				<span v-else>Generating...</span>
 			</button>
+		</div>
+
+		<!-- Timezone selector -->
+		<div class="mb-4">
+			<label class="block font-medium mb-1">Timezone</label>
+			<select v-model="timezone" class="input-field w-full">
+				<option v-for="tz in timezones" :key="tz.value" :value="tz.value">
+					{{ tz.name }}
+				</option>
+			</select>
 		</div>
 
 		<!-- 2. Running (structured English) -->
@@ -65,6 +75,7 @@
 <script setup lang="ts">
 import { callFirebaseFunction } from '@/firebase/functions'
 import { parseCronExpression } from '@/composables/utils/cronParser'
+import { timezones, getDefaultTimezone } from '@/composables/helpers/timezone'
 
 
 const props = defineProps({
@@ -85,6 +96,7 @@ const emit = defineEmits(['save', 'cancel'])
 const scheduleInput = ref('')
 const cronResult = ref<null | { cron: string, PlainText: string }>(null)
 const loading = ref(false)
+const timezone = ref<string>(getDefaultTimezone())
 
 // Placeholder for backend call
 async function generateCron() {
@@ -109,7 +121,8 @@ function onSave() {
     emit('save', {
       cron: cronResult.value.cron,
       PlainText: cronResult.value.PlainText,
-      Input: scheduleInput.value
+      Input: scheduleInput.value,
+      timezone: timezone.value
     })
   }
 }
@@ -118,6 +131,9 @@ onMounted(() => {
   if (props.formValues) {
     if (props.formValues.Input) {
       scheduleInput.value = props.formValues.Input
+    }
+    if ((props.formValues as any).timezone) {
+      timezone.value = (props.formValues as any).timezone
     }
     if (props.formValues.cron && props.formValues.PlainText) {
       cronResult.value = {

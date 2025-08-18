@@ -70,6 +70,16 @@ export const scheduleTriggerNodes: FlowNode[] = [
                         cloneable: true
                     },
                     {
+                        name: 'Timezone',
+                        key: 'timezone',
+                        type: 'select',
+                        required: true,
+                        description: 'The timezone used to interpret the schedule (we will convert to UTC)',
+                        options: timezones,
+                        value: getDefaultTimezone,
+                        cloneable: true
+                    },
+                    {
                         name: 'CRON Expression',
                         key: 'cron',
                         type: 'text',
