@@ -51,7 +51,7 @@ export const useLinkGoogleCalendar = () => {
                                 access_token: oauthResult.access_token,
                                 refresh_token: oauthResult.refresh_token,
                                 type: 'CALENDAR',
-                                provider: 'GOOGLE_COMPOSIO',
+                                provider: 'GOOGLE',
                                 email: oauthResult.email,
                                 expiry_date: oauthResult.expiry_date,
                                 created_at: Timestamp.fromDate(new Date()),
