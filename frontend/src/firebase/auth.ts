@@ -1,11 +1,10 @@
 import {
 	GoogleAuthProvider,
-	signInWithRedirect,
+	signInWithPopup,
 	onAuthStateChanged,
 	signOut,
 	setPersistence,
-	browserLocalPersistence,
-	getRedirectResult
+	browserLocalPersistence
 } from 'firebase/auth'
 import type { User } from 'firebase/auth'
 import { auth } from './init'
@@ -38,19 +37,10 @@ const provider = new GoogleAuthProvider()
 export const googleAuth = async () => {
 	try {
 		await setPersistence(auth, browserLocalPersistence)
-		await signInWithRedirect(auth, provider)
-		return undefined as unknown as User
+		const result = await signInWithPopup(auth, provider)
+		return result.user as User
 	} catch (err: any) {
 		openAlert({ type: 'ERROR', msg: `Error: ${err.message}` })
-	}
-}
-
-export const handleGoogleRedirectResult = async (): Promise<User | null> => {
-	try {
-		const result = await getRedirectResult(auth)
-		return (result?.user as User) || null
-	} catch (err) {
-		return null
 	}
 }
 
