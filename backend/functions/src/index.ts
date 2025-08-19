@@ -28,10 +28,10 @@ export * from "./chat/shareChatSession";
 // Composio Gmail integration
 export * from "./ai/tools/gmail/utils/setup";
 
-// Convex sync functions
-// export * from "./convex/index";
-export * from "./agents/migrateAgents";
+// Search functions (Upstash)
 export * from "./agents/searchAgents";
+export * from "./search/syncAgent";
+export * from "./search/syncFlow";
 
 // Email trigger functions
 export * from "./email/zohoWebhookHandler";
@@ -44,8 +44,4 @@ export * from "./debug/testEmailTrigger";
 // Conditionally register Convex sync functions
 // We only attach these exports when Convex sync is enabled to avoid
 // Firestore trigger registration (and noisy emulator logs) in dev.
-import { isConvexSyncEnabled } from "./init";
-
-if (isConvexSyncEnabled()) {
-    Object.assign(exports, require("./convex/index"));
-}
+// Convex sync removed.

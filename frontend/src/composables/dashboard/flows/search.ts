@@ -7,8 +7,8 @@ import { useAlert } from '@/composables/core/notification'
  *
  * Architecture:
  * - Data fetching: Uses backend server API (Firebase Functions -> Firestore)
- * - Search functionality: Uses Convex for fast text search capabilities
- * - Convex is ONLY used for search operations, not for regular data fetching
+ * - Search functionality: Uses Upstash Search (via backend) for text search
+ * - Convex removed
  */
 
 // Search results and state
@@ -61,7 +61,6 @@ export const useFlowSearch = () => {
   }
 
   // Get public flows from backend server API (Firestore)
-  // Note: Convex is only used for search functionality, not data fetching
   const getPublicFlowsFromConvex = async () => {
     flowSearchLoading.value = true
     try {
@@ -80,7 +79,6 @@ export const useFlowSearch = () => {
   }
 
   // Get user's flows from backend server API (Firestore)
-  // Note: Convex is only used for search functionality, not data fetching
   const getUserFlowsFromConvex = async (creator_id?: string) => {
     flowSearchLoading.value = true
     try {

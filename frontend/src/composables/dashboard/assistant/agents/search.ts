@@ -47,7 +47,7 @@ export const useAgentSearch = () => {
     }
   }
 
-  // Get public agents using Convex (faster than Firebase)
+  // Get public agents from backend
   const getPublicAgentsFromConvex = async () => {
     searchLoading.value = true
     try {
@@ -65,7 +65,7 @@ export const useAgentSearch = () => {
     }
   }
 
-  // Get user's agents using Convex (with text search capability)
+  // Get user's agents from backend
   const getUserAgentsFromConvex = async (creator_id?: string) => {
     searchLoading.value = true
     try {

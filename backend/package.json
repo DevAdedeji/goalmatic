@@ -9,9 +9,7 @@
     "k": "npx kill-port 9099 5001 8181 9000 9199 9299 4000 8085",
     "find_port": "sudo lsof -i :3000"
   },
-  "dependencies": {
-    "convex": "^1.25.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/moment-timezone": "^0.5.30",
     "@types/node": "^22.13.1",

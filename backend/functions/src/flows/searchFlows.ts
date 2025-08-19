@@ -1,6 +1,5 @@
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { getConvexClient } from '../convex/utils';
-import { api } from '../../convex/src/_generated/api';
+import { getFlowsIndex } from "../search/upstash";
 import { goals_db } from '../init';
 
 export const searchFlows = onCall({
@@ -13,7 +12,6 @@ export const searchFlows = onCall({
 
   const { 
     query, 
-    searchType = 'full', // 'name', 'description', 'full'
     creator_id, 
     public_only = false,
     status,
@@ -25,41 +23,21 @@ export const searchFlows = onCall({
   }
 
   try {
-    const convex = getConvexClient();
-    let results: any[] = [];
+    const index = getFlowsIndex();
+    const filterParts: string[] = [];
+    if (creator_id) filterParts.push(`creator_id = '${creator_id}'`);
+    if (public_only !== undefined) filterParts.push(`public = ${public_only}`);
+    if (status !== undefined) filterParts.push(`status = '${status}'`);
+    if (type) filterParts.push(`type = '${type}'`);
 
-    switch (searchType) {
-      case 'name':
-        results = await convex.query(api.flows.searchFlows, {
-          query: query.trim(),
-          creator_id,
-          public_only,
-          status,
-          type
-        });
-        break;
-      
-      case 'description':
-        results = await convex.query(api.flows.searchFlowsByDescription, {
-          query: query.trim(),
-          creator_id,
-          public_only,
-          status,
-          type
-        });
-        break;
-      
-      case 'full':
-      default:
-        results = await convex.query(api.flows.searchFlowsFullText, {
-          query: query.trim(),
-          creator_id,
-          public_only,
-          status,
-          type
-        });
-        break;
-    }
+    const searchRes: any = await index.search({
+      query: query.trim(),
+      filter: filterParts.length ? filterParts.join(" AND ") : undefined,
+      limit: 50,
+    });
+    const documents = (searchRes && (searchRes.documents || searchRes.results || searchRes.hits))
+      || (Array.isArray(searchRes) ? searchRes : []);
+    const results = documents.map((d: any) => ({ id: d.id, ...(d.content || {}), ...(d.metadata || {}) }));
 
     return {
       success: true,
