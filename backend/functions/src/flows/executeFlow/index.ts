@@ -7,6 +7,7 @@ import { goals_db, is_dev } from "../../init";
 import { runStepsInContext } from "./flowSteps";
 import { Timestamp } from "firebase-admin/firestore";
 import { getAnalytics } from "../../utils/analytics";
+import { notifyUserOnFlowFailure } from "../../helpers/flowFailureNotifier";
 
 const UPSTASH_QSTASH_TOKEN = process.env.UPSTASH_QSTASH_TOKEN || process.env.QSTASH_TOKEN;
 const API_BASE_URL = is_dev
@@ -82,6 +83,27 @@ const runWorkflow = async (context: WorkflowContext) => {
           end_time: Timestamp.fromDate(new Date()),
         });
       }
+      // Proactively notify the user that execution failed before steps started
+      try {
+        const payload = context.requestPayload as { flowId: string; userId: string; executionId: string } | undefined;
+        if (payload?.userId && payload?.flowId) {
+          // Try fetch flow name
+          let flowName: string | undefined = undefined;
+          try {
+            const flowDoc = await goals_db.collection("flows").doc(payload.flowId).get();
+            flowName = flowDoc.exists ? (flowDoc.data()?.name as string | undefined) : undefined;
+          } catch {}
+          await notifyUserOnFlowFailure({
+            userId: payload.userId,
+            flowId: payload.flowId,
+            executionId: payload.executionId,
+            errorMessage: 'Flow data is undefined',
+            flowName,
+          });
+        }
+      } catch (notifyErr) {
+        console.error('Failed to notify user on flow failure (no flowData):', notifyErr);
+      }
       return { isValid: false, error: "Flow data is undefined" };
     }
 
@@ -136,6 +158,31 @@ const runWorkflow = async (context: WorkflowContext) => {
           end_time: Timestamp.fromDate(endTime),
           duration: durationStr,
         });
+      }
+
+      try {
+        const payload = context.requestPayload as { flowId: string; userId: string; executionId: string } | undefined;
+        if (payload?.userId && payload?.flowId) {
+          // Try fetch flow name
+          let flowName: string | undefined = undefined;
+          try {
+            const flowDoc = await goals_db.collection("flows").doc(payload.flowId).get();
+            flowName = flowDoc.exists ? (flowDoc.data()?.name as string | undefined) : undefined;
+          } catch {}
+
+          const nodeName = (error as any)?.nodeName as string | undefined;
+
+          await notifyUserOnFlowFailure({
+            userId: payload.userId,
+            flowId: payload.flowId,
+            executionId: payload.executionId,
+            errorMessage: error instanceof Error ? error.message : String(error),
+            flowName,
+            nodeName,
+          });
+        }
+      } catch (notifyErr) {
+        console.error('Failed to notify user on flow failure:', notifyErr);
       }
     }
 

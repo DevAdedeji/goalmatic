@@ -133,6 +133,17 @@ service cloud.firestore {
         allow update, delete: if isSignedIn() && (
           (!('creator_id' in resource.data) || resource.data.creator_id == request.auth.uid)
         );
+
+        // Steps subcollection under a specific log: detailed per-step execution records
+        match /steps/{stepId} {
+          // Allow read for flow owner or if the flow is public
+          allow read: if isSignedIn() && (
+            get(/databases/$(database)/documents/flows/$(flowId)).data.public == true ||
+            get(/databases/$(database)/documents/flows/$(flowId)).data.creator_id == request.auth.uid
+          );
+          // Disallow client writes; these are written by Cloud Functions only
+          allow create, update, delete: if false;
+        }
       }
     }
 

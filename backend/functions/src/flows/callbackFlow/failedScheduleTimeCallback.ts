@@ -3,6 +3,7 @@ import { goals_db } from '../../init';
 import { logger } from 'firebase-functions';
 import { Request } from 'firebase-functions/v2/https';
 import { Timestamp } from 'firebase-admin/firestore';
+import { notifyUserOnFlowFailure } from '../../helpers/flowFailureNotifier';
 
 interface FailurePayload {
   flowId?: string;
@@ -107,6 +108,22 @@ export const failedScheduleTimeCallback = onRequest(
       } catch (runError) {
         // Log but don't fail the entire operation if creating run document fails
         logger.error(`Error creating run document for failed flow ${flowId}:`, runError);
+      }
+
+      // Try notifying the user if we have one
+      try {
+        if (userId) {
+          const flowName = flowDoc.data()?.name as string | undefined;
+          await notifyUserOnFlowFailure({
+            userId,
+            flowId,
+            executionId,
+            errorMessage: `Scheduled execution failed with status ${status}.`,
+            flowName,
+          });
+        }
+      } catch (notifyErr) {
+        logger.error('Error notifying user on scheduled failure:', notifyErr);
       }
 
       // Return success response

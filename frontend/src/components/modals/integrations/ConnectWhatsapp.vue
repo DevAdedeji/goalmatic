@@ -26,9 +26,9 @@
 					<button type="button" class="btn-outline" :disabled="verificationLoading" @click="goBack">
 						Back
 					</button>
-					<button type="button" class="btn-outline" :disabled="verificationLoading" @click="sendOTP">
+					<!-- <button type="button" class="btn-outline" :disabled="verificationLoading" @click="sendOTP">
 						Resend OTP
-					</button>
+					</button> -->
 					<button type="button" class="btn-primary text-light" :disabled="verificationLoading" @click="confirmOTP">
 						<span v-if="!verificationLoading"> Confirm OTP and link </span>
 						<Spinner v-else />

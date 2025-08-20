@@ -12,6 +12,15 @@ export const handleDeactivateScheduleTimeTrigger = async (flowData: any, userId:
   try {
     // Check if the flow has a scheduled message
     if (!flowData.schedule || !flowData.schedule.messageId) {
+      // Mark flow as inactive and clear schedule when no scheduled message exists
+      try {
+        await goals_db.collection('flows').doc(flowData.id).update({
+          status: 0,
+          schedule: null
+        });
+      } catch (_updateError) {
+        // Best-effort update; proceed to return error regardless
+      }
       throw new HttpsError('not-found', 'No scheduled message found for this flow');
     }
 

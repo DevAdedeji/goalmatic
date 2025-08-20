@@ -8,6 +8,12 @@ export const formatTemplateMessage = (message: string): string => {
     // Trim leading/trailing spaces
     cleaned = cleaned.trim();
 
+    // Clamp to WhatsApp template parameter limits (body variable text typically <= 1024 chars)
+    const MAX_TEMPLATE_PARAM_CHARS = 750;
+    if (cleaned.length > MAX_TEMPLATE_PARAM_CHARS) {
+        cleaned = cleaned.slice(0, MAX_TEMPLATE_PARAM_CHARS);
+    }
+
     return cleaned;
 }
 

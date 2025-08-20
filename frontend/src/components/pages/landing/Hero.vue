@@ -7,7 +7,7 @@
 			<p ref="paragraph" class="text-sm md:text-[18px] text-dark text-center  md:max-w-[760px] leading-[30px] md:px-4">
 				Build AI agents that automate repetitive tasks. Connect to your apps, create workflows, and stay in control of your life with Goalmatic.
 			</p>
-			<nuxt-link ref="ctaButton" to="/auth/login" class="btn-primary mt-6">
+			<nuxt-link ref="ctaButton" to="/auth/signup" class="btn-primary mt-6">
 				Get Started for Free
 			</nuxt-link>
 			<img src="/hero.svg" alt="hero-bg" class="heroBox mt-24 ">

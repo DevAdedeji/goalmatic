@@ -1,6 +1,6 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
-import { goals_db, is_emulator } from "../../../../../init";
+import { goals_db } from "../../../../../init";
 import { send_WA_Message, send_WA_ImageMessageInput } from "../../../../../whatsapp/utils/sendMessage";
 import { goalmatic_whatsapp_workflow_template } from "../../../../../whatsapp/templates/workflow";
 import { formatTemplateMessage } from "../../../../../whatsapp/utils/formatTemplateMessage";
@@ -9,16 +9,42 @@ import { processMentionsProps } from "../../../../../utils/processMentions";
 import { generateAiFlowContext } from "../../../../../utils/generateAiFlowContext";
 import { normalizePhoneForWhatsApp } from "../../../../../utils/phoneUtils";
 
+// Final-pass resolver to ensure plain-text tokens like @step-1-TABLE_CREATE-totalRecordsCreated are resolved
+const resolvePlainTextMentions = (text: string, previousStepResult: any): string => {
+    if (!text || typeof text !== 'string') return text;
+    return text.replace(/@(step|trigger)-([\w-]+)-([\w]+)/g, (_match, prefix, groupRest, payloadKey) => {
+        const stepId = `${prefix}-${groupRest}`;
+        let replacementValue = previousStepResult?.[stepId]?.payload?.[payloadKey];
+        if (replacementValue === undefined && previousStepResult) {
+            const nodeIdSuffix = groupRest.replace(/^\d+-/, '');
+            for (const key in previousStepResult) {
+                if (typeof key === 'string' && key.endsWith(`-${nodeIdSuffix}`)) {
+                    const candidate = previousStepResult[key]?.payload?.[payloadKey];
+                    if (candidate !== undefined) {
+                        replacementValue = candidate;
+                        break;
+                    }
+                }
+            }
+        }
+        return replacementValue !== undefined ? String(replacementValue) : '';
+    });
+}
+
 const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
     try {
 
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
+        console.log('WA prev keys:', Object.keys(previousStepResult || {}));
 
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
 
         let { message, recipientType, phoneNumber } = processedPropsWithAiContext;
         // Ensure message is a string so that numeric 0 is preserved
         message = message === null || message === undefined ? '' : String(message);
+        // Final safeguard: resolve any remaining plain-text tokens
+        message = resolvePlainTextMentions(message, previousStepResult);
+        console.log('WA message after mentions/AI:', message);
 
         let recipientNumber: string | null = null;
 
@@ -63,6 +89,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
                 recipientNumber: recipientNumber,
                 uniqueTemplateMessageId: uniqueTemplateMessageId
             });
+            console.log(waMsg, 'waMsg');
             await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, message);
             await send_WA_Message(waMsg);
 
@@ -86,7 +113,7 @@ export const sendWhatsappMessageNode = {
 
 const isCustomerServiceWindowOpen = async (phoneNumber: string) => {
     // In dev or when running the Firebase emulator, always allow sending
-    if (is_emulator) return true;
+    // if (is_emulator) return true;
     const cswSnap = await goals_db.collection('CSW').doc(phoneNumber).get();
     if (!cswSnap.exists) return false;
     const cswData = cswSnap.data();
