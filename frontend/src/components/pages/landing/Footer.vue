@@ -17,6 +17,9 @@
 					All rights reserved by &copy; Taaskly
 				</p>
 				<div class="flex items-center gap-4 text-xs">
+					<nuxt-link to="/community">
+						Community
+					</nuxt-link>
 					<nuxt-link to="/privacy">
 						Privacy Policy
 					</nuxt-link>

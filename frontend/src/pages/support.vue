@@ -143,18 +143,22 @@
 							<div class="text-sm text-gray-600">Watch step-by-step guides</div>
 						</div>
 					</a>
-					<a
-						href="#"
+					<nuxt-link
+						to="/community"
 						class="flex items-center gap-3 p-4 border border-line rounded-lg hover:bg-tertiary transition-colors"
 					>
 						<div class="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
 							<Users class="w-5 h-5 text-white" />
 						</div>
 						<div>
-							<div class="font-semibold">Community Forum</div>
-							<div class="text-sm text-gray-600">Connect with other users</div>
+							<div class="font-semibold">
+								Community Forum
+							</div>
+							<div class="text-sm text-gray-600">
+								Connect with other users
+							</div>
 						</div>
-					</a>
+					</nuxt-link>
 					<a
 						href="#"
 						class="flex items-center gap-3 p-4 border border-line rounded-lg hover:bg-tertiary transition-colors"

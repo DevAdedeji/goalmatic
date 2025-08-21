@@ -35,7 +35,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
     try {
 
         const processedProps = processMentionsProps(step.propsData, previousStepResult);
-        console.log('WA prev keys:', Object.keys(previousStepResult || {}));
+
 
         const { processedPropsWithAiContext } = await generateAiFlowContext(step, processedProps);
 
@@ -44,7 +44,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
         message = message === null || message === undefined ? '' : String(message);
         // Final safeguard: resolve any remaining plain-text tokens
         message = resolvePlainTextMentions(message, previousStepResult);
-        console.log('WA message after mentions/AI:', message);
+
 
         let recipientNumber: string | null = null;
 
@@ -80,7 +80,6 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
 
         if (isCSWOpen) {
             const waMsg = send_WA_ImageMessageInput(recipientNumber, message);
-            console.log(waMsg);
             await send_WA_Message(waMsg);
         } else {
             const uniqueTemplateMessageId = uuidv4();
@@ -89,7 +88,7 @@ const sendWhatsappMessage = async (context: WorkflowContext, step: FlowNode, pre
                 recipientNumber: recipientNumber,
                 uniqueTemplateMessageId: uniqueTemplateMessageId
             });
-            console.log(waMsg, 'waMsg');
+
             await saveNonFormattedMessage(uniqueTemplateMessageId, recipientNumber, message);
             await send_WA_Message(waMsg);
 
