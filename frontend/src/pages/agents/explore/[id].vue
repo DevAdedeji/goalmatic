@@ -471,6 +471,23 @@ await useCustomHead({
 	img: 'https://www.goalmatic.io/og2.png'
 })
 
+// Set canonical URL for individual agent pages
+useSeoMeta({
+	title: () => `${agentDetails.value?.name || 'Agent'} - Goalmatic`,
+	description: () => agentDetails.value?.description || 'View agent details and capabilities on Goalmatic',
+	ogTitle: () => `${agentDetails.value?.name || 'Agent'} - Goalmatic`,
+	ogDescription: () => agentDetails.value?.description || 'View agent details and capabilities on Goalmatic',
+	ogImage: 'https://www.goalmatic.io/og2.png',
+	twitterCard: 'summary_large_image'
+})
+
+// Add canonical link separately
+useHead({
+	link: [
+		{ rel: 'canonical', href: () => `https://goalmatic.io/agents/explore/${id}` }
+	]
+})
+
 // ===== Agent Details Composable Setup =====
 const {
  titleInputRef, titlePopoverOpen, currentTitle, isEditingDescription, descriptionModel, setupWatchers,

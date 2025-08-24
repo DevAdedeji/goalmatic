@@ -282,7 +282,7 @@ async function executeFlowWithEmailData(
   const executionId = uuidv4();
   const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
 
-  // Prepare email flow input data
+  // Prepare complete email flow input data
   const emailFlowInput = {
     from_email: normalizedPayload.fromAddress,
     from_name: normalizedPayload.fromName || normalizedPayload.fromAddress,
@@ -295,10 +295,14 @@ async function executeFlowWithEmailData(
     headers: {},
     attachments: normalizedPayload.hasAttachment ? normalizedPayload.attachments : [],
     trigger_email: normalizedPayload.toAddress[0],
-    account_id: normalizedPayload.accountId
+    account_id: normalizedPayload.accountId,
+    // Add raw normalized payload for complete access
+    raw_payload: normalizedPayload,
+    // Add trigger type for flow execution context
+    trigger_type: 'email'
   };
 
-  // Store email data for flow execution
+  // Store email data for flow execution (for backup/retrieval if needed)
   await goals_db.collection('emailFlowInputs').doc(executionId).set({
     execution_id: executionId,
     flow_id: flowId,
@@ -306,14 +310,14 @@ async function executeFlowWithEmailData(
     created_at: Timestamp.now()
   });
 
-  // Trigger flow execution via QStash
+  // Trigger flow execution via QStash with complete email data
   await qstashClient.publishJSON({
     url: API_BASE_URL,
     body: {
       flowId,
       userId,
       executionId,
-      triggerData: emailFlowInput
+      triggerData: emailFlowInput // Pass complete email data as triggerData
     }
   });
 

@@ -26,23 +26,28 @@ const emailTrigger = async (context: WorkflowContext, step: FlowNode, previousSt
                 body_html: triggerData.body_html,
                 received_at: triggerData.received_at,
                 message_id: triggerData.message_id,
-                
+
                 // Processing info
                 trigger_email: triggerData.trigger_email,
                 account_id: triggerData.account_id,
-                
+
                 // Attachments (if any)
                 attachments: triggerData.attachments || [],
-                
+
                 // Additional headers
                 headers: triggerData.headers || {},
-                
+
                 // Convenience fields for easy access
                 sender: triggerData.from_email,
                 sender_name: triggerData.from_name || triggerData.from_email,
                 email_subject: triggerData.subject,
                 email_body: triggerData.body_text || triggerData.body_html,
-                received_date: triggerData.received_at
+                received_date: triggerData.received_at,
+
+                // Additional fields for complete email access
+                has_attachments: (triggerData.attachments && triggerData.attachments.length > 0) || false,
+                raw_payload: triggerData.raw_payload || {}, // Full webhook payload if available
+                trigger_type: triggerData.trigger_type || 'email'
             }
         };
     } catch (error: any) {

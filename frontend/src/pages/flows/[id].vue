@@ -92,6 +92,13 @@ useSeoMeta({
 	twitterCard: 'summary_large_image'
 })
 
+// Add canonical link separately
+useHead({
+	link: [
+		{ rel: 'canonical', href: () => `https://goalmatic.io/flows/${flowId}` }
+	]
+})
+
 const currentTab = ref('editor')
 
 // Function to refresh flow logs

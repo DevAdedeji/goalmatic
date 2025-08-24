@@ -101,11 +101,7 @@
 				</button>
 			</article>
 
-			<!-- Running State -->
-			<article v-else-if="flowStatus === 'running'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-blue-200 text-blue-800 bg-blue-50">
-				<Spinner size="18" class="animate-spin" />
-				<span class="text-sm">Flow Running · Your flow is currently executing.</span>
-			</article>
+
 
 			<!-- Completed State -->
 			<article v-else-if="flowStatus === 'completed'" class="w-full  p-2.5 flex justify-center items-center gap-4 rounded-lg border border-green-200 text-green-800 bg-green-50">
@@ -245,12 +241,14 @@ const handleToggleFlow = () => {
 }
 
 // Handle test flow
-const handleTestFlow = () => {
-	testFlow(props.flowData, () => {
-		// Switch to the logs tab after successful test
-		emit('update:currentTab', 'logs')
-	})
+const handleTestFlow = async () => {
+    try {
+        const res: any = await testFlow(props.flowData)
+        emit('update:currentTab', 'logs')
+    } catch {}
 }
+
+
 
 const configLoading = computed(() => false)
 

@@ -22,8 +22,8 @@ export const useTestFlow = () => {
 
         try {
             // Call the testFlow Firebase function
-            await callFirebaseFunction('testFlow', { flowId: flow.id }) as any
-            useAlert().openAlert({ type: 'SUCCESS', msg: 'Flow test completed successfully' })
+            const result = await callFirebaseFunction('testFlow', { flowId: flow.id }) as any
+            // result is expected to include success and executionId
 
             // Refresh the flow runs to show the test run
             await fetchFlowLogs(flow.id)
@@ -32,6 +32,8 @@ export const useTestFlow = () => {
             if (onSuccess) {
                 onSuccess()
             }
+
+            return result
         } catch (error: any) {
             console.error('Error testing flow:', error)
             const errorMessage = error.message || 'Unknown error occurred'
@@ -39,6 +41,7 @@ export const useTestFlow = () => {
                 type: 'ERROR',
                 msg: `Error testing flow: ${errorMessage}`
             })
+            throw error
         } finally {
             loading.value = false
         }

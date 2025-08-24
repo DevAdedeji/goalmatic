@@ -202,6 +202,19 @@ watch(activeTab, async (newTab) => {
 	}
 })
 
+// Set canonical URL for flows page
+useSeoMeta({
+	title: 'Explore Workflow Templates - Goalmatic',
+	description: 'Discover and explore workflow templates for various use cases. Find the perfect workflow for your needs from our community collection.',
+	ogTitle: 'Explore Workflow Templates - Goalmatic',
+	ogDescription: 'Discover and explore workflow templates for various use cases. Find the perfect workflow for your needs from our community collection.',
+	ogImage: 'https://www.goalmatic.io/og2.png',
+	twitterCard: 'summary_large_image',
+	link: [
+		{ rel: 'canonical', href: 'https://goalmatic.io/flows' }
+	]
+})
+
 useHeaderTitle().setTitle('Workflow Templates')
 </script>
 

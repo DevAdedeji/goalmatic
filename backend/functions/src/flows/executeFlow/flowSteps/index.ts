@@ -71,7 +71,10 @@ export const runStepsInContext = async (
         }
       };
     }
-  } else if (flowData.trigger) {
+  }
+
+  // Always run the trigger node if it exists (whether we have external data or not)
+  if (flowData.trigger) {
     // For schedule triggers or other triggers without external data, run the trigger node
     const triggerNodeId = flowData.trigger.node_id;
     const triggerNode: StepRunner = availableNodes[triggerNodeId];

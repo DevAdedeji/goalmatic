@@ -83,38 +83,40 @@
 						<AlertCircle :size="14" />
 					</span>
 				</span>
+
+				<!-- Expand control -->
+				<span v-else-if="item.expand" class="flex justify-end">
+					<button class="p-1 rounded hover:bg-gray-100" @click.stop="toggleExpand(item.data)">
+						<ChevronDown :size="16" class="transition-transform duration-200" :class="expandedRunId === item.data.id ? 'rotate-180' : 'rotate-0'" />
+					</button>
+				</span>
 			</template>
-			<template #footer>
-				<Modal
-					v-if="showStepsModal && activeRun"
-					type="sidebar"
-					size="xl"
-					title="Execution Steps"
-					@close="closeStepsModal"
-				>
-					<div class="space-y-3">
+
+			<!-- Expanded row content -->
+			<template #row-extra="{ data }">
+				<div v-if="expandedRunId === data.id" class="bg-white border-t border-border">
+					<div class="flex items-center justify-between px-6 py-3">
 						<div class="text-sm text-text-secondary">
-							Run ID: <span class="text-headline">{{ activeRun.id }}</span>
+							Run ID: <span class="text-headline">{{ data.id }}</span>
+							<span class="mx-2">•</span>
+							Status: <span class="capitalize">{{ data.status }}</span>
+							<span class="mx-2">•</span>
+							Started: {{ formatDateTime(data.start_time) }}
+							<span v-if="data.duration" class="mx-2">•</span>
+							<span v-if="data.duration">Duration: {{ data.duration }}</span>
 						</div>
-						<div class="text-sm text-text-secondary">
-							Status: <span class="capitalize">{{ activeRun.status }}</span>
-						</div>
-						<div class="text-sm text-text-secondary">
-							Started: {{ formatDateTime(activeRun.start_time) }}
-						</div>
-						<div class="text-sm text-text-secondary">
-							Duration: {{ activeRun.duration || '-' }}
-						</div>
+						<button class="px-3 py-1 text-sm rounded-md border border-border hover:border-primary hover:text-primary transition-colors flex items-center gap-1"
+							@click="copyLog(data)">
+							<Copy :size="14" />
+							Copy log
+						</button>
 					</div>
-					<div class="mt-4">
-						<div class="text-sm font-medium text-headline mb-2">
-							Steps
-						</div>
-						<div v-if="stepsLoading" class="text-sm text-text-secondary">
+					<div class="px-6 pb-4">
+						<div v-if="stepsByRunId[data.id]?.loading" class="text-sm text-text-secondary py-2">
 							Loading...
 						</div>
-						<div v-else class="space-y-2">
-							<div v-for="s in steps" :key="s.id" class="p-3 rounded-lg border border-border">
+						<div v-else class="space-y-3">
+							<div v-for="s in stepsByRunId[data.id]?.steps || []" :key="s.id" class="p-3 rounded-lg border border-border">
 								<div class="flex items-center justify-between">
 									<div class="font-medium text-headline">
 										{{ s.name || s.node_id }}
@@ -149,20 +151,21 @@
 							</div>
 						</div>
 					</div>
-				</Modal>
+				</div>
 			</template>
 		</Table>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { AlertCircle, RefreshCw, History } from 'lucide-vue-next'
+import { AlertCircle, RefreshCw, History, ChevronDown, Copy } from 'lucide-vue-next'
 import { ref } from 'vue'
 import { collection, getDocs, orderBy, query } from 'firebase/firestore'
 import { formatDateTime } from '@/composables/utils/formatter'
 import Table from '@/components/core/Table.vue'
 import Modal from '@/components/core/modal/Modal.vue'
 import { db } from '@/firebase/init'
+import { useAlert } from '@/composables/core/notification'
 
 // Define event emits
 const emit = defineEmits(['refreshLogs'])
@@ -180,33 +183,69 @@ const tableHeaders = [
 	{ text: 'Start Time', value: 'start_time' },
 	{ text: 'Duration', value: 'duration' },
 	{ text: 'Trigger', value: 'trigger' },
-	{ text: 'Steps', value: 'steps' } // Use a generic value 'steps' for the combined column
+	{ text: 'Steps', value: 'steps' },
+	{ text: '', value: 'expand' }
 ]
 
+const expandedRunId = ref<string | null>(null)
+const stepsByRunId = ref<Record<string, { loading: boolean, steps: any[] }>>({})
+
+const ensureStepsLoaded = async (runId: string) => {
+  if (!stepsByRunId.value[runId]) {
+    stepsByRunId.value[runId] = { loading: true, steps: [] }
+    try {
+      const flowId = useRoute().params.id as string
+      const stepsRef = collection(db, 'flows', flowId, 'logs', runId, 'steps')
+      const q = query(stepsRef, orderBy('started_at', 'asc'))
+      const snap = await getDocs(q)
+      stepsByRunId.value[runId].steps = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+    } catch (e) {
+      console.error('Failed to load steps:', e)
+    } finally {
+      stepsByRunId.value[runId].loading = false
+    }
+  }
+}
+
+const toggleExpand = async (run: any) => {
+  if (!run?.id) return
+  expandedRunId.value = expandedRunId.value === run.id ? null : run.id
+  if (expandedRunId.value) {
+    await ensureStepsLoaded(run.id)
+  }
+}
+
+const copyLog = async (run: any) => {
+  try {
+    const steps = stepsByRunId.value[run.id]?.steps || []
+    const lines: string[] = []
+    lines.push(`Run ID: ${run.id}`)
+    lines.push(`Status: ${run.status}`)
+    if (run.start_time) lines.push(`Started: ${formatDateTime(run.start_time)}`)
+    if (run.duration) lines.push(`Duration: ${run.duration}`)
+    lines.push('Steps:')
+    for (const s of steps) {
+      lines.push(`- ${s.name || s.node_id} [${s.status}]`)
+      if (s.error) lines.push(`  Error: ${s.error}`)
+      if (s.result_summary) lines.push(`  Result: ${s.result_summary}`)
+    }
+    const text = lines.join('\n')
+    await navigator.clipboard.writeText(text)
+    useAlert().openAlert({ type: 'SUCCESS', msg: 'Log copied to clipboard' })
+  } catch (e) {
+    console.error(e)
+    useAlert().openAlert({ type: 'ERROR', msg: 'Failed to copy log' })
+  }
+}
+
+// Keep modal utilities (no longer used) for compatibility if needed
 const showStepsModal = ref(false)
 const steps = ref<any[]>([])
 const stepsLoading = ref(false)
 const activeRun = ref<any | null>(null)
 
 const onRowClicked = async (row: any) => {
-  const data = row
-  if (!data?.id) return
-  const run = props.flowLogs.find((l) => l.id === data.id)?.data || null
-  activeRun.value = run
-  steps.value = []
-  stepsLoading.value = true
-  showStepsModal.value = true
-  try {
-    const flowId = useRoute().params.id as string
-    const stepsRef = collection(db, 'flows', flowId, 'logs', data.id, 'steps')
-    const q = query(stepsRef, orderBy('started_at', 'asc'))
-    const snap = await getDocs(q)
-    steps.value = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-  } catch (e) {
-    console.error('Failed to load steps:', e)
-  } finally {
-    stepsLoading.value = false
-  }
+  await toggleExpand(row)
 }
 
 const closeStepsModal = () => {

@@ -168,6 +168,19 @@ onMounted(() => {
 })
 
 
+// Set canonical URL for explore agents page
+useSeoMeta({
+	title: 'Explore AI Agent Templates - Goalmatic',
+	description: 'Discover and explore AI agent templates for various use cases. Find the perfect agent for your needs from our community collection.',
+	ogTitle: 'Explore AI Agent Templates - Goalmatic',
+	ogDescription: 'Discover and explore AI agent templates for various use cases. Find the perfect agent for your needs from our community collection.',
+	ogImage: 'https://www.goalmatic.io/og2.png',
+	twitterCard: 'summary_large_image',
+	link: [
+		{ rel: 'canonical', href: 'https://goalmatic.io/agents/explore' }
+	]
+})
+
 useHeaderTitle().setTitle('Agent Templates')
 </script>
 

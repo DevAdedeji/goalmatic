@@ -251,7 +251,7 @@
 					</div>
 
 					<!-- Email Display Field (for showing generated email addresses with copy functionality) -->
-					<div v-else-if="prop.type === 'email_display'" class="flex">
+					<div v-else-if="prop.type === 'email_display'" class="flex flex-col gap-3">
 						<EmailDisplayField
 							v-model="formValues[prop.key]"
 							:description="prop.description"

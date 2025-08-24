@@ -41,7 +41,5 @@ export * from "./email/cleanupEmailTriggerLogs";
 // Debug functions
 export * from "./debug/testEmailTrigger";
 
-// Conditionally register Convex sync functions
-// We only attach these exports when Convex sync is enabled to avoid
-// Firestore trigger registration (and noisy emulator logs) in dev.
-// Convex sync removed.
+
+

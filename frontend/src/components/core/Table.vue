@@ -25,23 +25,30 @@
 					</tr>
 				</thead>
 				<tbody v-if="!loading" class="bg-white divide-y divide-border">
-					<tr v-for="(data, index) in displayTable" :key="index" :data-index="index"
-						:class="['hover:bg-gray-50', (isClickable || rowClicked) ? 'cursor-pointer' : '']"
-						@click="handleRowClick($event, data)">
-						<td v-if="checkbox" class="px-4 py-3 whitespace-nowrap text-center">
-							<input
-								:checked="selected!.map(el => el?.id).includes(data?.id)"
-								type="checkbox"
-								class="form-checkbox h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mx-auto"
-								@change="$emit('checked', data)"
-								@click.stop>
-						</td>
-						<td v-for="(value, key) in populateTable(data)" :key="key" class="px-4 py-3 whitespace-nowrap text-sm" :data-label="headers[key]?.text">
-							<slot name="item" :item="{ [key]: key, data, index: index }">
-								<span class="text-text-secondary">{{ value }}</span>
-							</slot>
-						</td>
-					</tr>
+					<template v-for="(data, index) in displayTable" :key="index">
+						<tr :data-index="index"
+							:class="['hover:bg-gray-50', (isClickable || rowClicked) ? 'cursor-pointer' : '']"
+							@click="handleRowClick($event, data)">
+							<td v-if="checkbox" class="px-4 py-3 whitespace-nowrap text-center">
+								<input
+									:checked="selected!.map(el => el?.id).includes(data?.id)"
+									type="checkbox"
+									class="form-checkbox h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary mx-auto"
+									@change="$emit('checked', data)"
+									@click.stop>
+							</td>
+							<td v-for="(value, key) in populateTable(data)" :key="key" class="px-4 py-3 whitespace-nowrap text-sm" :data-label="headers[key]?.text">
+								<slot name="item" :item="{ [key]: key, data, index: index }">
+									<span class="text-text-secondary">{{ value }}</span>
+								</slot>
+							</td>
+						</tr>
+						<tr v-if="$slots['row-extra']" :key="`extra-${index}`">
+							<td :colspan="headers.length + (checkbox ? 1 : 0)" class="px-0 py-0">
+								<slot name="row-extra" :data="data" :index="index" />
+							</td>
+						</tr>
+					</template>
 				</tbody>
 				<tbody v-else class="bg-white divide-y divide-border">
 					<tr v-for="n in 3" :key="n" class="hover:bg-gray-50">
