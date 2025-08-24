@@ -81,7 +81,7 @@ interface EmailTrigger {
   flow_id: string;
   creator_id: string;
   email: string;
-  status: 'active' | 'inactive' | 'suspended';
+  status: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
   settings: EmailTriggerSettings;
   created_at: Timestamp;
   last_triggered?: Timestamp;
@@ -435,7 +435,7 @@ export const zohoEmailWebhook = onRequest({
         const triggerData = triggerDoc.data() as EmailTrigger;
 
         // Check if trigger is active
-        if (triggerData.status !== 'active') {
+        if (triggerData.status !== 1) { // not active
           console.log(`Email trigger inactive: ${triggerId}`);
           if (isTestingMode) {
             await logEmailTrigger(triggerId, triggerData.flow_id, normalizedPayload, 'testing', 'EMAIL_RECEIVED_FOR_TESTING', undefined, true);

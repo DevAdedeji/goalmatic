@@ -7,7 +7,7 @@ export interface EmailTrigger {
   creator_id: string;
   email: string; // e.g., "trigger-abc123@goalmatic.io"
   trigger_id: string; // unique identifier for the trigger
-  status: 'active' | 'inactive' | 'suspended';
+  status: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
   created_at: Timestamp;
   updated_at: Timestamp;
   last_triggered?: Timestamp;
