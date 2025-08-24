@@ -17,7 +17,7 @@ interface EmailTrigger {
   id: string;
   flow_id: string;
   creator_id: string;
-  unique_email: string;
+  email: string;
   trigger_id: string;
   status: "active" | "inactive" | "suspended";
   settings: EmailTriggerSettings;
@@ -197,7 +197,7 @@ export async function createEmailTrigger(
     id: triggerId,
     flow_id: flowId,
     creator_id: userId,
-    unique_email: email,
+    email: email,
     trigger_id: triggerId,
     status: "active",
     settings: validatedSettings,
@@ -213,7 +213,7 @@ export async function createEmailTrigger(
 
   // Update the flow to include the email trigger reference
   await goals_db.collection("flows").doc(flowId).update({
-    "trigger.propsData.unique_email": email,
+    "trigger.propsData.email": email,
     "trigger.propsData.trigger_id": triggerId,
     updated_at: Timestamp.now(),
   });
@@ -351,7 +351,7 @@ export async function deleteEmailTrigger(
 
   // Remove trigger reference from flow
   await goals_db.collection("flows").doc(existingTrigger.flow_id).update({
-    "trigger.propsData.unique_email": null,
+    "trigger.propsData.email": null,
     "trigger.propsData.trigger_id": null,
     updated_at: Timestamp.now(),
   });
@@ -446,7 +446,7 @@ export async function testEmailTrigger(
   //   subject: testEmail.subject,
   //   fromAddress: testEmail.from,
   //   fromName: testEmail.from.split("@")[0],
-  //   toAddress: [trigger.unique_email],
+  //   toAddress: [trigger.email],
   //   ccAddress: [],
   //   date: new Date().toISOString(),
   //   hasAttachment: false,

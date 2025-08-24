@@ -8,7 +8,7 @@ import { Timestamp } from "firebase-admin/firestore";
 
 interface EmailTriggerProps {
   // Unique email address (auto-generated, read-only)
-  unique_email?: string;
+  email?: string;
 }
 
 export const handleActivateEmailTrigger = async (
@@ -36,7 +36,7 @@ export const handleActivateEmailTrigger = async (
         // Update flow with existing trigger info
         await goals_db.collection("flows").doc(flowData.id).update({
           status: 1,
-          "trigger.propsData.unique_email": existingTrigger.unique_email,
+          "trigger.propsData.email": existingTrigger.email,
           "trigger.propsData.trigger_id": existingTrigger.id,
           updated_at: Timestamp.now(),
         });
@@ -44,7 +44,7 @@ export const handleActivateEmailTrigger = async (
         return {
           success: true,
           message: "Email trigger reactivated successfully",
-          unique_email: existingTrigger.unique_email,
+          email: existingTrigger.email,
           trigger_id: existingTrigger.id,
         };
       } else {
@@ -52,14 +52,14 @@ export const handleActivateEmailTrigger = async (
         return {
           success: true,
           message: "Email trigger is already active",
-          unique_email: existingTrigger.unique_email,
+          email: existingTrigger.email,
           trigger_id: existingTrigger.id,
         };
       }
     }
 
     // Check if email address already exists in propsData (pre-generated)
-    const existingEmail = propsData.unique_email;
+    const existingEmail = propsData.email;
     const existingTriggerId = propsData.trigger_id;
 
     let emailTrigger: any;
@@ -74,7 +74,7 @@ export const handleActivateEmailTrigger = async (
         id: existingTriggerId,
         flow_id: flowData.id,
         creator_id: userId,
-        unique_email: existingEmail,
+        email: existingEmail,
         trigger_id: existingTriggerId,
         status: "active" as const,
         settings: settings,
@@ -111,14 +111,14 @@ export const handleActivateEmailTrigger = async (
     });
 
     console.log(
-      `Email trigger activated for flow ${flowData.id}: ${emailTrigger.unique_email}`,
+      `Email trigger activated for flow ${flowData.id}: ${emailTrigger.email}`,
     );
     console.log(`Trigger ID: ${emailTrigger.id}, Status: ${emailTrigger.status}`);
 
     return {
       success: true,
       message: "Email trigger activated successfully",
-      unique_email: emailTrigger.unique_email,
+      email: emailTrigger.email,
       trigger_id: emailTrigger.id,
       webhook_info: {
         instructions: "Configure outgoing webhook in Zoho Mail Developer Space",

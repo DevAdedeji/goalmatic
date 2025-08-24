@@ -153,7 +153,7 @@ const props = defineProps({
 	}
 })
 
-const emit = defineEmits(['update:currentTab'])
+const emit = defineEmits(['update:currentTab', 'expandExecution'])
 
 // Determine why the flow might be invalid (more granular messaging)
 const invalidReason = computed<
@@ -244,7 +244,11 @@ const handleToggleFlow = () => {
 const handleTestFlow = async () => {
     try {
         const res: any = await testFlow(props.flowData)
+        // Emit both the tab change and the execution ID to expand
         emit('update:currentTab', 'logs')
+        if (res?.executionId) {
+            emit('expandExecution', res.executionId)
+        }
     } catch {}
 }
 

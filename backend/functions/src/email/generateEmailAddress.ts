@@ -36,7 +36,7 @@ function generateUniqueEmail(userId: string, flowId: string): { triggerId: strin
 async function isEmailAddressAvailable(email: string): Promise<boolean> {
   const existingTrigger = await goals_db
     .collection('emailTriggers')
-    .where('unique_email', '==', email)
+    .where('email', '==', email)
     .limit(1)
     .get();
 
@@ -115,7 +115,7 @@ export const generateEmailAddress = onCall({
       const triggerData = existingTrigger.docs[0].data();
       return {
         success: true,
-        unique_email: triggerData.unique_email,
+        email: triggerData.email,
         trigger_id: triggerData.id,
         is_existing: true
       };
@@ -126,7 +126,7 @@ export const generateEmailAddress = onCall({
 
     // Update the flow with the generated email address (but don't create the trigger yet)
     await goals_db.collection('flows').doc(flowId).update({
-      'trigger.propsData.unique_email': email,
+      'trigger.propsData.email': email,
       'trigger.propsData.trigger_id': triggerId,
       updated_at: new Date()
     });
@@ -135,7 +135,7 @@ export const generateEmailAddress = onCall({
 
     return {
       success: true,
-      unique_email: email,
+      email: email,
       trigger_id: triggerId,
       is_existing: false
     };

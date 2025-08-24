@@ -106,7 +106,7 @@ export const createTestEmailTrigger = onCall({
       id: triggerId,
       flow_id: flowId,
       creator_id: userId,
-      unique_email: email,
+      email: email,
       trigger_id: triggerId,
       status: 'active',
       settings: {
@@ -126,7 +126,7 @@ export const createTestEmailTrigger = onCall({
 
     // Update flow with trigger info
     await goals_db.collection('flows').doc(flowId).update({
-      'trigger.propsData.unique_email': email,
+      'trigger.propsData.email': email,
       'trigger.propsData.trigger_id': triggerId,
       status: 1,
       updated_at: new Date()
@@ -178,13 +178,13 @@ export const testEmailContentFlow = onCall({
     const testEmailData = {
       from_email: 'test@example.com',
       from_name: 'Test Sender',
-      to_email: triggerData.unique_email,
+      to_email: triggerData.email,
       subject: 'Test Email for Content Flow Verification',
       body_text: 'This is a test email body to verify that email content is properly passed to subsequent nodes in the flow.',
       body_html: '<p>This is a test email body to verify that email content is properly passed to subsequent nodes in the flow.</p>',
       received_at: new Date().toISOString(),
       message_id: 'test-message-123',
-      trigger_email: triggerData.unique_email,
+      trigger_email: triggerData.email,
       account_id: 'test-account',
       attachments: [],
       headers: { 'test-header': 'test-value' },
@@ -194,7 +194,7 @@ export const testEmailContentFlow = onCall({
         subject: 'Test Email for Content Flow Verification',
         fromAddress: 'test@example.com',
         fromName: 'Test Sender',
-        toAddress: [triggerData.unique_email],
+        toAddress: [triggerData.email],
         date: new Date().toISOString(),
         hasAttachment: false
       }

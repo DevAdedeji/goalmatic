@@ -159,13 +159,15 @@
 
 <script setup lang="ts">
 import { AlertCircle, RefreshCw, History, ChevronDown, Copy } from 'lucide-vue-next'
-import { ref } from 'vue'
-import { collection, getDocs, orderBy, query } from 'firebase/firestore'
+import { ref, onBeforeUnmount, watch, nextTick } from 'vue'
+import { collection, orderBy, query, onSnapshot } from 'firebase/firestore'
+import { useRoute } from 'vue-router'
 import { formatDateTime } from '@/composables/utils/formatter'
 import Table from '@/components/core/Table.vue'
 import Modal from '@/components/core/modal/Modal.vue'
 import { db } from '@/firebase/init'
 import { useAlert } from '@/composables/core/notification'
+import ColorBadge from '@/components/core/ColorBadge.vue'
 
 // Define event emits
 const emit = defineEmits(['refreshLogs'])
@@ -174,6 +176,7 @@ const emit = defineEmits(['refreshLogs'])
 const props = defineProps<{
   flowLogs: any[]
   loading: boolean
+  executionIdToExpand?: string | null
 }>()
 
 // Define headers for the Table component
@@ -188,31 +191,74 @@ const tableHeaders = [
 ]
 
 const expandedRunId = ref<string | null>(null)
+const route = useRoute()
 const stepsByRunId = ref<Record<string, { loading: boolean, steps: any[] }>>({})
+const stepUnsubByRunId = ref<Record<string, () => void>>({})
 
-const ensureStepsLoaded = async (runId: string) => {
-  if (!stepsByRunId.value[runId]) {
-    stepsByRunId.value[runId] = { loading: true, steps: [] }
-    try {
-      const flowId = useRoute().params.id as string
-      const stepsRef = collection(db, 'flows', flowId, 'logs', runId, 'steps')
-      const q = query(stepsRef, orderBy('started_at', 'asc'))
-      const snap = await getDocs(q)
-      stepsByRunId.value[runId].steps = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-    } catch (e) {
-      console.error('Failed to load steps:', e)
-    } finally {
-      stepsByRunId.value[runId].loading = false
+// Watch for executionIdToExpand changes and auto-expand the execution
+watch(() => props.executionIdToExpand, async (newExecutionId) => {
+  if (newExecutionId && props.flowLogs.length > 0) {
+    const execution = props.flowLogs.find((log) => log.id === newExecutionId)
+    if (execution) {
+      await nextTick()
+      await toggleExpand(execution)
     }
+  }
+})
+
+// Also watch for flowLogs changes to handle case where logs load after executionIdToExpand is set
+watch(() => props.flowLogs, async (newLogs) => {
+  if (props.executionIdToExpand && newLogs.length > 0) {
+    const execution = newLogs.find((log) => log.id === props.executionIdToExpand)
+    if (execution && expandedRunId.value !== props.executionIdToExpand) {
+      await nextTick()
+      await toggleExpand(execution)
+    }
+  }
+}, { immediate: true })
+
+const subscribeSteps = (runId: string) => {
+  if (!stepsByRunId.value[runId]) stepsByRunId.value[runId] = { loading: true, steps: [] }
+  // Tear down old if exists
+  if (stepUnsubByRunId.value[runId]) {
+    stepUnsubByRunId.value[runId]!()
+    delete stepUnsubByRunId.value[runId]
+  }
+  try {
+    const flowId = route.params.id as string
+    const stepsRef = collection(db, 'flows', flowId, 'logs', runId, 'steps')
+    const q = query(stepsRef, orderBy('started_at', 'asc'))
+    const unsub = onSnapshot(q, (snap) => {
+      stepsByRunId.value[runId].steps = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      stepsByRunId.value[runId].loading = false
+    }, () => {
+      stepsByRunId.value[runId].loading = false
+    })
+    stepUnsubByRunId.value[runId] = unsub
+  } catch (e) {
+    console.error('Failed to subscribe steps:', e)
+    stepsByRunId.value[runId].loading = false
   }
 }
 
 const toggleExpand = async (run: any) => {
   if (!run?.id) return
-  expandedRunId.value = expandedRunId.value === run.id ? null : run.id
-  if (expandedRunId.value) {
-    await ensureStepsLoaded(run.id)
+  // If collapsing current run, unsubscribe
+  if (expandedRunId.value === run.id) {
+    expandedRunId.value = null
+    if (stepUnsubByRunId.value[run.id]) {
+      stepUnsubByRunId.value[run.id]!()
+      delete stepUnsubByRunId.value[run.id]
+    }
+    return
   }
+  // Switch to new run: unsubscribe previous
+  if (expandedRunId.value && stepUnsubByRunId.value[expandedRunId.value]) {
+    stepUnsubByRunId.value[expandedRunId.value]!()
+    delete stepUnsubByRunId.value[expandedRunId.value]
+  }
+  expandedRunId.value = run.id
+  subscribeSteps(run.id)
 }
 
 const copyLog = async (run: any) => {
@@ -253,6 +299,11 @@ const closeStepsModal = () => {
   activeRun.value = null
   steps.value = []
 }
+
+onBeforeUnmount(() => {
+  Object.values(stepUnsubByRunId.value).forEach((fn) => fn && fn())
+  stepUnsubByRunId.value = {}
+})
 </script>
 
 <style scoped>

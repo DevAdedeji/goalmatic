@@ -11,7 +11,13 @@
 					<FlowsIdHeader v-if="!isOwner(flowDetails) && flowDetails.id" :flow-data="flowDetails" :loading="loading" />
 				</section>
 
-				<FlowsIdToolbar v-if="isOwner(flowDetails)" :current-tab="currentTab" :flow-data="flowDetails" @update:current-tab="currentTab = $event" />
+				<FlowsIdToolbar
+					v-if="isOwner(flowDetails)"
+					:current-tab="currentTab"
+					:flow-data="flowDetails"
+					@update:current-tab="currentTab = $event"
+					@expand-execution="executionIdToExpand = $event"
+				/>
 				<section v-if="loading" class="flex flex-col gap-4 pt-10 px-4 md:px-10 w-full max-w-5xl mx-auto">
 					<FlowsIdLoader />
 				</section>
@@ -24,6 +30,7 @@
 						:flow-data="flowDetails"
 						:flow-logs="flowLogs"
 						:flow-logs-loading="flowLogsLoading"
+						:execution-id-to-expand="executionIdToExpand"
 						@refresh-logs="refreshFlowLogs"
 					/>
 				</div>
@@ -100,6 +107,7 @@ useHead({
 })
 
 const currentTab = ref('editor')
+const executionIdToExpand = ref<string | null>(null)
 
 // Function to refresh flow logs
 const refreshFlowLogs = async () => {
@@ -110,6 +118,9 @@ const refreshFlowLogs = async () => {
 watch(() => currentTab.value, (newTab) => {
   if (newTab === 'logs') {
     refreshFlowLogs()
+  } else {
+    // Reset execution ID to expand when leaving logs tab
+    executionIdToExpand.value = null
   }
 })
 

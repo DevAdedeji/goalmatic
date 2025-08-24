@@ -261,6 +261,7 @@
 							:copyable="prop.copyable"
 							:auto-generate="prop.auto_generate"
 							:flow-id="payload?.flow_id || payload?.id || route.params.id"
+							:existing-email="payload?.propsData?.email"
 							:show-instructions="true"
 							@generated="(email) => (formValues[prop.key] = email)"
 							@copied="(email) => console.log('Copied email:', email)"

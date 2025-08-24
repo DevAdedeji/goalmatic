@@ -80,7 +80,7 @@ interface EmailTrigger {
   id: string;
   flow_id: string;
   creator_id: string;
-  unique_email: string;
+  email: string;
   status: 'active' | 'inactive' | 'suspended';
   settings: EmailTriggerSettings;
   created_at: Timestamp;
@@ -408,7 +408,7 @@ export const zohoEmailWebhook = onRequest({
           console.log('Existing email triggers:');
           allTriggers.docs.forEach(doc => {
             const data = doc.data();
-            console.log(`- ID: ${doc.id}, Email: ${data.unique_email}, Status: ${data.status}, FlowID: ${data.flow_id}`);
+            console.log(`- ID: ${doc.id}, Email: ${data.email}, Status: ${data.status}, FlowID: ${data.flow_id}`);
           });
 
           // Also check flows collection for this trigger ID pattern
@@ -420,7 +420,7 @@ export const zohoEmailWebhook = onRequest({
           flowsWithEmailTrigger.docs.forEach(doc => {
             const data = doc.data();
             const triggerProps = data.trigger?.propsData;
-            console.log(`- FlowID: ${doc.id}, Email: ${triggerProps?.unique_email}, TriggerID: ${triggerProps?.trigger_id}, Status: ${data.status}`);
+            console.log(`- FlowID: ${doc.id}, Email: ${triggerProps?.email}, TriggerID: ${triggerProps?.trigger_id}, Status: ${data.status}`);
           });
 
           // For testing mode, log as testing instead of failed

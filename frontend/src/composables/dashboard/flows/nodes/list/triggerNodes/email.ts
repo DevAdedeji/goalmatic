@@ -11,8 +11,8 @@ export const emailTriggerNodes: FlowNode[] = [
     category: 'MESSAGING',
     props: [
       {
-        name: 'Unique Email Address',
-        key: 'unique_email',
+        name: 'Email Address',
+        key: 'email',
         type: 'email_display',
         required: false,
         disabled: true,

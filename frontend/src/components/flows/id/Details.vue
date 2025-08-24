@@ -4,6 +4,7 @@
 		v-if="currentTab === 'logs'"
 		:flow-logs="flowLogs"
 		:loading="flowLogsLoading"
+		:execution-id-to-expand="executionIdToExpand"
 		@refresh-logs="emit('refreshLogs')"
 	/>
 </template>
@@ -20,6 +21,7 @@ defineProps<{
 	currentTab: string
 	flowLogs: any[]
 	flowLogsLoading: boolean
+	executionIdToExpand: string | null
 }>()
 
 const emit = defineEmits<{

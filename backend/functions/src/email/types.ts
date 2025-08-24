@@ -5,7 +5,7 @@ export interface EmailTrigger {
   id: string;
   flow_id: string;
   creator_id: string;
-  unique_email: string; // e.g., "trigger-abc123@goalmatic.io"
+  email: string; // e.g., "trigger-abc123@goalmatic.io"
   trigger_id: string; // unique identifier for the trigger
   status: 'active' | 'inactive' | 'suspended';
   created_at: Timestamp;
@@ -90,7 +90,7 @@ export interface EmailAttachment {
 // Email trigger node properties (simplified)
 export interface EmailTriggerProps {
   // Unique email address (auto-generated, read-only)
-  unique_email?: string;
+  email?: string;
 }
 
 // Email data that flows receive as input
