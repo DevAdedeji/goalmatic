@@ -1,101 +1,75 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 
-const emailTrigger = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+const emailTrigger = async (context: WorkflowContext, step: FlowNode) => {
     try {
-        // Extract email trigger data from previousStepResult
-        let triggerData = previousStepResult?.["trigger-data"];
+        // Get trigger data from workflow context (like scheduled triggers)
+        const { triggerData } = context.requestPayload as { triggerData?: any };
 
-        // If no trigger data is available (e.g., during testing), provide sample data
+        // Get flow configuration from step
+        const { propsData } = step;
+
+        // If no external trigger data, use flow configuration for testing
         if (!triggerData) {
-            console.log('No email trigger data found, using sample data for testing');
-            triggerData = {
-                from_email: 'test@example.com',
-                from_name: 'Test User',
-                to_email: step?.propsData?.email || 'test-trigger@goalmatic.io',
-                subject: '[TEST] Sample Email for Testing',
-                body_text: 'This is a sample email body for testing purposes. You can use this data to build and test your email-triggered workflows.',
-                body_html: '<p>This is a <strong>sample email body</strong> for testing purposes.</p><p>You can use this data to build and test your email-triggered workflows.</p>',
-                received_at: new Date().toISOString(),
-                message_id: 'test-message-' + Date.now(),
-                trigger_email: step?.propsData?.email || 'test-trigger@goalmatic.io',
-                account_id: 'test-account',
-                attachments: [
-                    {
-                        filename: 'sample-document.pdf',
-                        content_type: 'application/pdf',
-                        size_bytes: 1024000,
-                        download_url: 'https://example.com/sample.pdf'
-                    }
-                ],
-                headers: {
-                    'content-type': 'text/plain; charset=UTF-8',
-                    'x-mailer': 'Test Email Client',
-                    'user-agent': 'Test/1.0'
-                },
-                raw_payload: {
-                    messageId: 'test-message-' + Date.now(),
+            console.log('No external email trigger data found, using flow configuration for testing');
+
+            return {
+                success: true,
+                payload: {
+                    from_email: 'test@example.com',
+                    from_name: 'Test User',
+                    to_email: propsData?.email || 'test-trigger@goalmatic.io',
                     subject: '[TEST] Sample Email for Testing',
-                    fromAddress: 'test@example.com',
-                    fromName: 'Test User',
-                    toAddress: [step?.propsData?.email || 'test-trigger@goalmatic.io'],
-                    date: new Date().toISOString(),
-                    hasAttachment: true,
-                    attachments: [{
-                        fileName: 'sample-document.pdf',
-                        size: 1024000,
-                        contentType: 'application/pdf'
-                    }],
-                    preview: 'This is a sample email body for testing purposes.',
-                    accountId: 'test-account'
-                },
-                trigger_type: 'email'
+                    body_text: 'This is a sample email body for testing purposes.',
+                    body_html: null,
+                    received_at: new Date().toISOString(),
+                    message_id: 'test-message-' + Date.now(),
+                    headers: {},
+                    attachments: [],
+                    trigger_email: propsData?.email || 'test-trigger@goalmatic.io',
+                    account_id: null,
+                    raw_payload: null,
+                    trigger_type: 'email',
+                    processed_at: new Date().toISOString()
+                }
             };
         }
 
-        // Return the email data in a structured format for subsequent nodes
+        // Process real email trigger data - keep it simple and consistent
         return {
             success: true,
             payload: {
-                // Email metadata
-                from_email: triggerData.from_email,
-                from_name: triggerData.from_name,
-                to_email: triggerData.to_email,
+                // Core email data
+                from_email: triggerData.from_email || triggerData.fromAddress,
+                from_name: triggerData.from_name || triggerData.fromName,
+                to_email: triggerData.to_email || triggerData.toAddress,
                 subject: triggerData.subject,
-                body_text: triggerData.body_text,
-                body_html: triggerData.body_html,
-                received_at: triggerData.received_at,
-                message_id: triggerData.message_id,
+                body_text: triggerData.body_text || triggerData.bodyText || triggerData.preview,
+                body_html: triggerData.body_html || triggerData.bodyHtml,
+                received_at: triggerData.received_at || triggerData.date,
+                message_id: triggerData.message_id || triggerData.messageId,
 
                 // Processing info
-                trigger_email: triggerData.trigger_email,
-                account_id: triggerData.account_id,
+                trigger_email: triggerData.trigger_email || triggerData.toAddress,
+                account_id: triggerData.account_id || triggerData.accountId,
 
-                // Attachments (if any)
+                // Optional data
+                headers: triggerData.headers || {},
                 attachments: triggerData.attachments || [],
 
-                // Additional headers
-                headers: triggerData.headers || {},
+                // Raw payload for complete access
+                raw_payload: triggerData.raw_payload || triggerData,
 
-                // Convenience fields for easy access
-                sender: triggerData.from_email,
-                sender_name: triggerData.from_name || triggerData.from_email,
-                email_subject: triggerData.subject,
-                email_body: triggerData.body_text || triggerData.body_html,
-                received_date: triggerData.received_at,
-
-                // Additional fields for complete email access
-                has_attachments: (triggerData.attachments && triggerData.attachments.length > 0) || false,
-                raw_payload: triggerData.raw_payload || {}, // Full webhook payload if available
-                trigger_type: triggerData.trigger_type || 'email'
+                // Metadata
+                trigger_type: 'email',
+                processed_at: new Date().toISOString()
             }
         };
     } catch (error: any) {
         console.error('Error processing email trigger:', error);
-        return {
-            success: false,
-            error: error?.message || 'Failed to process email trigger'
-        };
+
+        // Let workflow system handle the error properly
+        throw error;
     }
 };
 

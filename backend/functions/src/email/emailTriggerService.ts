@@ -19,7 +19,7 @@ interface EmailTrigger {
   creator_id: string;
   email: string;
   trigger_id: string;
-  status: "active" | "inactive" | "suspended";
+  status: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
   settings: EmailTriggerSettings;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -37,7 +37,7 @@ interface UpdateEmailTriggerParams {
   triggerId: string;
   userId: string;
   settings?: Partial<EmailTriggerSettings>;
-  status?: "active" | "inactive" | "suspended";
+  status?: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
 }
 
 // Constants
@@ -199,7 +199,7 @@ export async function createEmailTrigger(
     creator_id: userId,
     email: email,
     trigger_id: triggerId,
-    status: "active",
+    status: 1, // active
     settings: validatedSettings,
     created_at: Timestamp.now(),
     updated_at: Timestamp.now(),
@@ -433,7 +433,7 @@ export async function testEmailTrigger(
     throw new HttpsError("not-found", "Email trigger not found");
   }
 
-  if (trigger.status !== "active") {
+  if (trigger.status !== 1) {
     return {
       success: false,
       message: "Email trigger is not active",

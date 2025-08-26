@@ -1,7 +1,7 @@
 import { WorkflowContext } from "@upstash/workflow";
 import { FlowNode } from "../../../type";
 
-const scheduleTimeTrigger = async (context: WorkflowContext, step: FlowNode, previousStepResult: any) => {
+const scheduleTimeTrigger = async (context: WorkflowContext, step: FlowNode) => {
     try {
         // For schedule time triggers, we need to get the trigger configuration from the flow
         const { flowId } = context.requestPayload as { flowId: string };

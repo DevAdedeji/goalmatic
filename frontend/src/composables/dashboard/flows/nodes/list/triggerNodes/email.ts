@@ -35,7 +35,7 @@ export const emailTriggerNodes: FlowNode[] = [
         key: 'from_name',
         name: 'Sender Name',
         type: 'text',
-        description: 'Name of the sender'
+        description: 'Name of the sender (if available)'
       },
       {
         key: 'to_email',
@@ -53,19 +53,19 @@ export const emailTriggerNodes: FlowNode[] = [
         key: 'body_text',
         name: 'Email Body (Text)',
         type: 'textarea',
-        description: 'Plain text content of the email (preview only from webhook)'
+        description: 'Plain text content of the email'
       },
       {
         key: 'body_html',
         name: 'Email Body (HTML)',
         type: 'textarea',
-        description: 'HTML content of the email (not available from webhook)'
+        description: 'HTML content of the email (if available)'
       },
       {
         key: 'received_at',
         name: 'Received Date',
         type: 'text',
-        description: 'When the email was received'
+        description: 'When the email was received (ISO format)'
       },
       {
         key: 'message_id',
@@ -74,47 +74,43 @@ export const emailTriggerNodes: FlowNode[] = [
         description: 'Unique identifier for the email message'
       },
       {
-        key: 'sender',
-        name: 'Sender (Alias)',
-        type: 'text',
-        description: 'Sender email address (convenience field)'
-      },
-      {
-        key: 'sender_name',
-        name: 'Sender Name (Alias)',
-        type: 'text',
-        description: 'Sender name or email (convenience field)'
-      },
-      {
-        key: 'email_subject',
-        name: 'Subject (Alias)',
-        type: 'text',
-        description: 'Email subject (convenience field)'
-      },
-      {
-        key: 'email_body',
-        name: 'Body (Alias)',
-        type: 'textarea',
-        description: 'Email body content (convenience field)'
-      },
-      {
-        key: 'received_date',
-        name: 'Date (Alias)',
-        type: 'text',
-        description: 'Received date (convenience field)'
+        key: 'headers',
+        name: 'Email Headers',
+        type: 'object',
+        description: 'Email headers object containing metadata'
       },
       {
         key: 'attachments',
         name: 'Attachments',
         type: 'array',
-        description: 'Array of email attachments (if enabled)'
+        description: 'Array of email attachments (if any)'
       },
       {
         key: 'trigger_email',
         name: 'Trigger Email',
         type: 'text',
         description: 'The unique trigger email address that received this message'
+      },
+      {
+        key: 'account_id',
+        name: 'Account ID',
+        type: 'text',
+        description: 'Account identifier associated with the email'
+      },
+      {
+        key: 'trigger_type',
+        name: 'Trigger Type',
+        type: 'text',
+        description: 'Type of trigger (always "email" for email triggers)'
+      },
+      {
+        key: 'raw_payload',
+        name: 'Raw Payload',
+        type: 'object',
+        description: 'Complete raw payload from the webhook for debugging'
       }
     ]
   }
 ]
+
+

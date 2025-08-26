@@ -1,5 +1,6 @@
 import { initializeApp, getApps, getApp } from 'firebase-admin/app'
 import { getFirestore, Firestore } from 'firebase-admin/firestore'
+import { Settings } from 'firebase-admin/firestore'
 
 
 
@@ -18,7 +19,15 @@ export default function firebaseServer() {
 }
 export const useFirestore = (databaseName = '(default)'): Firestore => {
   const app = firebaseServer()!
-  return getFirestore(app, databaseName)
+  const db = getFirestore(app, databaseName)
+
+  // Configure Firestore to ignore undefined properties
+  const settings: Settings = {
+    ignoreUndefinedProperties: true
+  }
+  db.settings(settings)
+
+  return db
 }
 
 export const is_emulator = process.env.FUNCTIONS_EMULATOR === 'true';

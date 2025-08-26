@@ -24,12 +24,12 @@ export const handleActivateEmailTrigger = async (
     const existingTrigger = await getEmailTriggerByFlowId(flowData.id, userId);
     if (existingTrigger) {
       // If trigger exists but is inactive, reactivate it
-      if (existingTrigger.status === "inactive") {
+      if (existingTrigger.status === 0) {
         await goals_db
           .collection("emailTriggers")
           .doc(existingTrigger.id)
           .update({
-            status: "active",
+            status: 1, // active
             updated_at: Timestamp.now(),
           });
 
@@ -76,7 +76,7 @@ export const handleActivateEmailTrigger = async (
         creator_id: userId,
         email: existingEmail,
         trigger_id: existingTriggerId,
-        status: "active" as const,
+        status: 1, // active
         settings: settings,
         created_at: Timestamp.now(),
         updated_at: Timestamp.now(),

@@ -122,13 +122,13 @@ function normalizeWebhookPayload(payload: ZohoWebhookPayload): any {
       fromAddress: cleanEmailAddress(payload.data.from.address),
       fromName: payload.data.from.name,
       toAddress: payload.data.to.map(t => cleanEmailAddress(t.address)),
-      ccAddress: payload.data.cc?.map(c => cleanEmailAddress(c.address)) || [],
+      ccAddress: payload.data.cc?.map(c => cleanEmailAddress(c.address)),
       date: payload.data.date,
       hasAttachment: payload.data.hasAttachment,
-      attachments: payload.data.attachments || [],
+      attachments: payload.data.attachments,
       preview: payload.data.preview,
-      bodyHtml: (payload.data as any).html || '',
-      bodyText: (payload.data as any).summary || payload.data.preview || '',
+      bodyHtml: (payload.data as any).html,
+      bodyText: (payload.data as any).summary || payload.data.preview,
       accountId: payload.data.accountId
     };
   }
@@ -152,15 +152,15 @@ function normalizeWebhookPayload(payload: ZohoWebhookPayload): any {
       messageId: v1Payload.messageId,
       subject: v1Payload.subject,
       fromAddress: cleanEmailAddress(v1Payload.fromAddress),
-      fromName: (v1Payload as any).sender || undefined,
+      fromName: (v1Payload as any).sender,
       toAddress: toAddressArray,
-      ccAddress: v1Payload.ccAddress?.map(email => cleanEmailAddress(email)) || [],
+      ccAddress: v1Payload.ccAddress?.map(email => cleanEmailAddress(email)),
       date: v1Payload.date,
       hasAttachment: v1Payload.hasAttachment,
       attachments: [],
-      preview: (v1Payload as any).summary || undefined,
-      bodyHtml: (v1Payload as any).html || '',
-      bodyText: (v1Payload as any).summary || '',
+      preview: (v1Payload as any).summary,
+      bodyHtml: (v1Payload as any).html,
+      bodyText: (v1Payload as any).summary,
       accountId: v1Payload.accountId
     };
   }
@@ -282,19 +282,20 @@ async function executeFlowWithEmailData(
   const executionId = uuidv4();
   const qstashClient = new Client({ token: UPSTASH_QSTASH_TOKEN });
 
-  // Prepare complete email flow input data
+      // Prepare complete email flow input data
+  // Firestore will now ignore undefined properties automatically
   const emailFlowInput = {
     from_email: normalizedPayload.fromAddress,
-    from_name: normalizedPayload.fromName || normalizedPayload.fromAddress,
-    to_email: normalizedPayload.toAddress[0], // Primary recipient
+    from_name: normalizedPayload.fromName,
+    to_email: normalizedPayload.toAddress?.[0],
     subject: normalizedPayload.subject,
-    body_text: normalizedPayload.bodyText || normalizedPayload.preview || '',
-    body_html: normalizedPayload.bodyHtml || '',
+    body_text: normalizedPayload.bodyText || normalizedPayload.preview,
+    body_html: normalizedPayload.bodyHtml,
     received_at: normalizedPayload.date,
     message_id: normalizedPayload.messageId,
-    headers: {},
-    attachments: normalizedPayload.hasAttachment ? normalizedPayload.attachments : [],
-    trigger_email: normalizedPayload.toAddress[0],
+    headers: normalizedPayload.headers,
+    attachments: normalizedPayload.attachments,
+    trigger_email: normalizedPayload.toAddress?.[0],
     account_id: normalizedPayload.accountId,
     // Add raw normalized payload for complete access
     raw_payload: normalizedPayload,
@@ -435,6 +436,8 @@ export const zohoEmailWebhook = onRequest({
         const triggerData = triggerDoc.data() as EmailTrigger;
 
         // Check if trigger is active
+        console.log(triggerData.status);
+        console.log(typeof triggerData.status);
         if (triggerData.status !== 1) { // not active
           console.log(`Email trigger inactive: ${triggerId}`);
           if (isTestingMode) {

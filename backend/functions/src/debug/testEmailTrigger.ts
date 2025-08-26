@@ -108,7 +108,7 @@ export const createTestEmailTrigger = onCall({
       creator_id: userId,
       email: email,
       trigger_id: triggerId,
-      status: 'active',
+      status: 1, // active
       settings: {
         include_attachments: false,
         max_attachment_size_mb: 10,
@@ -210,6 +210,9 @@ export const testEmailContentFlow = onCall({
       run: async (stepName: string, fn: () => any) => {
         console.log(`Executing step: ${stepName}`);
         return await fn();
+      },
+      requestPayload: {
+        triggerData: testEmailData
       }
     };
 
@@ -225,21 +228,18 @@ export const testEmailContentFlow = onCall({
       propsData: {}
     };
 
-    const previousStepResult = {
-      "trigger-data": testEmailData
-    };
-
-    // Execute the email trigger node
-    const result = await emailTriggerNode.run(mockContext as any, mockStep, previousStepResult);
+    // Execute the email trigger node (new signature with only 2 parameters)
+    const result = await emailTriggerNode.run(mockContext as any, mockStep);
 
     console.log('Email trigger node result:', JSON.stringify(result, null, 2));
 
     // Verify that all expected email content is present in the result
     const expectedFields = [
       'from_email', 'from_name', 'to_email', 'subject',
-      'body_text', 'body_html', 'received_at', 'message_id',
-      'sender', 'sender_name', 'email_subject', 'email_body',
-      'attachments', 'trigger_email', 'has_attachments'
+      'body', 'received_at', 'message_id',
+      'trigger_email', 'account_id',
+      'attachments', 'headers', 'has_attachments',
+      'trigger_type', 'processed_at'
     ];
 
     const missingFields = expectedFields.filter(field => !(field in (result.payload || {})));

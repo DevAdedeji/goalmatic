@@ -31,7 +31,9 @@ editor.value = new Editor({
         Mention.configure({
             renderHTML({ node }) {
                 const id = node.attrs.id || node.attrs.label || ''
-                const label = formatEditorMention(node.attrs.label ?? node.attrs.id)
+                const rawLabel = node.attrs.label ?? node.attrs.id
+                const label = formatEditorMention(rawLabel) || rawLabel || 'Unknown Mention'
+
                 return [
                     'span',
                     {

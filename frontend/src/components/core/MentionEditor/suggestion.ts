@@ -110,9 +110,27 @@ export const agentSuggestion = createSuggestionRenderer({
 })
 
 export const formatEditorMention = (mention: string) => {
-  if (!mention) return
+  if (!mention) return ''
+
+  // Remove @ prefix and split by dashes
   const splitMain = mention.replace(/@/g, '').split('-')
-  const capTitle = splitMain[2].split('_').map((i) => capitalize(i)).join(' ')
-  const formatted = `(${splitMain[1]}) ${capTitle} - ${splitMain[3]}`
+
+  // Ensure we have at least 4 parts for proper formatting
+  if (splitMain.length < 4) {
+    // Fallback: return a basic formatted version or the original mention
+    return mention.replace(/@/g, '')
+  }
+
+  // Safe access with fallbacks
+  const triggerType = splitMain[1] || 'UNKNOWN'
+  const rawTitle = splitMain[2] || ''
+  const value = splitMain[3] || 'undefined'
+
+  // Format the title by splitting underscores and capitalizing
+  const capTitle = rawTitle
+    ? rawTitle.split('_').map((i) => capitalize(i)).join(' ')
+    : 'Unknown Field'
+
+  const formatted = `(${triggerType}) ${capTitle} - ${value}`
   return formatted
 }

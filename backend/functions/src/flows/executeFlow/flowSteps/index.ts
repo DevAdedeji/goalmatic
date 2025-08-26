@@ -4,7 +4,7 @@ import { goals_db } from "../../../init";
 import { Timestamp } from "firebase-admin/firestore";
 
 // Define an interface for the expected structure of a step node's run method
-// It now accepts an optional third argument for the previous step's result.
+// Some triggers (like email) don't need previousStepResult, others (like schedule) might.
 interface StepRunner {
   run: (
     context: WorkflowContext,
@@ -41,36 +41,15 @@ export const runStepsInContext = async (
     }
   };
 
-  // Handle trigger data - either from external trigger (email) or generate for schedule triggers
+  // Handle trigger data for different trigger types
   if (triggerData) {
-    // External trigger data (e.g., from email trigger)
-    previousStepResult["trigger-data"] = triggerData;
-
-    // Also make trigger data available in the format expected by the frontend mention system
-    // For email triggers, structure the data to match the frontend expectations
-    if (flowData.trigger?.node_id === 'EMAIL_TRIGGER') {
-      previousStepResult["trigger-EMAIL_TRIGGER"] = {
-        payload: {
-          from_email: triggerData.from_email,
-          from_name: triggerData.from_name,
-          to_email: triggerData.to_email,
-          subject: triggerData.subject,
-          body_text: triggerData.body_text,
-          body_html: triggerData.body_html,
-          received_at: triggerData.received_at,
-          message_id: triggerData.message_id,
-          trigger_email: triggerData.trigger_email,
-          account_id: triggerData.account_id,
-          attachments: triggerData.attachments || [],
-          headers: triggerData.headers || {},
-          sender: triggerData.from_email,
-          sender_name: triggerData.from_name || triggerData.from_email,
-          email_subject: triggerData.subject,
-          email_body: triggerData.body_text || triggerData.body_html,
-          received_date: triggerData.received_at
-        }
-      };
-    }
+    // For external triggers (email), pass data to workflow context for trigger nodes to access
+    // The trigger nodes themselves will access this data from context.requestPayload
+    console.log(`External trigger data received for ${flowData.trigger?.node_id}:`, {
+      hasTriggerData: !!triggerData,
+      triggerType: triggerData.trigger_type || 'unknown',
+      flowTriggerType: flowData.trigger?.node_id
+    });
   }
 
   // Always run the trigger node if it exists (whether we have external data or not)
@@ -93,10 +72,17 @@ export const runStepsInContext = async (
         });
       }
 
+      // Execute trigger based on its type
       const triggerResult = await context.run(
         `trigger-${triggerNodeId}`,
         () => {
-          return triggerNode.run(context, flowData.trigger, previousStepResult);
+          // Triggers that get data from workflow context (email, schedule)
+          if (triggerNodeId === 'EMAIL_TRIGGER' || triggerNodeId === 'SCHEDULE_INTERVAL' || triggerNodeId === 'SCHEDULE_TIME') {
+            return triggerNode.run(context, flowData.trigger);
+          } else {
+            // Other triggers may need previousStepResult for configuration
+            return triggerNode.run(context, flowData.trigger, previousStepResult);
+          }
         }
       );
 
