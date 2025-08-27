@@ -52,6 +52,16 @@
 									<button
 										class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
 										role="menuitem"
+										:disabled="cloneLoading"
+										@click="handleCloneFlow"
+									>
+										<Copy :size="16" class="mr-2" />
+										<span v-if="cloneLoading">Cloning...</span>
+										<span v-else>Clone Flow</span>
+									</button>
+									<button
+										class="flex items-center rounded-md px-4 py-2 text-sm text-dark hover:bg-gray-100 w-full text-start border border-light"
+										role="menuitem"
 										@click="handleToggleVisibility"
 									>
 										<EyeClosed v-if="flowDetails?.public" :size="16" class="mr-2" />
@@ -142,7 +152,7 @@
 </template>
 
 <script setup lang="ts">
-import { File, ChevronDown, Edit2, Trash2, Eye, EyeClosed, Share2 } from 'lucide-vue-next'
+import { File, ChevronDown, Edit2, Trash2, Eye, EyeClosed, Share2, Copy } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { DropdownMenuRoot, DropdownMenuTrigger, DropdownMenuContent } from 'radix-vue'
 
@@ -152,6 +162,7 @@ import { useToggleFlow } from '@/composables/dashboard/flows/toggle'
 import { useTestFlow } from '@/composables/dashboard/flows/test'
 import { useEditFlow } from '@/composables/dashboard/flows/edit'
 import { useDeleteFlow } from '@/composables/dashboard/flows/delete'
+import { useOwnerCloneFlow } from '@/composables/dashboard/flows/ownerClone'
 import { useFlowsModal } from '@/composables/core/modals'
 import { isNodeValid } from '@/composables/dashboard/flows/nodes/nodeOperations'
 import { useCopyToClipboard } from '@/composables/utils/share'
@@ -166,6 +177,7 @@ const { toggleFlowStatus, loading: toggleLoading } = useToggleFlow()
 const { testFlow, loading: testLoading } = useTestFlow()
 const { saveFlow, loading: saveLoading, openVisibilityConfirmation } = useEditFlow()
 const { setDeleteFlowData } = useDeleteFlow()
+const { ownerCloneFlow, loading: cloneLoading } = useOwnerCloneFlow()
 const { openCreateWorkflow } = useFlowsModal()
 const { copyData } = useCopyToClipboard()
 
@@ -199,6 +211,12 @@ const handleShareFlow = () => {
 		info: shareUrl,
 		msg: 'Flow link copied to clipboard!'
 	})
+}
+
+// Handle clone flow
+const handleCloneFlow = () => {
+	if (!flowDetails.value) return
+	ownerCloneFlow(flowDetails.value)
 }
 
 

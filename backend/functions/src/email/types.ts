@@ -6,7 +6,6 @@ export interface EmailTrigger {
   flow_id: string;
   creator_id: string;
   email: string; // e.g., "trigger-abc123@goalmatic.io"
-  trigger_id: string; // unique identifier for the trigger
   status: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -118,7 +117,6 @@ export interface EmailFlowInput {
 
   // Processing info
   trigger_email: string;
-  trigger_id: string;
   spam_score?: number;
 }
 

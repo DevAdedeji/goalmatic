@@ -2,6 +2,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import {
   createEmailTrigger,
   getEmailTriggerByFlowId,
+  checkEmailExists,
 } from "../../../email/emailTriggerService";
 import { goals_db } from "../../../init";
 import { Timestamp } from "firebase-admin/firestore";
@@ -11,12 +12,42 @@ interface EmailTriggerProps {
   email?: string;
 }
 
+
+const validateEmailTriggerData = async (flowData: any, userId: string): Promise<{ success: boolean, message: string }> => {
+
+  if (!flowData || !flowData.trigger || !flowData.trigger.propsData || !userId) {
+    return { success: false, message: 'Invalid flow data' }
+  }
+
+  // Validate email format if provided
+  const email = flowData.trigger.propsData.email;
+  if (email !== null && email !== undefined) {
+    if (typeof email !== 'string') {return { success: false, message: 'Email must be a string' }}
+    if (email.trim() === '') { return { success: false, message: 'Email cannot be empty' } }
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {return { success: false, message: 'Invalid email format' }}
+
+  }
+
+
+
+  return {
+    success: true,
+    message: 'Validation successful',
+  };
+}
+
 export const handleActivateEmailTrigger = async (
   flowData: any,
   userId: string,
 ) => {
   try {
-    console.log(`Activating email trigger for flow ${flowData.id}, user ${userId}`);
+    const { success, message } = await validateEmailTriggerData(flowData, userId);
+    if (!success) {
+      throw new HttpsError('invalid-argument', message);
+    }
+
     const { propsData } = flowData.trigger;
     console.log('Trigger propsData:', JSON.stringify(propsData, null, 2));
 
@@ -37,7 +68,6 @@ export const handleActivateEmailTrigger = async (
         await goals_db.collection("flows").doc(flowData.id).update({
           status: 1,
           "trigger.propsData.email": existingTrigger.email,
-          "trigger.propsData.trigger_id": existingTrigger.id,
           updated_at: Timestamp.now(),
         });
 
@@ -45,7 +75,6 @@ export const handleActivateEmailTrigger = async (
           success: true,
           message: "Email trigger reactivated successfully",
           email: existingTrigger.email,
-          trigger_id: existingTrigger.id,
         };
       } else {
         // Trigger is already active
@@ -53,29 +82,42 @@ export const handleActivateEmailTrigger = async (
           success: true,
           message: "Email trigger is already active",
           email: existingTrigger.email,
-          trigger_id: existingTrigger.id,
         };
       }
     }
 
     // Check if email address already exists in propsData (pre-generated)
     const existingEmail = propsData.email;
-    const existingTriggerId = propsData.trigger_id;
 
     let emailTrigger: any;
 
-    if (existingEmail && existingTriggerId) {
+    if (existingEmail) {
+      // Check if the existing email is already in use by another flow
+      const emailExists = await checkEmailExists(existingEmail);
+      if (emailExists) {
+        // Check if it's not the same trigger (to allow reactivation)
+        const existingTrigger = await getEmailTriggerByFlowId(flowData.id, userId);
+        if (!existingTrigger || existingTrigger.email !== existingEmail) {
+          throw new HttpsError(
+            "already-exists",
+            `Email address ${existingEmail} is already in use by another flow. Please use a different email address.`
+          );
+        }
+      }
+
+      // Extract trigger ID from email address
+      const triggerIdFromEmail = existingEmail.split('@')[0];
+
       // Use existing email address and create trigger with it
       const settings = parseEmailTriggerSettings(
         propsData as EmailTriggerProps,
       );
 
       emailTrigger = {
-        id: existingTriggerId,
+        id: triggerIdFromEmail,
         flow_id: flowData.id,
         creator_id: userId,
         email: existingEmail,
-        trigger_id: existingTriggerId,
         status: 1, // active
         settings: settings,
         created_at: Timestamp.now(),
@@ -84,12 +126,12 @@ export const handleActivateEmailTrigger = async (
       };
 
       // Save to database
-      console.log(`Creating email trigger with ID: ${existingTriggerId}`);
+      console.log(`Creating email trigger with ID: ${triggerIdFromEmail}`);
       await goals_db
         .collection("emailTriggers")
-        .doc(existingTriggerId)
+        .doc(triggerIdFromEmail)
         .set(emailTrigger);
-      console.log(`Email trigger saved to database: ${existingTriggerId}`);
+      console.log(`Email trigger saved to database: ${triggerIdFromEmail}`);
     } else {
       // Parse and validate trigger settings from propsData
       const settings = parseEmailTriggerSettings(
@@ -119,7 +161,6 @@ export const handleActivateEmailTrigger = async (
       success: true,
       message: "Email trigger activated successfully",
       email: emailTrigger.email,
-      trigger_id: emailTrigger.id,
       webhook_info: {
         instructions: "Configure outgoing webhook in Zoho Mail Developer Space",
         webhook_url: `${process.env.BASE_URL || process.env.BASE_URL_DEV}/zohoEmailWebhook`,

@@ -18,7 +18,6 @@ interface EmailTrigger {
   flow_id: string;
   creator_id: string;
   email: string;
-  trigger_id: string;
   status: 0 | 1 | 2; // 0: inactive, 1: active, 2: suspended
   settings: EmailTriggerSettings;
   created_at: Timestamp;
@@ -52,6 +51,29 @@ const DEFAULT_SETTINGS: EmailTriggerSettings = {
 };
 
 /**
+ * Check if an email address already exists in the system (across all users)
+ */
+export async function checkEmailExists(email: string): Promise<boolean> {
+  // Validate input parameter
+  if (!email || typeof email !== 'string') {
+    throw new HttpsError('invalid-argument', 'Valid email address is required');
+  }
+
+  if (email.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Email address cannot be empty');
+  }
+
+  console.log('email', email);
+  const existingTrigger = await goals_db
+    .collection("emailTriggers")
+    .where("email", "==", email)
+    .limit(1)
+    .get();
+
+  return !existingTrigger.empty;
+}
+
+/**
  * Generate a unique email address for the trigger
  * Format: {userPrefix}{flowPrefix}@goalmatic.io
  */
@@ -59,6 +81,15 @@ function generateUniqueEmail(
   userId: string,
   flowId: string,
 ): { triggerId: string; email: string } {
+  // Validate input parameters
+  if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid userId is required');
+  }
+
+  if (!flowId || typeof flowId !== 'string' || flowId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid flowId is required');
+  }
+
   // Take first 3 characters of user ID (alphanumeric only)
   const userPrefix = userId
     .replace(/[^a-zA-Z0-9]/g, "")
@@ -150,11 +181,35 @@ function validateSettings(
 }
 
 /**
+ * Validate createEmailTrigger parameters
+ */
+function validateCreateEmailTriggerParams(params: CreateEmailTriggerParams): void {
+  if (!params) {
+    throw new HttpsError('invalid-argument', 'Parameters are required');
+  }
+
+  if (!params.flowId || typeof params.flowId !== 'string' || params.flowId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid flowId is required');
+  }
+
+  if (!params.userId || typeof params.userId !== 'string' || params.userId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid userId is required');
+  }
+
+  if (params.settings !== undefined && params.settings !== null && typeof params.settings !== 'object') {
+    throw new HttpsError('invalid-argument', 'Settings must be an object if provided');
+  }
+}
+
+/**
  * Create a new email trigger
  */
 export async function createEmailTrigger(
   params: CreateEmailTriggerParams,
 ): Promise<EmailTrigger> {
+  // Validate input parameters
+  validateCreateEmailTriggerParams(params);
+
   const { flowId, userId, settings = {} } = params;
 
   // Validate that the flow exists and belongs to the user
@@ -187,7 +242,33 @@ export async function createEmailTrigger(
   }
 
   // Generate unique email address based on user and flow IDs
-  const { triggerId, email } = generateUniqueEmail(userId, flowId);
+  let { triggerId, email } = generateUniqueEmail(userId, flowId);
+
+  // Ensure the generated email is unique across the system
+  let attempts = 0;
+  const maxAttempts = 5;
+  while (await checkEmailExists(email) && attempts < maxAttempts) {
+    // Regenerate with a new random suffix if email already exists
+    const userPrefix = userId
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .substring(0, 3)
+      .toLowerCase();
+    const flowPrefix = flowId
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .substring(0, 3)
+      .toLowerCase();
+    const randomSuffix = Math.random().toString(36).substring(2, 5); // Longer suffix
+    triggerId = `${userPrefix}${flowPrefix}${randomSuffix}`;
+    email = `${triggerId}@${EMAIL_DOMAIN}`;
+    attempts++;
+  }
+
+  if (attempts >= maxAttempts) {
+    throw new HttpsError(
+      "resource-exhausted",
+      "Unable to generate a unique email address after multiple attempts. Please try again later."
+    );
+  }
 
   // Validate and merge settings
   const validatedSettings = validateSettings(settings);
@@ -198,7 +279,6 @@ export async function createEmailTrigger(
     flow_id: flowId,
     creator_id: userId,
     email: email,
-    trigger_id: triggerId,
     status: 1, // active
     settings: validatedSettings,
     created_at: Timestamp.now(),
@@ -214,7 +294,6 @@ export async function createEmailTrigger(
   // Update the flow to include the email trigger reference
   await goals_db.collection("flows").doc(flowId).update({
     "trigger.propsData.email": email,
-    "trigger.propsData.trigger_id": triggerId,
     updated_at: Timestamp.now(),
   });
 
@@ -275,6 +354,15 @@ export async function getEmailTriggerByFlowId(
   flowId: string,
   userId: string,
 ): Promise<EmailTrigger | null> {
+  // Validate input parameters
+  if (!flowId || typeof flowId !== 'string' || flowId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid flowId is required');
+  }
+
+  if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+    throw new HttpsError('invalid-argument', 'Valid userId is required');
+  }
+
   const triggerSnapshot = await goals_db
     .collection("emailTriggers")
     .where("flow_id", "==", flowId)
@@ -352,7 +440,6 @@ export async function deleteEmailTrigger(
   // Remove trigger reference from flow
   await goals_db.collection("flows").doc(existingTrigger.flow_id).update({
     "trigger.propsData.email": null,
-    "trigger.propsData.trigger_id": null,
     updated_at: Timestamp.now(),
   });
 

@@ -160,7 +160,17 @@ const invalidReason = computed<
     null | 'no_trigger' | 'no_action' | 'invalid_trigger' | 'invalid_action'
 >(() => {
     // Missing trigger
-    if (!props.flowData.trigger) return 'no_trigger'
+	if (!props.flowData.trigger) return 'no_trigger'
+    // Check if trigger has any null properties
+    const trigger = props.flowData.trigger.propsData
+    if (trigger && typeof trigger === 'object') {
+        const triggerKeys = Object.keys(trigger)
+        for (const key of triggerKeys) {
+            if (trigger[key] === null) {
+                return 'invalid_trigger'
+            }
+        }
+    }
 
     // Missing action step
     if (!props.flowData.steps || props.flowData.steps.length === 0) return 'no_action'

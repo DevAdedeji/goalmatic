@@ -107,7 +107,6 @@ export const createTestEmailTrigger = onCall({
       flow_id: flowId,
       creator_id: userId,
       email: email,
-      trigger_id: triggerId,
       status: 1, // active
       settings: {
         include_attachments: false,
@@ -127,7 +126,6 @@ export const createTestEmailTrigger = onCall({
     // Update flow with trigger info
     await goals_db.collection('flows').doc(flowId).update({
       'trigger.propsData.email': email,
-      'trigger.propsData.trigger_id': triggerId,
       status: 1,
       updated_at: new Date()
     });

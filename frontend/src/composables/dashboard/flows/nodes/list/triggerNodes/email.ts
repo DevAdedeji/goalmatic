@@ -14,7 +14,7 @@ export const emailTriggerNodes: FlowNode[] = [
         name: 'Email Address',
         key: 'email',
         type: 'email_display',
-        required: false,
+        required: true,
         disabled: true,
         copyable: true,
         description: 'Auto-generated unique email address for this trigger',

@@ -41,16 +41,6 @@ export const runStepsInContext = async (
     }
   };
 
-  // Handle trigger data for different trigger types
-  if (triggerData) {
-    // For external triggers (email), pass data to workflow context for trigger nodes to access
-    // The trigger nodes themselves will access this data from context.requestPayload
-    console.log(`External trigger data received for ${flowData.trigger?.node_id}:`, {
-      hasTriggerData: !!triggerData,
-      triggerType: triggerData.trigger_type || 'unknown',
-      flowTriggerType: flowData.trigger?.node_id
-    });
-  }
 
   // Always run the trigger node if it exists (whether we have external data or not)
   if (flowData.trigger) {

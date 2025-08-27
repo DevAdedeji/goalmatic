@@ -4,7 +4,6 @@
 		:title="isEditMode ? 'Edit Workflow' : 'Create Workflow'"
 		:props-modal="propsModal"
 		modal-content-class="p-0 "
-		size="xl"
 	>
 		<template #header>
 			<div class="flex flex-col relative w-full">

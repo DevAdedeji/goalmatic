@@ -5,10 +5,12 @@ export const handleDeactivateEmailTrigger = async (flowData: any, userId: string
   try {
     // Get the email trigger data from the flow
     const triggerEmail = flowData.trigger?.propsData?.email;
-    const triggerId = flowData.trigger?.propsData?.trigger_id;
 
-    // If there's a trigger ID, update the email trigger status to inactive
-    if (triggerId) {
+    // If there's an email, extract trigger ID and update the email trigger status to inactive
+    if (triggerEmail) {
+      // Extract trigger ID from email address
+      const triggerId = triggerEmail.split('@')[0];
+
       try {
         const emailTriggerRef = goals_db.collection('emailTriggers').doc(triggerId);
         const emailTriggerDoc = await emailTriggerRef.get();
@@ -33,14 +35,12 @@ export const handleDeactivateEmailTrigger = async (flowData: any, userId: string
     await goals_db.collection('flows').doc(flowData.id).update({
       status: 0,
       'trigger.propsData.email': null,
-      'trigger.propsData.trigger_id': null,
       updated_at: new Date()
     });
 
     return {
       success: true,
       triggerEmail: triggerEmail,
-      triggerId: triggerId,
       deactivatedAt: new Date().toISOString()
     };
   } catch (error: any) {
