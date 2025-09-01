@@ -32,6 +32,12 @@ export type FlowNodeOutputProp = {
   description?: string
 }
 
+export type IntegrationRequirement = {
+  type: string // e.g., 'EMAIL'
+  provider: string // e.g., 'GOOGLE_COMPOSIO'
+  label?: string // Friendly display label
+}
+
 export type FlowNode = {
   id?: string
   node_id?: string
@@ -46,6 +52,8 @@ export type FlowNode = {
   props?: FlowNodeProp[]
   outputProps?: FlowNodeOutputProp[]
   expectedOutput?: FlowNodeOutputProp[]
+  // Optional integration requirement to gate node usage (e.g., Gmail via Composio)
+  requiresIntegration?: IntegrationRequirement
 }
 
 export type TriggerNodeType = 'SCHEDULED' | 'MANUAL' | 'EVENT'

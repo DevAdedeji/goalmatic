@@ -157,17 +157,6 @@ export const useEditFlow = () => {
       // Send full cleaned data (no allow-list filtering)
       const updatePayload: Record<string, any> = cleaned_data
 
-      // Debug info to help diagnose rules failures
-      // Note: safe to keep in dev; remove or guard for production if noisy
-      // eslint-disable-next-line no-console
-      console.debug('Updating flow payload', {
-        flowId: cleaned_data.id,
-        userId: user_id.value,
-        creatorId: updatePayload.creator_id,
-        hasUpdatedAt: Boolean(updatePayload.updated_at),
-        isTimestamp: updatePayload.updated_at instanceof Timestamp
-      })
-
       await updateFirestoreDocument('flows', cleaned_data.id, updatePayload)
 
       // Update the local flowDetails to reflect changes immediately

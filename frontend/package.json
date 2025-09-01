@@ -24,6 +24,7 @@
     "@headlessui/vue": "^1.7.23",
     "@iconify/vue": "^4.3.0",
     "@nuxt/kit": "^3.17.2",
+    "@posthog/ai": "^6.2.0",
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.7",
     "@tiptap/extension-color": "^2.7.4",
@@ -31,6 +32,7 @@
     "@tiptap/extension-text-style": "^2.7.4",
     "@tiptap/pm": "^2.7.4",
     "@tiptap/starter-kit": "^2.7.4",
+    "@tiptap/suggestion": "^2.0.0-beta.75",
     "@tiptap/vue-3": "^2.7.4",
     "@vueuse/core": "^10.11.1",
     "@vueuse/nuxt": "^9.3.1",
@@ -56,15 +58,14 @@
     "sass": "^1.81.0",
     "sortablejs": "^1",
     "split.js": "^1.6.5",
+    "tippy.js": "^6.3.7",
     "uuid": "^9.0.0",
     "vue": "^3.4.27",
     "vue-cal": "^5.0.1-rc.1",
     "vue-datepicker-next": "^1.0.3",
     "vue-draggable-next": "^2.2.1",
     "vue-gtag-next": "^1.14.0",
-    "vue-router": "^4.3.2",
-    "@tiptap/suggestion": "^2.0.0-beta.75",
-    "tippy.js": "^6.3.7"
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@inspira-ui/plugins": "^0.0.1",

@@ -2,6 +2,38 @@
 	<div>
 		<!-- Properties Form -->
 		<form class="flex flex-col gap-6 sm:pb-0 pb-24" @submit.prevent="validateAndSave">
+			<!-- Integration requirement banner -->
+			<div
+				v-if="needsIntegration && !integrationConnected"
+				class="p-3 border rounded-md bg-amber-50 border-amber-200 text-amber-900 flex items-start justify-between gap-3"
+			>
+				<div class="text-sm">
+					<p class="font-medium">
+						{{ integrationLabel }} connection required
+					</p>
+					<p class="mt-1">
+						Connect your {{ integrationLabel }} account to use this node. You’ll be redirected to authorize access.
+					</p>
+				</div>
+				<div class="flex items-center gap-2">
+					<button
+						type="button"
+						class="btn-primary !py-1.5"
+						:disabled="connecting"
+						@click="connectIntegration"
+					>
+						<span v-if="!connecting">Connect</span>
+						<span v-else class="flex items-center gap-2">
+							<svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" />
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+							</svg>
+							Connecting...
+						</span>
+					</button>
+				</div>
+			</div>
+
 			<div v-if="!hasProps" class="text-center py-4 text-text-secondary">
 				This node has no configurable properties.
 			</div>
@@ -496,7 +528,7 @@
 				<button
 					type="submit"
 					class="btn-primary flex-1"
-					:disabled="loading"
+					:disabled="loading || (needsIntegration && !integrationConnected)"
 				>
 					<span v-if="loading">Saving...</span>
 					<span v-else>Save Changes</span>
@@ -507,7 +539,7 @@
 					<button type="button" class="btn-outline" @click="closeModal">
 						Cancel
 					</button>
-					<button type="submit" class="btn-primary" :disabled="loading">
+					<button type="submit" class="btn-primary" :disabled="loading || (needsIntegration && !integrationConnected)">
 						<span v-if="loading">Saving...</span>
 						<span v-else>Save Changes</span>
 					</button>
@@ -530,6 +562,8 @@ import Select from '@/components/core/Select.vue'
 import EmailDisplayField from '@/components/flows/EmailDisplayField.vue'
 import EmailTriggerTester from '@/components/flows/EmailTriggerTester.vue'
 import type { FlowNodeProp } from '@/composables/dashboard/flows/nodes/types'
+import { callFirebaseFunction } from '@/firebase/functions'
+import { useConnectIntegration } from '@/composables/dashboard/integrations/connect'
 
 const route = useRoute()
 
@@ -574,7 +608,31 @@ const validationMessages = ref<Record<string, string>>({})
 // User composable for getting user's agents
 const { user: _user } = useUser()
 
+// Integration requirement (generic)
+const requiredIntegration = computed(() => props.payload?.requiresIntegration || null)
+const needsIntegration = computed(() => !!requiredIntegration.value)
+const integrationLabel = computed(() => requiredIntegration.value?.label || 'Integration')
+const userIdRef = computed(() => {
+  const composableId = (useUser() as any)?.id?.value
+  const u: any = _user.value
+  return composableId || u?.uid || null
+})
 
+// Use existing integration connection composable
+const { connectIntegration: connectExistingIntegration } = useConnectIntegration()
+
+const integrationConnected = ref(false)
+const connecting = ref(false)
+
+// Map provider to integration ID for the existing composable
+const getIntegrationId = (provider: string) => {
+  switch (provider) {
+    case 'GOOGLE_COMPOSIO':
+      return 'GMAIL'
+    default:
+      return provider
+  }
+}
 
 // Check if this is an email trigger node
 const isEmailTriggerNode = computed(() => {
@@ -812,6 +870,35 @@ const validateAndSave = () => {
     // Reset validation state on successful save
     showValidation.value = false
     hasValidationErrors.value = false
+
+    // Gmail Trigger normalization: build Composio query from simple fields
+    if (props.payload?.node_id === 'GMAIL_TRIGGER') {
+        const from = (resolvedValues.from || '').trim()
+        const subjectContains = (resolvedValues.subject_contains || '').trim()
+        const labelIds = (resolvedValues.labelIds || '').trim()
+
+        // Build query from available filters
+        const parts: string[] = []
+        if (from) parts.push(`from:${from}`)
+        if (subjectContains) parts.push(`subject:(${subjectContains})`)
+        if (labelIds) parts.push(`label:${labelIds}`)
+        const query = parts.join(' ')
+
+        resolvedValues.query = query
+
+        // Persist raw filters for backend reference (activate handler reads gmail_filters)
+        resolvedValues.gmail_filters = {
+            sender_contains: from || undefined,
+            subject_contains: subjectContains || undefined
+        }
+
+        // Coerce interval to a finite number (minutes)
+        if (resolvedValues.interval !== undefined) {
+            const n = Number(resolvedValues.interval)
+            resolvedValues.interval = Number.isFinite(n) ? n : 1
+        }
+    }
+
     emit('save', { ...resolvedValues, aiEnabledFields })
 }
 
@@ -960,6 +1047,10 @@ onMounted(() => {
     setTimeout(() => {
         initializeFormValues()
     }, 100)
+    // Check integration status on mount (generic)
+    if (needsIntegration.value && userIdRef.value) {
+        checkIntegrationConnected()
+    }
 })
 
 // Helper methods for Select and SearchableSelect
@@ -986,4 +1077,49 @@ const getSelectOptions = (prop: FlowNodeProp) => {
         }
     })
 }
+/**
+ * Integration helpers (generic)
+ * - Checks existing user integrations in Firestore for the required provider
+ * - Initiates Gmail (Composio) connection via callable functions when needed
+ */
+const checkIntegrationConnected = async () => {
+    try {
+        const integrationsRef = ref<any[]>([])
+        const userComposable = useUser()
+        const uid = userComposable.id.value
+        if (!uid || !requiredIntegration.value) return
+        await getFirestoreSubCollectionWithWhereQuery(
+            'users',
+            uid,
+            'integrations',
+            integrationsRef,
+            { name: 'type', operator: '==', value: requiredIntegration.value.type }
+        )
+        const found = (integrationsRef.value || []).some((i: any) => i.provider === requiredIntegration.value!.provider)
+        integrationConnected.value = !!found
+    } catch (e) {
+        console.error('Failed to check integration status', e)
+    }
+}
+
+const connectIntegration = async () => {
+    if (!requiredIntegration.value) return
+
+    const integrationId = getIntegrationId(requiredIntegration.value.provider)
+    if (!integrationId) return
+
+    try {
+        connecting.value = true
+        await connectExistingIntegration(integrationId)
+        // Check connection status after the integration flow completes
+        setTimeout(async () => {
+            await checkIntegrationConnected()
+            connecting.value = false
+        }, 3000)
+    } catch (e) {
+        console.error('Failed to initiate integration connection', e)
+        connecting.value = false
+    }
+}
+
 </script>
