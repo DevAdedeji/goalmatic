@@ -38,10 +38,7 @@ const validateEmailTriggerData = async (flowData: any, userId: string): Promise<
   };
 }
 
-export const handleActivateEmailTrigger = async (
-  flowData: any,
-  userId: string,
-) => {
+export const handleActivateEmailTrigger = async (flowData: any, userId: string) => {
   try {
     const { success, message } = await validateEmailTriggerData(flowData, userId);
     if (!success) {

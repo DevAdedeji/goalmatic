@@ -2,6 +2,7 @@ import { HttpsError } from "firebase-functions/v2/https";
 import { handleActivateScheduleTimeTrigger } from "./activateScheduleTime";
 import { handleActivateScheduleIntervalTrigger } from "./activateScheduleInterval";
 import { handleActivateEmailTrigger } from "./activateEmailTrigger";
+import { handleActivateGmailTrigger } from "./activateGmailTrigger";
 
 export const handleFlowTrigger = async (flowData, userId) => {
   const { trigger } = flowData;
@@ -14,6 +15,8 @@ export const handleFlowTrigger = async (flowData, userId) => {
       return await handleActivateScheduleIntervalTrigger(flowData, userId);
     case "EMAIL_TRIGGER":
       return await handleActivateEmailTrigger(flowData, userId);
+    case "GMAIL_TRIGGER":
+      return await handleActivateGmailTrigger(flowData, userId);
     default:
       throw new HttpsError(
         "unimplemented",

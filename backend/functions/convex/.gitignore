@@ -1,9 +1,0 @@
-.env.local
-
-# Ignore generated JavaScript files and source maps
-*.js
-*.js.map
-
-# But keep specific config files
-!convex.config.js
-!auth.config.js

@@ -28,6 +28,8 @@ export * from "./chat/shareChatSession";
 
 // Composio Gmail integration
 export * from "./ai/tools/gmail/utils/setup";
+// Composio webhooks
+export * from "./composio/composioWebhook";
 
 // Search functions (Upstash)
 export * from "./agents/searchAgents";
